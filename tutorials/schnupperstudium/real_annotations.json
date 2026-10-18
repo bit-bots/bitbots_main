@@ -1,0 +1,2302 @@
+[
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 33,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 37,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 41,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 53,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 57,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 61,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 77,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 81,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 93,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 97,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 101,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 113,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 121,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 125,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 133,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 137,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 141,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 145,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 157,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 161,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 165,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 169,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 173,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 181,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 185,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 189,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 193,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 197,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 201,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 209,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 213,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 217,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 245,
+    "boxes": [
+      [
+        437,
+        120,
+        479,
+        160
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 246,
+    "boxes": [
+      [
+        430,
+        137,
+        471,
+        176
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 247,
+    "boxes": [
+      [
+        428,
+        146,
+        468,
+        185
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 248,
+    "boxes": [
+      [
+        428,
+        145,
+        468,
+        184
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 249,
+    "boxes": [
+      [
+        429,
+        144,
+        470,
+        182
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 250,
+    "boxes": [
+      [
+        429,
+        144,
+        469,
+        183
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 251,
+    "boxes": [
+      [
+        429,
+        145,
+        469,
+        184
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 252,
+    "boxes": [
+      [
+        429,
+        146,
+        469,
+        184
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 253,
+    "boxes": [
+      [
+        428,
+        145,
+        469,
+        184
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 254,
+    "boxes": [
+      [
+        429,
+        146,
+        469,
+        184
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 255,
+    "boxes": [
+      [
+        433,
+        129,
+        475,
+        169
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 256,
+    "boxes": [
+      [
+        442,
+        120,
+        486,
+        162
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 257,
+    "boxes": [
+      [
+        440,
+        97,
+        487,
+        142
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 258,
+    "boxes": [
+      [
+        443,
+        115,
+        492,
+        162
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 259,
+    "boxes": [
+      [
+        452,
+        103,
+        508,
+        154
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 260,
+    "boxes": [
+      [
+        386,
+        158,
+        439,
+        209
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 261,
+    "boxes": [
+      [
+        371,
+        216,
+        424,
+        269
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 262,
+    "boxes": [
+      [
+        391,
+        279,
+        453,
+        341
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 263,
+    "boxes": [
+      [
+        376,
+        284,
+        444,
+        355
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 264,
+    "boxes": [
+      [
+        360,
+        294,
+        432,
+        370
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 268,
+    "boxes": [
+      [
+        213,
+        202,
+        267,
+        252
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 269,
+    "boxes": [
+      [
+        224,
+        107,
+        266,
+        146
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 293,
+    "boxes": [
+      [
+        394,
+        96,
+        427,
+        127
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 294,
+    "boxes": [
+      [
+        402,
+        103,
+        436,
+        134
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 295,
+    "boxes": [
+      [
+        407,
+        109,
+        443,
+        141
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 313,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 329,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 333,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 353,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 369,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 373,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 377,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 381,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 383,
+    "boxes": [
+      [
+        530,
+        161,
+        555,
+        181
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 384,
+    "boxes": [
+      [
+        308,
+        147,
+        326,
+        165
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 385,
+    "boxes": [
+      [
+        177,
+        152,
+        199,
+        175
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 386,
+    "boxes": [
+      [
+        101,
+        159,
+        127,
+        181
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 389,
+    "boxes": [
+      [
+        370,
+        166,
+        388,
+        184
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 413,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 417,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 419,
+    "boxes": [
+      [
+        250,
+        117,
+        280,
+        146
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 420,
+    "boxes": [
+      [
+        310,
+        214,
+        339,
+        242
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 421,
+    "boxes": [
+      [
+        284,
+        217,
+        314,
+        244
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 422,
+    "boxes": [
+      [
+        232,
+        219,
+        262,
+        246
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 423,
+    "boxes": [
+      [
+        95,
+        235,
+        133,
+        266
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 429,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 433,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 449,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 453,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 457,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 461,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 465,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 468,
+    "boxes": [
+      [
+        367,
+        176,
+        385,
+        192
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 469,
+    "boxes": [
+      [
+        319,
+        161,
+        336,
+        177
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 470,
+    "boxes": [
+      [
+        289,
+        149,
+        308,
+        166
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 473,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 481,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 485,
+    "boxes": [
+      [
+        615,
+        187,
+        650,
+        213
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 486,
+    "boxes": [
+      [
+        416,
+        169,
+        440,
+        192
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 487,
+    "boxes": [
+      [
+        260,
+        171,
+        283,
+        194
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 508,
+    "boxes": [
+      [
+        304,
+        328,
+        340,
+        366
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 509,
+    "boxes": [
+      [
+        318,
+        266,
+        354,
+        301
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 520,
+    "boxes": [
+      [
+        533,
+        113,
+        576,
+        150
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 521,
+    "boxes": [
+      [
+        561,
+        175,
+        606,
+        211
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 525,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 533,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 541,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 549,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 557,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 573,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 581,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 589,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 597,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 605,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 613,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 621,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 625,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 637,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 653,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 657,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 661,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 669,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 674,
+    "boxes": [
+      [
+        400,
+        177,
+        421,
+        197
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 675,
+    "boxes": [
+      [
+        251,
+        168,
+        273,
+        189
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 676,
+    "boxes": [
+      [
+        152,
+        156,
+        179,
+        178
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 681,
+    "boxes": [
+      [
+        353,
+        205,
+        373,
+        225
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 685,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 689,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 693,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 694,
+    "boxes": [
+      [
+        536,
+        180,
+        563,
+        203
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 695,
+    "boxes": [
+      [
+        341,
+        162,
+        362,
+        183
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 709,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 713,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 715,
+    "boxes": [
+      [
+        278,
+        304,
+        328,
+        351
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 717,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 721,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 723,
+    "boxes": [
+      [
+        463,
+        94,
+        533,
+        156
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 725,
+    "boxes": [
+      [
+        507,
+        121,
+        583,
+        184
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 726,
+    "boxes": [
+      [
+        510,
+        129,
+        585,
+        191
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 727,
+    "boxes": [
+      [
+        509,
+        133,
+        582,
+        194
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 728,
+    "boxes": [
+      [
+        503,
+        160,
+        569,
+        218
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 729,
+    "boxes": [
+      [
+        488,
+        187,
+        549,
+        241
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 730,
+    "boxes": [
+      [
+        485,
+        194,
+        547,
+        248
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 731,
+    "boxes": [
+      [
+        486,
+        197,
+        547,
+        251
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 732,
+    "boxes": [
+      [
+        486,
+        199,
+        547,
+        252
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 733,
+    "boxes": [
+      [
+        486,
+        199,
+        547,
+        252
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 734,
+    "boxes": [
+      [
+        485,
+        198,
+        547,
+        252
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 735,
+    "boxes": [
+      [
+        486,
+        199,
+        547,
+        253
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 736,
+    "boxes": [
+      [
+        486,
+        200,
+        547,
+        253
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 737,
+    "boxes": [
+      [
+        485,
+        199,
+        547,
+        253
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 738,
+    "boxes": [
+      [
+        486,
+        201,
+        547,
+        255
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 739,
+    "boxes": [
+      [
+        491,
+        197,
+        557,
+        251
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 740,
+    "boxes": [
+      [
+        486,
+        177,
+        549,
+        233
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 741,
+    "boxes": [
+      [
+        451,
+        169,
+        515,
+        225
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 742,
+    "boxes": [
+      [
+        418,
+        152,
+        484,
+        212
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 743,
+    "boxes": [
+      [
+        383,
+        136,
+        450,
+        199
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 744,
+    "boxes": [
+      [
+        347,
+        192,
+        414,
+        255
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 745,
+    "boxes": [
+      [
+        343,
+        221,
+        415,
+        289
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 746,
+    "boxes": [
+      [
+        362,
+        223,
+        440,
+        298
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 748,
+    "boxes": [
+      [
+        352,
+        259,
+        391,
+        306
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 749,
+    "boxes": [
+      [
+        380,
+        223,
+        446,
+        282
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 750,
+    "boxes": [
+      [
+        401,
+        121,
+        461,
+        176
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 757,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 765,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 781,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 785,
+    "boxes": [],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 833,
+    "boxes": [
+      [
+        532,
+        201,
+        562,
+        225
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 835,
+    "boxes": [
+      [
+        177,
+        172,
+        204,
+        196
+      ]
+    ],
+    "split": "train",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1101,
+    "boxes": [],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1102,
+    "boxes": [
+      [
+        344,
+        147,
+        409,
+        205
+      ]
+    ],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1105,
+    "boxes": [
+      [
+        466,
+        117,
+        532,
+        177
+      ]
+    ],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1108,
+    "boxes": [
+      [
+        452,
+        139,
+        517,
+        196
+      ]
+    ],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1111,
+    "boxes": [
+      [
+        486,
+        199,
+        554,
+        258
+      ]
+    ],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1114,
+    "boxes": [
+      [
+        504,
+        305,
+        573,
+        369
+      ]
+    ],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1124,
+    "boxes": [
+      [
+        482,
+        254,
+        556,
+        321
+      ]
+    ],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1129,
+    "boxes": [],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1133,
+    "boxes": [
+      [
+        269,
+        235,
+        316,
+        279
+      ]
+    ],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1137,
+    "boxes": [],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1141,
+    "boxes": [],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1155,
+    "boxes": [
+      [
+        293,
+        101,
+        326,
+        132
+      ]
+    ],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1158,
+    "boxes": [
+      [
+        284,
+        104,
+        317,
+        135
+      ]
+    ],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1161,
+    "boxes": [
+      [
+        276,
+        104,
+        310,
+        134
+      ]
+    ],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1165,
+    "boxes": [],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1170,
+    "boxes": [
+      [
+        379,
+        255,
+        410,
+        283
+      ]
+    ],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1173,
+    "boxes": [
+      [
+        140,
+        231,
+        174,
+        259
+      ]
+    ],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1177,
+    "boxes": [],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1181,
+    "boxes": [],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1185,
+    "boxes": [],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1189,
+    "boxes": [],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1193,
+    "boxes": [],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1197,
+    "boxes": [],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1201,
+    "boxes": [],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1205,
+    "boxes": [],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1209,
+    "boxes": [],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1217,
+    "boxes": [],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1221,
+    "boxes": [],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1229,
+    "boxes": [],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1233,
+    "boxes": [],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1249,
+    "boxes": [
+      [
+        516,
+        237,
+        559,
+        277
+      ]
+    ],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1253,
+    "boxes": [],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1261,
+    "boxes": [],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1273,
+    "boxes": [
+      [
+        490,
+        128,
+        549,
+        178
+      ]
+    ],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1276,
+    "boxes": [
+      [
+        538,
+        253,
+        602,
+        306
+      ]
+    ],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1279,
+    "boxes": [
+      [
+        527,
+        307,
+        583,
+        359
+      ]
+    ],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1282,
+    "boxes": [
+      [
+        532,
+        310,
+        589,
+        363
+      ]
+    ],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1285,
+    "boxes": [
+      [
+        529,
+        312,
+        588,
+        365
+      ]
+    ],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1288,
+    "boxes": [
+      [
+        553,
+        296,
+        616,
+        351
+      ]
+    ],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  },
+  {
+    "bag": "ID_romeo_2026-10-16T18_05_34",
+    "frame": 1291,
+    "boxes": [
+      [
+        495,
+        105,
+        556,
+        156
+      ]
+    ],
+    "split": "test",
+    "reviewed": true,
+    "review_method": "color_assisted_visual_review_by_coding_agent"
+  }
+]

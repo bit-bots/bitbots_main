@@ -1,5 +1,6 @@
 <launch>
   <arg name="web" default="false" description="Use web-based mjviser viewer instead of the native MuJoCo viewer"/>
+  <arg name="ball_style" default="original" description="Ball appearance in the default robot scene: original or orange"/>
   <arg name="fake_localization" default="true" description="Publish the map frame from the ground truth instead of running the localization"/>
 
   <!-- The web viewer runs headless (no X server), so MuJoCo needs to render the cameras via EGL instead of GLFW -->
@@ -8,6 +9,7 @@
   <node pkg="bitbots_mujoco_sim" exec="sim" name="sim_interface" output="screen">
     <param name="use_namespace" value="false"/>
     <param name="web" value="$(var web)"/>
+    <param name="ball_style" value="$(var ball_style)"/>
   </node>
 
   <group if="$(var fake_localization)">

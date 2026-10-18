@@ -4,11 +4,11 @@
          description="true: activates simulation time" />
     <arg name="debug" default="false"
          description="true: activates publishing of the debug image" />
+    <arg name="vision_backend" default="original" description="Vision backend: original or schnupper" />
 
-    <node pkg="bitbots_vision" exec="vision" name="bitbots_vision" output="screen">
-        <!-- Set vision config -->
-        <param from="$(find-pkg-share bitbots_vision)/config/visionparams.yaml" />
-        <param name="components.debug_active" value="$(var debug)" />
-        <param name="use_sim_time" value="$(var sim)" />
-    </node>
+    <include file="$(find-pkg-share bitbots_vision)/launch/vision_backend.launch.py">
+        <arg name="vision_backend" value="$(var vision_backend)" />
+        <arg name="sim" value="$(var sim)" />
+        <arg name="debug" value="$(var debug)" />
+    </include>
 </launch>

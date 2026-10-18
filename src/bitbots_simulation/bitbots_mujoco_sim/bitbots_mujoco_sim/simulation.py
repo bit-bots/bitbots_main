@@ -29,6 +29,7 @@ class Simulation(Node):
     def __init__(self):
         super().__init__("sim_interface")
         self.declare_parameter("world_file", "")
+        self.declare_parameter("ball_style", "original")
         self.declare_parameter("use_namespace", True)
         self.declare_parameter("web", False)
 
@@ -167,7 +168,11 @@ class Simulation(Node):
         mujoco.mj_forward(self.model, self.data)
 
     def _generate_default_world(self) -> str:
-        template_path = Path(self.package_path) / "xml" / "kid_field.xml"
+        ball_style = self.get_parameter("ball_style").get_parameter_value().string_value
+        if ball_style not in {"original", "orange"}:
+            raise ValueError(f"Unsupported ball_style {ball_style!r}; expected 'original' or 'orange'")
+        template_name = "kid_field_orange.xml" if ball_style == "orange" else "kid_field.xml"
+        template_path = Path(self.package_path) / "xml" / template_name
         output_path = Path(self.package_path) / "xml" / "generated_world.xml"
         with open(template_path) as f:
             template = f.read()

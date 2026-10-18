@@ -1,0 +1,9 @@
+<mujoco model="offline_orange_ball">
+  <include file="dataset_field.xml"/>
+  <worldbody>
+    <body name="ball" pos="0 0 0.07">
+      <freejoint name="ball-root"/>
+      <geom name="ball" type="sphere" size="0.07" mass="0.205" friction="0.4 0.01 0.01" rgba="1 0.32 0.015 1"/>
+    </body>
+  </worldbody>
+</mujoco>

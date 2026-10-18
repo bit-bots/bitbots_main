@@ -1,0 +1,18 @@
+<mujoco model="offline_dataset_field">
+  <compiler angle="radian" assetdir="assets"/>
+  <option timestep="0.002"/>
+  <visual>
+    <global offwidth="672" offheight="376"/>
+    <quality shadowsize="2048"/>
+  </visual>
+  <include file="goal_kid.xml"/>
+  <asset>
+    <texture name="skybox" type="skybox" fileup="backgrounds/kiara_1_dawn_top.png" filedown="backgrounds/kiara_1_dawn_bottom.png" filefront="backgrounds/kiara_1_dawn_front.png" fileback="backgrounds/kiara_1_dawn_back.png" fileleft="backgrounds/kiara_1_dawn_left.png" fileright="backgrounds/kiara_1_dawn_right.png"/>
+    <texture name="pitch" file="kid_field.png" type="2d"/>
+    <material name="pitch" reflectance="0" texture="pitch" texrepeat="1 1" texuniform="false"/>
+  </asset>
+  <worldbody>
+    <light name="dataset_light" directional="true" pos="0 0 4" dir="-0.4 -0.3 -1" diffuse="0.8 0.8 0.8" specular="0.1 0.1 0.1"/>
+    <geom name="pitch" material="pitch" pos="0 0 0" size="5.5 4 1" type="plane"/>
+  </worldbody>
+</mujoco>
