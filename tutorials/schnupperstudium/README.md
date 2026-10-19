@@ -1,6 +1,8 @@
 # Schnupperstudium: einen Ball im Kamerabild finden
 
-Mit HSV-Farbauswahl, Masken und Konturen entwickelt ihr eine kleine Ball-Vision.
+Mit Histogrammen, Farbvergleichen und Mittelwerten entwickelt ihr eine kleine Ball-Vision.
+Der Lernweg und die Bonusaufgaben folgen der bereitgestellten Ballsuche-Vorlage des Kollegen.
+Die allgemeine Python-Grundlageneinführung entfällt; benötigte Befehle stehen im Spickzettel.
 `aufgabe.ipynb` enthält die Aufgaben und den auszufüllenden Detektor;
 `loesung.ipynb` zeigt eine erklärbare Referenzlösung ohne neuronales Netz.
 Beide Notebooks vergleichen echte und simulierte Bilder sowie Fehlerfälle.
@@ -28,10 +30,9 @@ Für die Referenzlösung entsprechend `loesung.ipynb` öffnen.
 
 ## Datensätze laden
 
-Früh in jedem Notebook steht eine klar markierte Zelle `DATASET_URLS`.
-Die Download-URLs für **orange** und **realistic** unter
-`https://data.bit-bots.de/Schnupperstudium2026/` sind bereits eingetragen.
-Die folgende Zelle lädt nur fehlende Datensätze mit `wget` herunter.
+`bilder_laden()` verwendet unsere vorhandenen Datensätze. Die Download-URLs für
+**orange** und **realistic** sind in `werkzeuge.py` als `DATASET_URLS` eingetragen.
+Die Hilfsfunktion lädt nur fehlende Datensätze mit `wget` herunter.
 Vollständige lokale Datensätze werden geprüft und offline wiederverwendet.
 Bei Fehlern bleibt ein vorhandener Datensatz unverändert; die Meldung erklärt,
 welche URL oder lokale Datei geprüft werden muss.
@@ -43,8 +44,8 @@ tar -czf orange.tar.gz -C tutorials/schnupperstudium/datasets orange
 tar -czf realistic.tar.gz -C tutorials/schnupperstudium/datasets realistic
 ```
 
-Die Archive unter den in den Notebooks eingetragenen URLs bereitstellen.
-Die Datenübersicht im Notebook zeigt den jeweils vorhandenen Umfang.
+Die Archive unter den in `werkzeuge.py` eingetragenen URLs bereitstellen.
+Die Auswertung zeigt den jeweils geprüften Datenumfang.
 
 ## Wie sind die Labels aufgebaut?
 
@@ -67,9 +68,24 @@ bleiben enthalten.
 ## Fair auswerten und weiterarbeiten
 
 Nur auf Trainingsbildern entwickeln; den Abschlusstest erst danach freischalten.
-Precision, Recall, F1 und Debugbilder zeigen Treffer und Fehlentscheidungen.
+Precision, Recall, F1 und Box-Overlays zeigen Treffer und Fehlentscheidungen.
+Die Masken in den Lernschritten werden direkt aus dem Schülercode angezeigt.
 Den unveränderten Detektor anschließend auf normalen Bällen ausprobieren.
 Die Referenz ist eine Farbregel, kein allgemeiner Ballerkennungs-Benchmark.
+Sie sucht vom Mittelwert der markierten Pixel aus zusammenhängende Bereiche im
+Zeilen- und Spaltenhistogramm und gibt höchstens eine Bounding Box zurück.
+Mehrere Bälle und fremde orange Flächen können die Mitte verschieben. Der Bonus
+macht diese Grenze sichtbar; ein Array als Rückgabe allein löst sie nicht.
+Die Messergebnisse des früheren Konturdetektors gelten nicht für diese Methode.
+
+Die Übungsbilder werden als RGB angezeigt; `zu_hsv` verwendet HSV_FULL.
+Der abschließende `detect_balls` erhält dagegen BGR und liefert ein Boxarray.
+Sein Funktionskörper ist eigenständig und verwendet nur `cv2` und `np`.
+Die fertige Lösung behandelt leere Masken und stoppt die Suche an allen Bildrändern.
+
+Die HSV-Abbildung liegt lokal unter `abbildungen/`; Urheber und Lizenz sind dort
+und in beiden Notebooks angegeben. Die Vorbereitung ist eingeklappt markiert;
+ob sie sofort verborgen erscheint, hängt von der Notebook-Oberfläche ab.
 
 Für den ROS-Wechsel den Backend-Schalter `vision_backend:=schnupper` verwenden.
 Startoptionen, Debug-Topics und Grenzen erklärt
@@ -83,7 +99,10 @@ mit den folgenden Dateien:
 
 - `aufgabe.ipynb`: Arbeitsblatt für die Schülerinnen und Schüler.
 - `loesung.ipynb`: Referenz für die Betreuung; erst bei Bedarf öffnen.
-- `vision_workshop.py`: lädt Bilder und Labels, berechnet Kennzahlen und zeichnet Debugbilder.
+- `werkzeuge.py`: einfache RGB-Anzeigen, HSV-Umrechnung und Zugang zu unseren Datensätzen.
+- `spickzettel.md`: benötigte Befehle zum Nachschlagen.
+- `abbildungen/`: HSV-Zylinder und Quellen-/Lizenzangaben für die Offline-Anzeige.
+- `vision_workshop.py`: lädt Bilder und Labels und berechnet die unveränderten Kennzahlen.
 - `download_datasets.py`: lädt und entpackt die im Notebook angegebenen Archive.
 - `README.md`: Einstieg und Durchführung.
 - `datasets/orange/` und `datasets/realistic/`: Bilder und `manifest.json`;
@@ -123,6 +142,7 @@ Die übrigen Dateien werden während des Workshops nicht ausgeführt:
 - `assemble_orange_dataset.py`: vorbereitete Real- und Simulationsdaten zusammenführen.
 - `SIM_DATASET.md`: Dokumentation der Datenerzeugung und Simulationsvariante.
 - `render_notebooks.py`: Beispielausgaben für die Notebooks vorbereiten.
+- `test_notebooks.py`: Histogramm-Detektor, RGB/BGR-Vertrag und Bildrandfälle.
 - `test_workshop.py`, `test_dataset_download.py`, `test_dataset_preparation.py`,
   `test_real_exclusions.py`: Tests der Notebook-Helfer und Datenvorbereitung.
 - `test/test_schnupper_vision.py` im Vision-Paket sowie
