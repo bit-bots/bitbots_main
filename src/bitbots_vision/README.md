@@ -8,6 +8,9 @@ Bit-Bots Vision
 
 This is the vision ROS package of the Hamburg Bit-Bots.
 
+Eine kleine austauschbare Python-Ballerkennung und die Launch-Umschaltung für das
+Schnupperstudium sind in [der deutschen Anleitung](README.schnupper.md) beschrieben.
+
 The vision is able to detect balls, goal posts, obstacles, and robots, and detects field lines, using a single RF-DETR ONNX model with separate detection and segmentation heads.
 
 For further information and getting started, see the documentation of this package at our website: [docs.bit-bots.de](https://docs.bit-bots.de/package/bitbots_vision/latest/index.html)

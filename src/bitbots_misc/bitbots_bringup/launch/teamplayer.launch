@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
 <launch>
+    <arg name="vision_backend" default="original" description="Vision backend: original or schnupper" />
+    <arg name="vision_debug" default="false" description="Publish vision debug overlays" />
     <arg name="audio" default="true" description="Whether the audio system should be started" />
     <arg name="behavior" default="true" description="Whether the behavior control system should be started" />
     <arg name="behavior_dsd_file" default="main.dsd" description="The behavior dsd file that should be used" />
@@ -53,6 +55,8 @@
 
     <!-- load the highlevel stuff -->
     <include file="$(find-pkg-share bitbots_bringup)/launch/highlevel.launch">
+        <arg name="vision_backend" value="$(var vision_backend)" />
+        <arg name="vision_debug" value="$(var vision_debug)" />
         <arg name="audio" value="$(var audio)" />
         <arg name="behavior" value="$(var behavior)" />
         <arg name="behavior_dsd_file" value="$(var behavior_dsd_file)" />

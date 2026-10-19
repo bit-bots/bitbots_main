@@ -33,6 +33,8 @@ TEAMPLAYER_ARGS = [
     ("path_planning", "Whether the path planning should be started"),
     ("teamcom", "Whether the team communication system should be started"),
     ("vision", "Whether the vision system should be started"),
+    ("vision_backend", "Vision backend: original or schnupper"),
+    ("vision_debug", "Publish vision debug overlays"),
     ("world_model", "Whether the world model should be started"),
     ("monitoring", "Whether the system monitor and udp bridge should be started"),
     ("record", "Whether the ros bag recording should be started"),
@@ -100,9 +102,14 @@ def generate_domain_bridge_config(robot_domain: int, output_dir: Path) -> Path:
     return config_path
 
 
-def generate_world_xml(num_robots: int, package_share: str, robot_type: str, one_versus_one: bool) -> Path:
+def generate_world_xml(
+    num_robots: int, package_share: str, robot_type: str, one_versus_one: bool, ball_style: str = "original"
+) -> Path:
     """Generate MuJoCo world XML with the correct number of robots."""
-    template_path = Path(package_share) / "xml" / "kid_field.xml"
+    templates = {"original": "kid_field.xml", "orange": "kid_field_orange.xml"}
+    if ball_style not in templates:
+        raise ValueError("ball_style must be original or orange")
+    template_path = Path(package_share) / "xml" / templates[ball_style]
     output_path = Path(package_share) / "xml" / "generated_world.xml"
     if one_versus_one:
         # Place the two robots mirrored at the center line, so each one starts on its own half
@@ -137,6 +144,7 @@ def launch_setup(context):
     if one_versus_one:
         num_robots = 2
     robot_type = str(LaunchConfiguration("robot_type").perform(context))
+    ball_style = LaunchConfiguration("ball_style").perform(context)
     use_web = LaunchConfiguration("web").perform(context).lower() == "true"
     start_teamplayer = LaunchConfiguration("teamplayer").perform(context).lower() == "true"
     fake_localization = LaunchConfiguration("fake_localization").perform(context).lower() == "true"
@@ -150,7 +158,7 @@ def launch_setup(context):
         if value:  # Only pass if not empty string
             teamplayer_args.append(f"{arg_name}:={value}")
 
-    world_file = generate_world_xml(num_robots, package_share, robot_type, one_versus_one)
+    world_file = generate_world_xml(num_robots, package_share, robot_type, one_versus_one, ball_style)
 
     actions = []
 
@@ -248,6 +256,12 @@ def generate_launch_description():
             "web",
             default_value="true",
             description="Use web-based mjviser viewer instead of the native MuJoCo viewer",
+        ),
+        DeclareLaunchArgument(
+            "ball_style",
+            default_value="original",
+            choices=["original", "orange"],
+            description="Select the original or orange-ball world template",
         ),
     ]
 

@@ -1,46 +1,53 @@
 # Schnupperstudium: einen Ball im Kamerabild finden
 
-Öffne `aufgabe.ipynb` und führe die Zellen von oben nach unten aus.
-Du entwickelst mit OpenCV einen eigenen Balldetektor und untersuchst seine Treffer
-und Fehler auf echten und simulierten Bildern.
+Öffne `aufgabe.ipynb`. Du entwickelst mit Histogrammen, Farbvergleichen und
+Mittelwerten eine Bounding Box für den Ball. Danach fasst du deine Schritte in
+`evaluation.ipynb` zu einer Funktion zusammen und prüfst sie auf weiteren Bildern.
+Der `spickzettel.md` hilft beim Nachschlagen der benötigten Befehle.
 
-## Start mit VS Code
+## Start
 
-Die Erweiterungen **Python** und **Jupyter** installieren. Im Notebook oben
-**Select Kernel → Python Environments** auswählen und den Interpreter
-`.pixi/envs/default/bin/python` des Repositorys verwenden.
-VS Code muss dafür nicht aus einer Pixi-Shell gestartet werden.
+In VS Code die Erweiterungen **Python** und **Jupyter** installieren und als
+Notebook-Kernel `.pixi/envs/default/bin/python` des Repositorys auswählen.
+Die Notebooks verwenden ihren Ordner als Arbeitsverzeichnis. Führe die Zellen
+von oben nach unten aus und nach Änderungen auch die davon abhängigen Zellen.
 
-Alternativ vom Repository-Root JupyterLab starten:
+Alternativ vom Repository-Root starten:
 
 ```sh
 pixi run -e default jupyter lab tutorials/schnupperstudium/aufgabe.ipynb
 ```
 
-## Dateien und Datensätze
+## Bilder und Hilfsdateien
 
-`vision_workshop.py` und `download_datasets.py` müssen neben dem Notebook liegen.
-Sie laden Bilder, zeichnen Debugansichten und berechnen die Kennzahlen.
-Die Download-URLs sind im Notebook bereits eingetragen. Fehlende Datensätze werden
-mit `wget` von `https://data.bit-bots.de/Schnupperstudium2026/` geladen und entpackt.
-Vorhandene lokale Daten unter `datasets/` werden offline wiederverwendet.
-Quellen-, Lizenz- und Autorenangaben des TORSO-Subsets bleiben beim Datensatz.
+`bilder_laden()` lädt eine gemischte Auswahl echter und simulierter Trainingsbilder.
+Fehlende Datensätze werden automatisch heruntergeladen; vorhandene Daten unter
+`datasets/` werden offline wiederverwendet. Die Download-Adressen stehen in
+`werkzeuge.py`. Quellen- und Lizenzangaben des TORSO-Datensatzes bleiben bei den Daten.
 
-Jeder Eintrag in `manifest.json` beschreibt ein Bild:
+Die Dateien `werkzeuge.py`, `vision_workshop.py` und `download_datasets.py` müssen
+neben den Notebooks liegen. Die HSV-Abbildung unter `abbildungen/` ist lokal verfügbar;
+dort stehen auch Urheber und Lizenz.
 
-- `image`: relativer Bildpfad.
-- `boxes`: Ballrechtecke als `[links, oben, rechts, unten]` in Pixeln.
-  Die rechte und untere Grenze liegen direkt hinter dem letzten zugehörigen Pixel.
-  Eine leere Liste bedeutet: kein Ball.
-- `source`: Kameraaufnahme (`real`) oder Simulation (`simulation`).
-- `split`: Trainingsbilder (`train`) oder Abschlusstest (`test`).
+Die Übungsbilder sind RGB. Der Detektor in `evaluation.ipynb` erhält BGR und nutzt
+`zu_hsv(image_bgr, bgr=True)`. Er liefert ein Tupel `(links, oben, rechts, unten)`
+oder `None`, wenn er keinen Ball findet. Rechts und unten liegen direkt hinter
+den eingeschlossenen Pixeln. Wir erwarten höchstens eine Box pro Bild.
 
-## Arbeiten und auswerten
+## Auswerten
 
-Entwickle deine Funktion zunächst auf Trainingsbildern. Verwende die Masken und
-Overlays, um Fehlentscheidungen zu verstehen. Lege deine Einstellungen fest,
-bevor du den Abschlusstest aktivierst. Probiere den fertigen Detektor anschließend
-unverändert auf dem Datensatz mit normalen Bällen aus.
+Entwickle auf den Trainingsbildern und lege deine Lösung fest, bevor du die
+Testbilder freischaltest. Betrachte die Ergebnisse für Kamera und Simulation
+getrennt. Die Auswertung vergleicht deine Box mit den vorgegebenen Groundtruth-Boxen;
+verändere diese und die Auswertungsregeln nicht. Probiere die fertige Funktion
+anschließend unverändert auf Bildern mit andersfarbigen Bällen aus.
 
-Ändere nur deinen Detektor; Referenzlabels und Auswertung bleiben unverändert.
-Die Notebooks starten keine Roboterprozesse.
+## Eigene Vision und orange Simulation
+
+Die benötigte ROS-Anbindung und die orange Simulationsszene gehören zu diesem
+Branch. `src/bitbots_vision/schnupper_vision/detector.py` ist ein ausfüllbarer Einstieg;
+ohne eure Erkennung liefert er noch keine Treffer.
+
+Wie du deine Funktion überträgst und die orange Simulation auswählst, steht in
+[der Vision-Anleitung](../../src/bitbots_vision/README.schnupper.md).
+Die Notebooks selbst starten keine Roboterprozesse und bewegen keine Hardware.

@@ -115,7 +115,6 @@ ament_target_dependencies(
 # ---------------------------------------------------------------------------
 if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
-
   ament_add_gtest(test_candidate test/test_candidate.cpp)
   target_link_libraries(test_candidate bitbots_vision_processing)
 
@@ -134,6 +133,12 @@ endif()
 
 install(TARGETS vision bitbots_vision_lib bitbots_vision_processing
         DESTINATION lib/${PROJECT_NAME})
+install(PROGRAMS schnupper_vision_node DESTINATION lib/${PROJECT_NAME})
+install(
+  DIRECTORY schnupper_vision
+  DESTINATION lib/${PROJECT_NAME}
+  FILES_MATCHING
+  PATTERN "*.py")
 install(DIRECTORY include/ DESTINATION include)
 install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
