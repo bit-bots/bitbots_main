@@ -7,6 +7,7 @@ import numpy as np
 import pytest
 from assemble_orange_dataset import assemble
 from prepare_real_dataset import extract
+from werkzeuge import box_als_array, zu_hsv
 
 
 def dataset(directory, records):
@@ -63,7 +64,7 @@ def test_unreviewed_empty_annotations_do_not_export(tmp_path):
     assert not target.exists()
 
 
-def test_notebook_and_node_reference_functions_match():
+def test_notebook_result_adapts_to_ros_box_array():
     directory = Path(__file__).resolve().parent
     notebook = json.loads((directory / "loesung.ipynb").read_text())
     functions = [
@@ -73,9 +74,11 @@ def test_notebook_and_node_reference_functions_match():
         for node in ast.parse("".join(cell["source"])).body
         if isinstance(node, ast.FunctionDef) and node.name == "detect_balls"
     ]
-    detector_path = directory.parents[1] / "src/bitbots_vision/schnupper_vision/detector.py"
-    node_function = next(
-        node for node in ast.parse(detector_path.read_text()).body if isinstance(node, ast.FunctionDef)
-    )
     assert len(functions) == 1
-    assert ast.dump(functions[0]) == ast.dump(node_function)
+    namespace = {"np": np, "zu_hsv": zu_hsv}
+    exec(compile(ast.Module(body=functions, type_ignores=[]), "notebook", "exec"), namespace)
+    detect = namespace["detect_balls"]
+    image = np.zeros((80, 100, 3), dtype=np.uint8)
+    assert box_als_array(detect(image)).shape == (0, 4)
+    image[20:50, 30:60] = (0, 140, 255)
+    np.testing.assert_array_equal(box_als_array(detect(image)), [[30, 20, 60, 50]])
