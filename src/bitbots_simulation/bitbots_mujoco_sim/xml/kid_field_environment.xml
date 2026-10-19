@@ -8,7 +8,7 @@
   </visual>
   <include file="goal_kid.xml"/>
   <asset>
-    <texture name="skybox" type="skybox" fileup="backgrounds/kiara_1_dawn_top.png" filedown="backgrounds/kiara_1_dawn_bottom.png" filefront="backgrounds/kiara_1_dawn_front.png" fileback="backgrounds/kiara_1_dawn_back.png" fileleft="backgrounds/kiara_1_dawn_left.png" fileright="backgrounds/kiara_1_dawn_right.png"/>
+    <texture name="skybox" type="skybox" fileup="backgrounds/shanghai_riverside_top.png" filedown="backgrounds/shanghai_riverside_bottom.png" filefront="backgrounds/shanghai_riverside_front.png" fileback="backgrounds/shanghai_riverside_back.png" fileleft="backgrounds/shanghai_riverside_left.png" fileright="backgrounds/shanghai_riverside_right.png"/>
     <texture name="pitch" file="kid_field.png" type="2d"/>
     <material name="pitch" reflectance="0.0" texture="pitch" texrepeat="1 1" texuniform="false"/>
     <model file="pi_plus.xml"/>
