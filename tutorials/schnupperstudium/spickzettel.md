@@ -1,6 +1,6 @@
 # 📋 Spickzettel – Ballsuche
 
-Hier stehen alle Befehle, die du im Notebook `aufgabe.ipynb` brauchst. Schau hier nach, wenn du nicht weiterweißt.
+Hier stehen alle Befehle, die du in `aufgabe.ipynb` und `evaluation.ipynb` brauchst. Schau hier nach, wenn du nicht weiterweißt.
 
 ## Python
 
@@ -41,21 +41,23 @@ Hier stehen alle Befehle, die du im Notebook `aufgabe.ipynb` brauchst. Schau hie
 | `bilder_laden()` | lädt eine gemischte Auswahl unserer orangefarbenen Trainingsbilder als RGB-Liste |
 | `zu_hsv(bild)` | rechnet ein Bild in H, S, V um (je 0–255) |
 | `bild_anzeigen(bild, titel, x, y)` | zeigt ein Bild, einen Kanal oder eine Maske; mit `x`, `y` zusätzlich ein Kreuz |
+| `bild_anzeigen(bild, box=box)` | zeichnet ein einzelnes Bounding-Box-Tupel ein; `None` lässt das Bild ohne Box |
+| `np.full((hoehe, breite, 3), farbe, dtype=np.uint8)` | erzeugt ein einfarbiges RGB-Bild aus einem Farbwert |
 | `histogramm_anzeigen(histogramm, titel)` | zeigt ein Histogramm als Balkendiagramm |
-| `detektor_anzeigen(bild, detect_balls)` | wandelt das RGB-Bild für den BGR-Detektor um und zeigt seine Boxen |
+| `detektor_anzeigen(bild, detect_balls)` | wandelt das RGB-Bild für den BGR-Detektor um und zeigt seine Box |
 | `auswerten(detect_balls)` | prüft auf der vollständigen Trainingsmenge und zeigt Fehlerbilder |
 | `ball_verdoppeln(bild, maske, dx, dy)` | kopiert die markierten Pixel um `dx` nach rechts und `dy` nach unten (Bonus) |
 
-## Bounding Boxes und Roboterschnittstelle
+## Eine Bounding Box zurückgeben
 
 `detect_balls(image_bgr)` erhält ein BGR-Bild. Im Notebook sind die Übungsbilder
 RGB; `detektor_anzeigen` übernimmt die Umwandlung beim Testen.
 Für dieselben HSV-Bereiche wie in `zu_hsv` verwende
 `cv2.cvtColor(image_bgr, cv2.COLOR_BGR2HSV_FULL)`.
 
-- `np.array([[links, oben, rechts, unten]], dtype=float)` erzeugt das Boxarray.
-- `np.empty((0, 4), dtype=float)` liefert ein leeres Boxarray, wenn kein Ball gefunden wird.
-- Jede Zeile ist eine Box. Rechts und unten sind die exklusiven Grenzen.
+- `return (links, oben, rechts, unten)` liefert genau eine Bounding Box als Tupel.
+- `return None` meldet, dass kein Ball gefunden wurde.
+- Rechts und unten sind die exklusiven Grenzen.
 - Ist `rechts` noch der letzte eingeschlossene Pixel, verwende `rechts + 1`;
   entsprechend gilt das für `unten`.
 - `max(0, links)` und `min(breite, rechts)` beschränken einen Ausschnitt auf das Bild.

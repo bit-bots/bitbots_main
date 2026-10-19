@@ -7,7 +7,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 import pytest
-from werkzeuge import ball_verdoppeln, detektor_anzeigen, zu_hsv
+from werkzeuge import ball_verdoppeln, box_als_array, detektor_anzeigen, zu_hsv
 
 DIRECTORY = Path(__file__).resolve().parent
 
@@ -30,20 +30,19 @@ def orange_image(height=100, width=120):
     return cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR_FULL)
 
 
-@pytest.mark.parametrize("name", ["aufgabe.ipynb", "loesung.ipynb"])
-def test_no_ball_returns_empty_box_array(name):
+@pytest.mark.parametrize("name", ["evaluation.ipynb", "loesung.ipynb"])
+def test_no_ball_returns_none(name):
     detect = notebook_functions(name)["detect_balls"]
     image = np.zeros((80, 100, 3), dtype=np.uint8)
     boxes = detect(image)
-    assert boxes.shape == (0, 4)
-    assert np.issubdtype(boxes.dtype, np.number)
+    assert boxes is None
 
 
 def test_solution_rectangle_uses_exclusive_bounds_and_preserves_input():
     detect = notebook_functions("loesung.ipynb")["detect_balls"]
     image = orange_image()
     original = image.copy()
-    np.testing.assert_array_equal(detect(image), [[40, 20, 70, 50]])
+    assert detect(image) == (40, 20, 70, 50)
     np.testing.assert_array_equal(image, original)
 
 
@@ -53,14 +52,14 @@ def test_solution_handles_all_image_edges(top, left):
     hsv[top : top + 30, left : left + 30] = (15, 220, 180)
     image = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR_FULL)
     boxes = notebook_functions("loesung.ipynb")["detect_balls"](image)
-    np.testing.assert_array_equal(boxes, [[left, top, left + 30, top + 30]])
+    assert boxes == (left, top, left + 30, top + 30)
 
 
 def test_sparse_markings_do_not_become_a_ball():
     hsv = np.zeros((80, 100, 3), dtype=np.uint8)
     hsv[20:22, 30:32] = (15, 220, 180)
     image = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR_FULL)
-    assert notebook_functions("loesung.ipynb")["detect_balls"](image).shape == (0, 4)
+    assert notebook_functions("loesung.ipynb")["detect_balls"](image) is None
 
 
 def test_histogram_counts_every_pixel():
@@ -84,9 +83,9 @@ def test_display_adapter_passes_bgr_to_detector(monkeypatch):
 
     def detector(image):
         np.testing.assert_array_equal(image, bgr)
-        return np.empty((0, 4))
+        return None
 
-    assert detektor_anzeigen(rgb, detector).shape == (0, 4)
+    assert detektor_anzeigen(rgb, detector) is None
 
 
 def test_bonus_radius_handles_missing_center_and_all_edges():
@@ -108,3 +107,39 @@ def test_copying_ball_clips_at_image_edges_without_modifying_input():
     copied = ball_verdoppeln(image, mask, -10, 0)
     np.testing.assert_array_equal(copied[5, 0], image[5, 10])
     np.testing.assert_array_equal(image, original)
+
+
+def test_evaluation_adapter_supports_one_box_and_none():
+    assert box_als_array(None).shape == (0, 4)
+    np.testing.assert_array_equal(box_als_array((10, 20, 30, 40)), [[10, 20, 30, 40]])
+
+
+@pytest.mark.parametrize("box", [[10, 20, 30, 40], ((1, 2, 3, 4),), (10, 20, 5, 40), (1, 2, np.nan, 4)])
+def test_evaluation_adapter_rejects_invalid_output(box):
+    with pytest.raises(ValueError):
+        box_als_array(box)
+
+
+def test_student_notebook_does_not_contain_detector_or_evaluation():
+    notebook = json.loads((DIRECTORY / "aufgabe.ipynb").read_text())
+    sources = "\n".join("".join(cell["source"]) for cell in notebook["cells"] if cell["cell_type"] == "code")
+    assert "detect_balls" not in sources
+    assert "auswerten" not in sources
+    assert "sys.path" not in sources
+
+
+def test_evaluation_imports_support_the_completed_detector():
+    notebook = json.loads((DIRECTORY / "evaluation.ipynb").read_text())
+    namespace = {}
+    for cell in notebook["cells"]:
+        if cell["cell_type"] != "code":
+            continue
+        tree = ast.parse("".join(cell["source"]))
+        tree.body = [node for node in tree.body if isinstance(node, (ast.Import, ast.ImportFrom))]
+        exec(compile(tree, "evaluation.ipynb", "exec"), namespace)
+    solution = json.loads((DIRECTORY / "loesung.ipynb").read_text())
+    detector = next(
+        "".join(cell["source"]) for cell in solution["cells"] if "".join(cell["source"]).startswith("def detect_balls")
+    )
+    exec(detector, namespace)
+    assert namespace["detect_balls"](orange_image()) == (40, 20, 70, 50)

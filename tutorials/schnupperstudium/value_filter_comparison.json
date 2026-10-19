@@ -1,0 +1,299 @@
+{
+  "method": "Identical histogram detector and parameters; only the v >= v_min mask condition is removed for without_value. IoU threshold unchanged.",
+  "evaluations": {
+    "orange/train": {
+      "with_value": {
+        "overall": {
+          "tp": 129,
+          "fp": 11,
+          "fn": 31,
+          "precision": 0.9214285714285714,
+          "recall": 0.80625,
+          "f1": 0.86
+        },
+        "by_source": {
+          "real": {
+            "tp": 75,
+            "fp": 2,
+            "fn": 5,
+            "precision": 0.974025974025974,
+            "recall": 0.9375,
+            "f1": 0.9554140127388535
+          },
+          "simulation": {
+            "tp": 54,
+            "fp": 9,
+            "fn": 26,
+            "precision": 0.8571428571428571,
+            "recall": 0.675,
+            "f1": 0.7552447552447552
+          }
+        },
+        "support": {
+          "overall": {
+            "images": 320,
+            "positive_images": 160,
+            "ground_truth_boxes": 160,
+            "recall_defined": true
+          },
+          "real": {
+            "images": 160,
+            "positive_images": 80,
+            "ground_truth_boxes": 80,
+            "recall_defined": true
+          },
+          "simulation": {
+            "images": 160,
+            "positive_images": 80,
+            "ground_truth_boxes": 80,
+            "recall_defined": true
+          }
+        }
+      },
+      "without_value": {
+        "overall": {
+          "tp": 111,
+          "fp": 27,
+          "fn": 49,
+          "precision": 0.8043478260869565,
+          "recall": 0.69375,
+          "f1": 0.7449664429530202
+        },
+        "by_source": {
+          "real": {
+            "tp": 63,
+            "fp": 6,
+            "fn": 17,
+            "precision": 0.9130434782608695,
+            "recall": 0.7875,
+            "f1": 0.8456375838926175
+          },
+          "simulation": {
+            "tp": 48,
+            "fp": 21,
+            "fn": 32,
+            "precision": 0.6956521739130435,
+            "recall": 0.6,
+            "f1": 0.6442953020134228
+          }
+        },
+        "support": {
+          "overall": {
+            "images": 320,
+            "positive_images": 160,
+            "ground_truth_boxes": 160,
+            "recall_defined": true
+          },
+          "real": {
+            "images": 160,
+            "positive_images": 80,
+            "ground_truth_boxes": 80,
+            "recall_defined": true
+          },
+          "simulation": {
+            "images": 160,
+            "positive_images": 80,
+            "ground_truth_boxes": 80,
+            "recall_defined": true
+          }
+        }
+      }
+    },
+    "orange/test": {
+      "with_value": {
+        "overall": {
+          "tp": 34,
+          "fp": 5,
+          "fn": 6,
+          "precision": 0.8717948717948718,
+          "recall": 0.85,
+          "f1": 0.8607594936708861
+        },
+        "by_source": {
+          "real": {
+            "tp": 19,
+            "fp": 1,
+            "fn": 1,
+            "precision": 0.95,
+            "recall": 0.95,
+            "f1": 0.95
+          },
+          "simulation": {
+            "tp": 15,
+            "fp": 4,
+            "fn": 5,
+            "precision": 0.7894736842105263,
+            "recall": 0.75,
+            "f1": 0.7692307692307693
+          }
+        },
+        "support": {
+          "overall": {
+            "images": 80,
+            "positive_images": 40,
+            "ground_truth_boxes": 40,
+            "recall_defined": true
+          },
+          "real": {
+            "images": 40,
+            "positive_images": 20,
+            "ground_truth_boxes": 20,
+            "recall_defined": true
+          },
+          "simulation": {
+            "images": 40,
+            "positive_images": 20,
+            "ground_truth_boxes": 20,
+            "recall_defined": true
+          }
+        }
+      },
+      "without_value": {
+        "overall": {
+          "tp": 31,
+          "fp": 10,
+          "fn": 9,
+          "precision": 0.7560975609756098,
+          "recall": 0.775,
+          "f1": 0.7654320987654321
+        },
+        "by_source": {
+          "real": {
+            "tp": 18,
+            "fp": 2,
+            "fn": 2,
+            "precision": 0.9,
+            "recall": 0.9,
+            "f1": 0.9
+          },
+          "simulation": {
+            "tp": 13,
+            "fp": 8,
+            "fn": 7,
+            "precision": 0.6190476190476191,
+            "recall": 0.65,
+            "f1": 0.6341463414634146
+          }
+        },
+        "support": {
+          "overall": {
+            "images": 80,
+            "positive_images": 40,
+            "ground_truth_boxes": 40,
+            "recall_defined": true
+          },
+          "real": {
+            "images": 40,
+            "positive_images": 20,
+            "ground_truth_boxes": 20,
+            "recall_defined": true
+          },
+          "simulation": {
+            "images": 40,
+            "positive_images": 20,
+            "ground_truth_boxes": 20,
+            "recall_defined": true
+          }
+        }
+      }
+    },
+    "realistic/test": {
+      "with_value": {
+        "overall": {
+          "tp": 0,
+          "fp": 26,
+          "fn": 41,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0
+        },
+        "by_source": {
+          "real": {
+            "tp": 0,
+            "fp": 7,
+            "fn": 21,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          },
+          "simulation": {
+            "tp": 0,
+            "fp": 19,
+            "fn": 20,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          }
+        },
+        "support": {
+          "overall": {
+            "images": 80,
+            "positive_images": 40,
+            "ground_truth_boxes": 41,
+            "recall_defined": true
+          },
+          "real": {
+            "images": 40,
+            "positive_images": 20,
+            "ground_truth_boxes": 21,
+            "recall_defined": true
+          },
+          "simulation": {
+            "images": 40,
+            "positive_images": 20,
+            "ground_truth_boxes": 20,
+            "recall_defined": true
+          }
+        }
+      },
+      "without_value": {
+        "overall": {
+          "tp": 0,
+          "fp": 26,
+          "fn": 41,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0
+        },
+        "by_source": {
+          "real": {
+            "tp": 0,
+            "fp": 6,
+            "fn": 21,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          },
+          "simulation": {
+            "tp": 0,
+            "fp": 20,
+            "fn": 20,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          }
+        },
+        "support": {
+          "overall": {
+            "images": 80,
+            "positive_images": 40,
+            "ground_truth_boxes": 41,
+            "recall_defined": true
+          },
+          "real": {
+            "images": 40,
+            "positive_images": 20,
+            "ground_truth_boxes": 21,
+            "recall_defined": true
+          },
+          "simulation": {
+            "images": 40,
+            "positive_images": 20,
+            "ground_truth_boxes": 20,
+            "recall_defined": true
+          }
+        }
+      }
+    }
+  }
+}

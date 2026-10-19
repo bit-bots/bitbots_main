@@ -16,9 +16,11 @@ Einstieg: `detect_balls(image_bgr) -> numpy.ndarray`.
 - Keine Erkennung: `np.empty((0, 4))`, nicht `[]` oder `None`.
 - Koordinaten müssen endlich sein, die Boxen positive Breite und Höhe haben.
   Der ROS-Adapter beschränkt Boxen auf das Bild und entfernt außen liegende Boxen.
-- Nur den **Funktionsbody** aus dem Notebook in `detect_balls` kopieren.
-  `cv2` und `np` sind bereits importiert. Keine Notebook-Variablen, zusätzlichen
-  Imports, Hilfsfunktionen oder ROS-Aufrufe voraussetzen. Das Eingabebild nicht verändern.
+- Das Notebook liefert inzwischen **ein Box-Tupel oder `None`**. Für diese ROS-Schnittstelle
+  beim Übertragen des Funktionskörpers die Rückgaben anpassen: `None` wird zu
+  `np.empty((0, 4))`, ein Tupel `box` zu `np.asarray([box], dtype=float)`.
+  `cv2` und `np` sind bereits importiert. Keine Notebook-Variablen oder ROS-Aufrufe
+  voraussetzen. Das Eingabebild nicht verändern.
 
 Die mitgelieferte Funktion erfüllt diesen Vertrag ohne externe Hilfsfunktionen.
 Nach Änderungen neu bauen und den laufenden Node neu starten.

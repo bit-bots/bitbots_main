@@ -214,7 +214,7 @@ def print_evaluation(result, label="Auswertung"):
         print(f"{label} · {source}: {metrics}")
         print(f"  Bilder: {support['images']}; positive Bilder: {support['positive_images']}")
         if not support["recall_defined"]:
-            print("  Recall/F1 nicht als Erkennungsleistung interpretierbar: keine GT-Bälle vorhanden.")
+            print("  Recall/F1 nicht als Erkennungsleistung interpretierbar: keine Groundtruth-Bälle vorhanden.")
 
 
 def orange_masks(image_bgr):
@@ -227,13 +227,16 @@ def orange_masks(image_bgr):
 
 
 def draw_overlay(record, predicted):
-    """Zeichne GT und Vorhersage ohne Änderung des Originalbildes."""
+    """Zeichne Groundtruth und Vorhersage ohne Änderung des Originalbildes."""
     image = record["image_bgr"].copy()
-    for label, boxes, color in (("GT", record["boxes"], (0, 220, 0)), ("Vorhersage", predicted, (255, 0, 255))):
+    for label, boxes, color in (
+        ("Groundtruth", record["boxes"], (0, 220, 0)),
+        ("Vorhersage", predicted, (255, 0, 255)),
+    ):
         for box in as_boxes(boxes):
             xmin, ymin, xmax, ymax = np.rint(box).astype(int)
-            thickness = 4 if label == "GT" else 1
-            label_y = max(ymin - 5, 12) if label == "GT" else min(ymax + 14, image.shape[0] - 3)
+            thickness = 4 if label == "Groundtruth" else 1
+            label_y = max(ymin - 5, 12) if label == "Groundtruth" else min(ymax + 14, image.shape[0] - 3)
             cv2.rectangle(image, (xmin, ymin), (xmax - 1, ymax - 1), color, thickness)
             cv2.putText(image, label, (xmin, label_y), cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 1)
     return image
@@ -246,7 +249,7 @@ def plot_debug(record, predicted):
     figure, axes = plt.subplots(1, 4, figsize=(16, 4), layout="constrained")
     panels = [cv2.cvtColor(image, cv2.COLOR_BGR2RGB), hsv[:, :, 0], mask, cleaned]
     titles = [
-        f"{record['id']} · {record['source']}\nGT grün / Vorhersage magenta",
+        f"{record['id']} · {record['source']}\nGroundtruth grün / Vorhersage magenta",
         "HSV: Farbton",
         "HSV-Maske",
         "Nach Morphologie",
@@ -259,7 +262,7 @@ def plot_debug(record, predicted):
 
 
 def plot_gallery(items, limit=9):
-    """Zeige eine Galerie vorhandener Datensatzbilder mit GT und Vorhersagen."""
+    """Zeige eine Galerie vorhandener Datensatzbilder mit Groundtruth und Vorhersagen."""
     selected = items[:limit]
     if not selected:
         raise ValueError("Für die Galerie werden ausgewertete Datensatzbilder benötigt.")
@@ -273,7 +276,7 @@ def plot_gallery(items, limit=9):
         axis.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
         presence = "mit Ball" if len(record["boxes"]) else "ohne Ball"
         axis.set_title(f"{record['source']} · {presence}\nTP {item['tp']} / FP {item['fp']} / FN {item['fn']}")
-    figure.suptitle("Datensatzgalerie: GT grün / Vorhersage magenta")
+    figure.suptitle("Datensatzgalerie: Groundtruth grün / Vorhersage magenta")
     return figure
 
 

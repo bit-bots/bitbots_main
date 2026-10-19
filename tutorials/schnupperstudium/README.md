@@ -3,7 +3,8 @@
 Mit Histogrammen, Farbvergleichen und Mittelwerten entwickelt ihr eine kleine Ball-Vision.
 Der Lernweg und die Bonusaufgaben folgen der bereitgestellten Ballsuche-Vorlage des Kollegen.
 Die allgemeine Python-Grundlageneinführung entfällt; benötigte Befehle stehen im Spickzettel.
-`aufgabe.ipynb` enthält die Aufgaben und den auszufüllenden Detektor;
+`aufgabe.ipynb` enthält die Aufgaben bis zur einzelnen Bounding Box.
+`evaluation.ipynb` enthält Teil 5 mit dem auszufüllenden Detektor und der Auswertung;
 `loesung.ipynb` zeigt eine erklärbare Referenzlösung ohne neuronales Netz.
 Beide Notebooks vergleichen echte und simulierte Bilder sowie Fehlerfälle.
 
@@ -75,17 +76,19 @@ Die Referenz ist eine Farbregel, kein allgemeiner Ballerkennungs-Benchmark.
 Sie sucht vom Mittelwert der markierten Pixel aus zusammenhängende Bereiche im
 Zeilen- und Spaltenhistogramm und gibt höchstens eine Bounding Box zurück.
 Mehrere Bälle und fremde orange Flächen können die Mitte verschieben. Der Bonus
-macht diese Grenze sichtbar; ein Array als Rückgabe allein löst sie nicht.
+macht diese Grenze sichtbar. Die Rückgabe ist ein einzelnes Tupel
+`(links, oben, rechts, unten)` beziehungsweise `None`, wenn kein Ball gefunden wird.
 Die Messergebnisse des früheren Konturdetektors gelten nicht für diese Methode.
 
 Die Übungsbilder werden als RGB angezeigt; `zu_hsv` verwendet HSV_FULL.
-Der abschließende `detect_balls` erhält dagegen BGR und liefert ein Boxarray.
+Der abschließende `detect_balls` erhält dagegen BGR und liefert ein Box-Tupel oder `None`.
+Die Hilfsfunktion `auswerten` passt dies intern an die unveränderte Mehrbox-Auswertung an.
 Sein Funktionskörper ist eigenständig und verwendet nur `cv2` und `np`.
 Die fertige Lösung behandelt leere Masken und stoppt die Suche an allen Bildrändern.
 
 Die HSV-Abbildung liegt lokal unter `abbildungen/`; Urheber und Lizenz sind dort
-und in beiden Notebooks angegeben. Die Vorbereitung ist eingeklappt markiert;
-ob sie sofort verborgen erscheint, hängt von der Notebook-Oberfläche ab.
+und in den Lernnotebooks angegeben. Die Notebooks werden mit dem Notebook-Ordner
+als Arbeitsverzeichnis ausgeführt; es gibt keine automatische Pfadsuche mehr.
 
 Für den ROS-Wechsel den Backend-Schalter `vision_backend:=schnupper` verwenden.
 Startoptionen, Debug-Topics und Grenzen erklärt
@@ -98,12 +101,14 @@ Für die Durchführung mit vorbereiteten Datensätzen genügt dieser Notebook-Or
 mit den folgenden Dateien:
 
 - `aufgabe.ipynb`: Arbeitsblatt für die Schülerinnen und Schüler.
-- `loesung.ipynb`: Referenz für die Betreuung; erst bei Bedarf öffnen.
+- `loesung.ipynb`: vollständige Referenz einschließlich Detektor und Auswertung.
+- `evaluation.ipynb`: Teil 5 und Auswertung zum Übertragen der eigenen Lösung.
+  Mit eigenem Kernel ausführbar; Variablen aus dem Aufgaben-Notebook werden nicht übernommen.
 - `werkzeuge.py`: einfache RGB-Anzeigen, HSV-Umrechnung und Zugang zu unseren Datensätzen.
 - `spickzettel.md`: benötigte Befehle zum Nachschlagen.
 - `abbildungen/`: HSV-Zylinder und Quellen-/Lizenzangaben für die Offline-Anzeige.
 - `vision_workshop.py`: lädt Bilder und Labels und berechnet die unveränderten Kennzahlen.
-- `download_datasets.py`: lädt und entpackt die im Notebook angegebenen Archive.
+- `download_datasets.py`: lädt und entpackt die in `werkzeuge.py` angegebenen Archive.
 - `README.md`: Einstieg und Durchführung.
 - `datasets/orange/` und `datasets/realistic/`: Bilder und `manifest.json`;
   alternativ werden diese Ordner aus den veröffentlichten Archiven geladen.
@@ -156,3 +161,12 @@ für die Durchführung müssen sie nicht verteilt werden. Die manuell geprüften
 Labels in `datasets/*/manifest.json` sind der aktuelle Stand für die Archive.
 Ein erneuter Import oder Zusammenbau aus älteren Vorbereitungsdaten kann manuelle
 Korrekturen überschreiben und ist zum Packen nicht erforderlich.
+
+## Vergleich des Value-Filters
+
+`value_filter_comparison.json` dokumentiert den Vergleich derselben Histogramm-Lösung
+mit und ohne die Helligkeitsbedingung. Farbton-, Sättigungs- und Geometriegrenzen
+wurden dabei nicht verändert. Die Entscheidung, den Filter beizubehalten, wird bereits
+durch die vollständige Trainingsmenge gestützt; auch die Testauswertung fällt mit
+Filter besser aus. Die Ergebnisse gelten für die vorhandenen Datensätze und diese
+Parameter, nicht für beliebige Kameras oder Farbgrenzen.
