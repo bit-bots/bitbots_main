@@ -45,7 +45,7 @@ cmd = "ros2 service call /sit std_srvs/srv/Empty"
 
 [tasks.sim]
 description = "Start MuJoCo simulation with configurable robot/teamplayer/behavior settings."
-cmd = "ros2 launch bitbots_bringup mujoco_simulation.launch.py num_robots:={{ num_robots }} one_versus_one:={{ one_versus_one }} teamplayer:={{ teamplayer }} audio:={{ audio }} behavior:={{ behavior }} behavior_mode:={{ behavior_mode }} {% if simple_behavior_script %} simple_behavior_script:={{ simple_behavior_script }} {% endif %} simple_behavior_web_host:={{ simple_behavior_web_host }} simple_behavior_web_port:={{ simple_behavior_web_port }} motion:={{ motion }} game_controller:={{ game_controller }} localization:={{ localization }} fake_localization:={{ fake_localization }} path_planning:={{ path_planning }} teamcom:={{ teamcom }} vision:={{ vision }} ipm:={{ ipm }} world_model:={{ world_model }} web:={{ web }}"
+cmd = "ros2 launch bitbots_bringup mujoco_simulation.launch.py num_robots:={{ num_robots }} one_versus_one:={{ one_versus_one }} teamplayer:={{ teamplayer }} audio:={{ audio }} behavior:={{ behavior }} behavior_mode:={{ behavior_mode }} {% if simple_behavior_script %} simple_behavior_script:={{ simple_behavior_script }} {% endif %} simple_behavior_web_host:={{ simple_behavior_web_host }} simple_behavior_web_port:={{ simple_behavior_web_port }} motion:={{ motion }} game_controller:={{ game_controller }} localization:={{ localization }} fake_localization:={{ fake_localization }} path_planning:={{ path_planning }} teamcom:={{ teamcom }} vision:={{ vision }} ipm:={{ ipm }} world_model:={{ world_model }} web:={{ web }} ball_style:={{ ball_style }} vision_backend:={{ vision_backend }}"
 args = [
     { arg = "num_robots", default = "1" },
     { arg = "one_versus_one", default = "false" },
@@ -66,6 +66,8 @@ args = [
     { arg = "ipm", default = "true" },
     { arg = "world_model", default = "true" },
     { arg = "web", default = "true" },
+    { arg = "ball_style", default = "orange" },
+    { arg = "vision_backend", default = "schnupper" },
 ]
 
 [tasks.sim-one]

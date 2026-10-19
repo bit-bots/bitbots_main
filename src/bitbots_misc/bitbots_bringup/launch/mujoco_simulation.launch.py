@@ -43,6 +43,7 @@ TEAMPLAYER_ARGS = [
 
 # The practical course uses the fake localization by default, so the students can focus on the behavior
 PRAKTIKUM_DEFAULTS = {
+    "vision_backend": "schnupper",
     "localization": "false",
     "fake_localization": "true",
 }
@@ -103,7 +104,7 @@ def generate_domain_bridge_config(robot_domain: int, output_dir: Path) -> Path:
 
 
 def generate_world_xml(
-    num_robots: int, package_share: str, robot_type: str, one_versus_one: bool, ball_style: str = "original"
+    num_robots: int, package_share: str, robot_type: str, one_versus_one: bool, ball_style: str = "orange"
 ) -> Path:
     """Generate MuJoCo world XML with the correct number of robots."""
     templates = {"original": "kid_field.xml", "orange": "kid_field_orange.xml"}
@@ -243,8 +244,7 @@ def generate_launch_description():
         ),
         DeclareLaunchArgument(
             "teamplayer",
-            # The practical course starts the motion and its own nodes separately for each robot
-            default_value="false",
+            default_value="true",
             description="Whether to start the teamplayer stack for each robot",
         ),
         DeclareLaunchArgument(
@@ -259,7 +259,7 @@ def generate_launch_description():
         ),
         DeclareLaunchArgument(
             "ball_style",
-            default_value="original",
+            default_value="orange",
             choices=["original", "orange"],
             description="Select the original or orange-ball world template",
         ),

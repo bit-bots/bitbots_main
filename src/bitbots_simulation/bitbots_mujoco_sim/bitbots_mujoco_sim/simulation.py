@@ -29,7 +29,7 @@ class Simulation(Node):
     def __init__(self):
         super().__init__("sim_interface")
         self.declare_parameter("world_file", "")
-        self.declare_parameter("ball_style", "original")
+        self.declare_parameter("ball_style", "orange")
         self.declare_parameter("use_namespace", True)
         self.declare_parameter("web", False)
 

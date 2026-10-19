@@ -14,7 +14,7 @@ class DatasetDownloadError(RuntimeError):
 
 def dataset_root():
     """Nutze die Workshop-Suche, auch vor dem ersten Download."""
-    from vision_workshop import find_dataset_root
+    from werkzeuge import find_dataset_root
 
     try:
         return find_dataset_root() / "datasets"

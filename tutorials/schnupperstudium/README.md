@@ -25,7 +25,7 @@ Fehlende Datensätze werden automatisch heruntergeladen; vorhandene Daten unter
 `datasets/` werden offline wiederverwendet. Die Download-Adressen stehen in
 `werkzeuge.py`. Quellen- und Lizenzangaben des TORSO-Datensatzes bleiben bei den Daten.
 
-Die Dateien `werkzeuge.py`, `vision_workshop.py` und `download_datasets.py` müssen
+Die Dateien `werkzeuge.py` und `download_datasets.py` müssen
 neben den Notebooks liegen. Die HSV-Abbildung unter `abbildungen/` ist lokal verfügbar;
 dort stehen auch Urheber und Lizenz.
 

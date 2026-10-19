@@ -12,10 +12,13 @@ from soccer_vision_2d_msgs.msg import Ball, BallArray
 from schnupper_vision.detector import detect_balls
 
 
-def validate_boxes(boxes: np.ndarray, image_shape: tuple) -> np.ndarray:
+def validate_boxes(box: tuple[int, int, int, int] | None, image_shape: tuple) -> np.ndarray:
     """Prüfe den Notebook-Vertrag und beschränke Boxen auf das Bild."""
-    if not isinstance(boxes, np.ndarray) or boxes.ndim != 2 or boxes.shape[1] != 4:
-        raise ValueError("detect_balls muss ein numpy.ndarray der Form (N, 4) liefern")
+    if box is None:
+        return np.empty((0, 4), dtype=float)
+    if not isinstance(box, tuple) or len(box) != 4:
+        raise ValueError("detect_balls muss ein Tupel (links, oben, rechts, unten) oder None liefern")
+    boxes = np.asarray([box])
     if boxes.dtype.kind not in "iuf" or not np.isfinite(boxes).all():
         raise ValueError("Boxkoordinaten müssen endliche reelle Zahlen sein")
     if np.any(boxes[:, 2:] <= boxes[:, :2]):

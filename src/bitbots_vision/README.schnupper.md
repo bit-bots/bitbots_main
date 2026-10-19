@@ -2,31 +2,33 @@
 
 Diese Python-Vision verbindet eure Ballerkennung mit ROS. Der Einstieg in
 `schnupper_vision/detector.py` ist zum Ausfüllen vorbereitet und liefert zunächst
-keine Treffer. Setzt eure Lösung aus `evaluation.ipynb` ein. Die Original-Vision
-bleibt Standard; Roboter, Torpfosten und Linien werden vom Schüler-Backend nicht erkannt.
+keine Treffer. Setzt eure Lösung aus `evaluation.ipynb` ein.
+In den Teamplayer-Einstiegen ist die Schnupper-Vision vorausgewählt. Sie erkennt
+nur Bälle; Roboter, Torpfosten und Linien werden nicht erkannt.
 
-## Vertrag mit dem Notebook
+## Funktion aus dem Notebook übernehmen
 
-Datei: `src/bitbots_vision/schnupper_vision/detector.py`.
-Einstieg: `detect_balls(image_bgr) -> numpy.ndarray`.
+Kopiert eure vollständige Funktion `detect_balls` aus `evaluation.ipynb` nach
+`src/bitbots_vision/schnupper_vision/detector.py` und ersetzt dort die vorbereitete
+Funktion. Die Eingabe und Rückgabe stimmen mit dem Notebook überein:
 
-- Eingabe: OpenCV-Bild in BGR-Reihenfolge, `uint8`, Form `(H, W, 3)`.
-- Ausgabe: numerisches Array `(N, 4)` mit Zeilen `[xmin, ymin, xmax, ymax]`
-  in Pixelkoordinaten; rechts und unten sind die exklusiven Boxgrenzen.
-- Keine Erkennung: `np.empty((0, 4))`, nicht `[]` oder `None`.
-- Koordinaten müssen endlich sein, die Boxen positive Breite und Höhe haben.
-  Der ROS-Adapter beschränkt Boxen auf das Bild und entfernt außen liegende Boxen.
-- Das Notebook liefert inzwischen **ein Box-Tupel oder `None`**. Für diese ROS-Schnittstelle
-  beim Übertragen des Funktionskörpers die Rückgaben anpassen: `None` wird zu
-  `np.empty((0, 4))`, ein Tupel `box` zu `np.asarray([box], dtype=float)`.
-  Den Notebook-Aufruf `zu_hsv(image_bgr, bgr=True)` durch
-  `cv2.cvtColor(image_bgr, cv2.COLOR_BGR2HSV_FULL)` ersetzen; die Hilfsdatei wird
-  nicht auf dem Roboter benötigt. `cv2` und `np` sind bereits importiert.
-  Keine Notebook-Variablen oder ROS-Aufrufe
-  voraussetzen. Das Eingabebild nicht verändern.
+```python
+def detect_balls(image_bgr: np.ndarray) -> tuple[int, int, int, int] | None:
+    ...
+```
 
-Der vorbereitete Einstieg erfüllt diesen Vertrag auch ohne fertige Erkennung.
-Nach Änderungen neu bauen und den laufenden Node neu starten.
+Die Eingabe ist ein BGR-Bild. Die Funktion liefert ein Tupel
+`(links, oben, rechts, unten)` oder `None`, wenn kein Ball gefunden wurde.
+Rechts und unten sind exklusive Grenzen. Die Box muss endliche Koordinaten
+und eine positive Breite und Höhe haben. Die ROS-Anbindung beschränkt sie
+auf das Bild und übersetzt sie in eine Ballnachricht.
+
+`np` und die Hilfsfunktion `zu_hsv(image_bgr, bgr=True)` stehen in `detector.py`
+bereits bereit. Die HSV-Umrechnung ist dieselbe wie im Notebook; ihr müsst keine
+Rückgaben oder Farbgrenzen für ROS umschreiben. Übernehmt keine Notebook-Variablen
+und verändert das Eingabebild nicht.
+
+Nach Änderungen neu bauen und den laufenden Vision-Node neu starten.
 
 ## Bauen und offline prüfen
 
@@ -53,19 +55,35 @@ muss `/clock` vorhanden sein. Außerhalb der Simulation `sim:=false` verwenden.
 Bei Nutzung des Zenoh-RMW muss wie im restlichen Stack ein Zenoh-Router laufen;
 dieser lässt sich separat mit `pixi run -e default zenoh` starten.
 
-Die Auswahl wird auch von `vision_standalone.launch`, `highlevel.launch`,
-`teamplayer.launch`, `simulator_teamplayer.launch`, `mujoco_simulation.launch.py`
-und `demo.launch` weitergereicht. Bei Highlevel-, Teamplayer-, Demo- und
-Simulations-Einstiegen heißt der Overlay-Schalter `vision_debug:=true`.
-Der direkte Einstieg `bitbots_vision vision.launch` akzeptiert `debug:=true`.
-Beim MuJoCo-Einstieg wird die Auswahl nur mit `teamplayer:=true` an die gestarteten
-Stacks übergeben. Zusätzlich wählt `ball_style:=orange` dort das Template
-`bitbots_mujoco_sim/xml/kid_field_orange.xml` statt `kid_field.xml`;
-`ball_style:=original` bleibt der Standard. Beide Templates haben dieselbe
-Platzhalter-Schnittstelle. Die Ballfarbe und das Vision-Backend sind unabhängig
-wählbar; für die Ballsuche aus dem Notebook ist das orange Template vorgesehen.
-**Diese vollständigen Bringup-/Simulations-Launches können
-Bewegungsprozesse starten; nur in einer ausdrücklich freigegebenen Simulation nutzen.**
+## Simulation mit der eigenen Vision
+
+Die Simulations-Einstiege wählen standardmäßig den orangefarbenen Ball.
+`teamplayer.launch`, `simulator_teamplayer.launch` und die Teamplayer-Stacks aus
+`mujoco_simulation.launch.py` wählen standardmäßig `vision_backend:=schnupper`.
+`teamplayer.launch` startet den Roboter-Stack; die Simulation wird über einen
+der Simulations-Einstiege gestartet.
+
+Eine Simulation mit einem Roboter samt Stack startet ihr mit:
+
+```bash
+pixi run -e default ros2 launch bitbots_bringup mujoco_simulation.launch.py vision_debug:=true
+```
+
+Für mehrere Roboter ergänzt ihr `num_robots`; für zwei gegnerische Roboter
+verwendet ihr `one_versus_one:=true`. Die Pixi-Aufgaben `sim` und `sim-one`
+verwenden dieselben Voreinstellungen. Mit `teamplayer:=false` kann die Simulation
+separat laufen und der Stack später in der ROS-Domain des jeweiligen Roboters
+über `teamplayer.launch sim:=true` gestartet werden.
+
+Mit `ball_style:=original` und `vision_backend:=original` könnt ihr die bisherige
+Szene und Vision auswählen. Bei `simulator_teamplayer.launch` lässt sich die
+Ballfarbe ebenfalls mit `ball_style` wählen. `vision_debug:=true` aktiviert die
+Boxanzeige bei den Teamplayer-Einstiegen; bei `vision.launch` heißt der Schalter
+`debug:=true`.
+
+Diese Befehle starten Simulations- und gegebenenfalls Bewegungsprozesse.
+Verwendet sie für die Simulation mit `sim:=true`, wenn der Einstieg dieses
+Argument verlangt.
 
 ## ROS-Vertrag
 
