@@ -1,0 +1,7 @@
+<mujocoinclude>
+  <body name="ball" pos="0 0 0.11">
+    <freejoint name="ball-root"/>
+    <site name="B-vismarker" pos="0 0 0"/>
+    <geom name="ball" pos="0 0 0" size="0.07" mass="0.205" friction="0.4 0.01 0.01" rgba="1 1 1 1" condim="6" priority="1" solref="-5000 -20" type="sphere" material="ball"/>
+  </body>
+</mujocoinclude>

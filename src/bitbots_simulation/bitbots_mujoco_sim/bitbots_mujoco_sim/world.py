@@ -52,6 +52,10 @@ DEFAULT_GOALIE_COLORS: list[tuple[int, int, int]] = [
 # Directory where generated jersey textures are cached to avoid re-generating.
 JERSEY_CACHE_DIR: Path = Path(tempfile.gettempdir()) / "bitbots_mujoco_sim_jerseys"
 
+# World templates per ball style. Both only differ in the ball texture asset; the
+# robot placement is generated dynamically regardless of the chosen template.
+BALL_STYLE_TEMPLATES = {"original": "kid_field.xml", "orange": "kid_field_orange.xml"}
+
 
 def get_robot_jersey_color(
     team_color: int,
@@ -263,6 +267,7 @@ def generate_world_xml(
     num_robots: str | int,
     package_share: str,
     robot_type: str,
+    ball_style: str = "orange",
 ) -> Path:
     """Generate the MuJoCo world XML positioning every robot individually.
 
@@ -276,9 +281,15 @@ def generate_world_xml(
     robot displays its team/goalie color and player number in both the visualizer and
     camera images.
 
+    ``ball_style`` selects the base world template so that the simulation can use the
+    original textured ball or the high-contrast orange ball used by the vision
+    workshop.
+
     Returns the path of the generated world file.
     """
-    template_path = Path(package_share) / "xml" / "kid_field.xml"
+    if ball_style not in BALL_STYLE_TEMPLATES:
+        raise ValueError(f"ball_style must be one of {sorted(BALL_STYLE_TEMPLATES)}, got {ball_style!r}")
+    template_path = Path(package_share) / "xml" / BALL_STYLE_TEMPLATES[ball_style]
     output_path = Path(package_share) / "xml" / "generated_world.xml"
 
     teams = parse_num_robots(num_robots)

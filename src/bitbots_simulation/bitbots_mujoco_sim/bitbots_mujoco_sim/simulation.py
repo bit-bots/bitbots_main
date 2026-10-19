@@ -31,6 +31,7 @@ class Simulation(Node):
     def __init__(self):
         super().__init__("sim_interface")
         self.declare_parameter("world_file", "")
+        self.declare_parameter("ball_style", "orange")
         self.declare_parameter("use_namespace", True)
         self.declare_parameter("web", False)
 
@@ -181,7 +182,8 @@ class Simulation(Node):
         mujoco.mj_forward(self.model, self.data)
 
     def _generate_default_world(self) -> str:
-        return str(generate_world_xml("1", self.package_path, "piplus"))
+        ball_style = self.get_parameter("ball_style").get_parameter_value().string_value
+        return str(generate_world_xml("1", self.package_path, "piplus", ball_style))
 
     def _find_robot_indices(self) -> list[int]:
         """Find all robot instances by looking for bodies named 'robot_<index>_base_link'."""

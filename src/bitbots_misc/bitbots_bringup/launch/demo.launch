@@ -1,10 +1,14 @@
 <?xml version="1.0"?>
 <launch>
+    <arg name="vision_backend" default="original" description="Vision backend: original or schnupper" />
+    <arg name="vision_debug" default="false" description="Publish vision debug overlays" />
     <arg name="sim" default="false" description="Whether the robot is running in simulation or on real hardware" />
     <arg name="behavior_dsd_file" default="demo.dsd" description="The behavior dsd file that should be used" />
 
     <!-- load teamplayer software stack without some unnecessary stuff, that is not needed in the demo -->
     <include file="$(find-pkg-share bitbots_bringup)/launch/teamplayer.launch">
+        <arg name="vision_backend" value="$(var vision_backend)" />
+        <arg name="vision_debug" value="$(var vision_debug)" />
         <arg name="behavior_dsd_file" value="$(var behavior_dsd_file)" />
         <arg name="fieldname" value="demo" />
         <arg name="game_controller" value="false"/>

@@ -34,6 +34,8 @@ TEAMPLAYER_ARGS = [
     ("path_planning", "Whether the path planning should be started"),
     ("teamcom", "Whether the team communication system should be started"),
     ("vision", "Whether the vision system should be started"),
+    ("vision_backend", "Vision backend: original or schnupper"),
+    ("vision_debug", "Publish vision debug overlays"),
     ("world_model", "Whether the world model should be started"),
     ("monitoring", "Whether the system monitor and udp bridge should be started"),
     ("record", "Whether the ros bag recording should be started"),
@@ -42,6 +44,7 @@ TEAMPLAYER_ARGS = [
 
 # The practical course uses the fake localization by default, so the students can focus on the behavior
 PRAKTIKUM_DEFAULTS = {
+    "vision_backend": "original",
     "localization": "false",
     "fake_localization": "true",
 }
@@ -111,6 +114,7 @@ def launch_setup(context):
         num_robots_spec = LaunchConfiguration("num_robots").perform(context)
     num_robots = sum(parse_num_robots(num_robots_spec))  # total robots across all teams
     robot_type = str(LaunchConfiguration("robot_type").perform(context))
+    ball_style = LaunchConfiguration("ball_style").perform(context)
     use_web = LaunchConfiguration("web").perform(context).lower() == "true"
     start_teamplayer = LaunchConfiguration("teamplayer").perform(context).lower() == "true"
     fake_localization = LaunchConfiguration("fake_localization").perform(context).lower() == "true"
@@ -124,7 +128,7 @@ def launch_setup(context):
         if value:  # Only pass if not empty string
             teamplayer_args.append(f"{arg_name}:={value}")
 
-    world_file = generate_world_xml(num_robots_spec, package_share, robot_type)
+    world_file = generate_world_xml(num_robots_spec, package_share, robot_type, ball_style)
 
     # Compute individual game settings for every robot so that each robot gets its
     # own team affiliation, bot id and role instead of relying on hand-written
@@ -225,8 +229,7 @@ def generate_launch_description():
         ),
         DeclareLaunchArgument(
             "teamplayer",
-            # The practical course starts the motion and its own nodes separately for each robot
-            default_value="false",
+            default_value="true",
             description="Whether to start the teamplayer stack for each robot",
         ),
         DeclareLaunchArgument(
@@ -238,6 +241,12 @@ def generate_launch_description():
             "web",
             default_value="true",
             description="Use web-based mjviser viewer instead of the native MuJoCo viewer",
+        ),
+        DeclareLaunchArgument(
+            "ball_style",
+            default_value="orange",
+            choices=["original", "orange"],
+            description="Select the original or orange-ball world template",
         ),
     ]
 
