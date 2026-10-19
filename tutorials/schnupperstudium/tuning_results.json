@@ -1,0 +1,383 @@
+{
+  "selection": "Mean of real and simulation training F1; first candidate wins ties. No morphology.",
+  "parameter_order": [
+    "h_min",
+    "h_max",
+    "s_min",
+    "v_min",
+    "min_area",
+    "min_roundness",
+    "min_aspect"
+  ],
+  "color_grid": [
+    [
+      0,
+      3,
+      5
+    ],
+    [
+      20,
+      30,
+      40
+    ],
+    [
+      60,
+      100,
+      140
+    ],
+    [
+      40,
+      80
+    ]
+  ],
+  "shape_grid": [
+    [
+      10,
+      30,
+      60
+    ],
+    [
+      0,
+      0.3,
+      0.5,
+      0.65,
+      0.75
+    ],
+    [
+      0.4,
+      0.6,
+      0.75
+    ]
+  ],
+  "iou_threshold": 0.5,
+  "selected": {
+    "score": 1.0,
+    "parameters": [
+      0,
+      20,
+      140,
+      80,
+      60,
+      0.5,
+      0.4
+    ],
+    "by_source": {
+      "real": {
+        "tp": 80,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "simulation": {
+        "tp": 80,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      }
+    }
+  },
+  "evaluations": {
+    "orange/train": {
+      "baseline": {
+        "overall": {
+          "tp": 100,
+          "fp": 18,
+          "fn": 60,
+          "precision": 0.847457627118644,
+          "recall": 0.625,
+          "f1": 0.7194244604316546
+        },
+        "by_source": {
+          "real": {
+            "tp": 20,
+            "fp": 3,
+            "fn": 60,
+            "precision": 0.8695652173913043,
+            "recall": 0.25,
+            "f1": 0.3883495145631068
+          },
+          "simulation": {
+            "tp": 80,
+            "fp": 15,
+            "fn": 0,
+            "precision": 0.8421052631578947,
+            "recall": 1.0,
+            "f1": 0.9142857142857143
+          }
+        },
+        "support": {
+          "overall": {
+            "images": 320,
+            "positive_images": 160,
+            "ground_truth_boxes": 160,
+            "recall_defined": true
+          },
+          "real": {
+            "images": 160,
+            "positive_images": 80,
+            "ground_truth_boxes": 80,
+            "recall_defined": true
+          },
+          "simulation": {
+            "images": 160,
+            "positive_images": 80,
+            "ground_truth_boxes": 80,
+            "recall_defined": true
+          }
+        }
+      },
+      "tuned": {
+        "overall": {
+          "tp": 160,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "by_source": {
+          "real": {
+            "tp": 80,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "simulation": {
+            "tp": 80,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          }
+        },
+        "support": {
+          "overall": {
+            "images": 320,
+            "positive_images": 160,
+            "ground_truth_boxes": 160,
+            "recall_defined": true
+          },
+          "real": {
+            "images": 160,
+            "positive_images": 80,
+            "ground_truth_boxes": 80,
+            "recall_defined": true
+          },
+          "simulation": {
+            "images": 160,
+            "positive_images": 80,
+            "ground_truth_boxes": 80,
+            "recall_defined": true
+          }
+        }
+      }
+    },
+    "orange/test": {
+      "baseline": {
+        "overall": {
+          "tp": 22,
+          "fp": 3,
+          "fn": 18,
+          "precision": 0.88,
+          "recall": 0.55,
+          "f1": 0.676923076923077
+        },
+        "by_source": {
+          "real": {
+            "tp": 2,
+            "fp": 2,
+            "fn": 18,
+            "precision": 0.5,
+            "recall": 0.1,
+            "f1": 0.16666666666666666
+          },
+          "simulation": {
+            "tp": 20,
+            "fp": 1,
+            "fn": 0,
+            "precision": 0.9523809523809523,
+            "recall": 1.0,
+            "f1": 0.975609756097561
+          }
+        },
+        "support": {
+          "overall": {
+            "images": 80,
+            "positive_images": 40,
+            "ground_truth_boxes": 40,
+            "recall_defined": true
+          },
+          "real": {
+            "images": 40,
+            "positive_images": 20,
+            "ground_truth_boxes": 20,
+            "recall_defined": true
+          },
+          "simulation": {
+            "images": 40,
+            "positive_images": 20,
+            "ground_truth_boxes": 20,
+            "recall_defined": true
+          }
+        }
+      },
+      "tuned": {
+        "overall": {
+          "tp": 40,
+          "fp": 1,
+          "fn": 0,
+          "precision": 0.975609756097561,
+          "recall": 1.0,
+          "f1": 0.9876543209876543
+        },
+        "by_source": {
+          "real": {
+            "tp": 20,
+            "fp": 1,
+            "fn": 0,
+            "precision": 0.9523809523809523,
+            "recall": 1.0,
+            "f1": 0.975609756097561
+          },
+          "simulation": {
+            "tp": 20,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          }
+        },
+        "support": {
+          "overall": {
+            "images": 80,
+            "positive_images": 40,
+            "ground_truth_boxes": 40,
+            "recall_defined": true
+          },
+          "real": {
+            "images": 40,
+            "positive_images": 20,
+            "ground_truth_boxes": 20,
+            "recall_defined": true
+          },
+          "simulation": {
+            "images": 40,
+            "positive_images": 20,
+            "ground_truth_boxes": 20,
+            "recall_defined": true
+          }
+        }
+      }
+    },
+    "realistic/test": {
+      "baseline": {
+        "overall": {
+          "tp": 0,
+          "fp": 38,
+          "fn": 41,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0
+        },
+        "by_source": {
+          "real": {
+            "tp": 0,
+            "fp": 5,
+            "fn": 21,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          },
+          "simulation": {
+            "tp": 0,
+            "fp": 33,
+            "fn": 20,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          }
+        },
+        "support": {
+          "overall": {
+            "images": 80,
+            "positive_images": 40,
+            "ground_truth_boxes": 41,
+            "recall_defined": true
+          },
+          "real": {
+            "images": 40,
+            "positive_images": 20,
+            "ground_truth_boxes": 21,
+            "recall_defined": true
+          },
+          "simulation": {
+            "images": 40,
+            "positive_images": 20,
+            "ground_truth_boxes": 20,
+            "recall_defined": true
+          }
+        }
+      },
+      "tuned": {
+        "overall": {
+          "tp": 0,
+          "fp": 36,
+          "fn": 41,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0
+        },
+        "by_source": {
+          "real": {
+            "tp": 0,
+            "fp": 5,
+            "fn": 21,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          },
+          "simulation": {
+            "tp": 0,
+            "fp": 31,
+            "fn": 20,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          }
+        },
+        "support": {
+          "overall": {
+            "images": 80,
+            "positive_images": 40,
+            "ground_truth_boxes": 41,
+            "recall_defined": true
+          },
+          "real": {
+            "images": 40,
+            "positive_images": 20,
+            "ground_truth_boxes": 21,
+            "recall_defined": true
+          },
+          "simulation": {
+            "images": 40,
+            "positive_images": 20,
+            "ground_truth_boxes": 20,
+            "recall_defined": true
+          }
+        }
+      }
+    }
+  },
+  "manifest_sha256": {
+    "orange": "0c41d2022e2f89c1992235ff39a625e54e40b23adca877ea4dac603e1970d011",
+    "realistic": "6730a912fc19230ff5fa6a822f38660e49b3ca3344b07d7a9b5538185b21d03a"
+  }
+}

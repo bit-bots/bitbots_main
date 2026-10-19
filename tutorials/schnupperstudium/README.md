@@ -171,3 +171,15 @@ wurden dabei nicht verändert. Die Entscheidung, den Filter beizubehalten, wird 
 durch die vollständige Trainingsmenge gestützt; auch die Testauswertung fällt mit
 Filter besser aus. Die Ergebnisse gelten für die vorhandenen Datensätze und diese
 Parameter, nicht für beliebige Kameras oder Farbgrenzen.
+
+## Vollständiger Stand und Schüler-Branch
+
+Dieser Branch (`schnupperstudium2026_vision_full`) enthält zusätzlich zur
+Schülerfassung die Musterlösung, Tests und Werkzeuge zur Datenvorbereitung.
+`schnupperstudium2026` enthält die benötigten Notebooks und Hilfsdateien sowie
+die orange Simulation und den auszufüllenden Vision-Einstieg.
+
+`tune_reference.py`, `tuning_results.json` und `workshop_plots.py` stammen aus der
+früheren Konturvariante. Sie bleiben hier für Vergleich und Nachvollziehbarkeit
+verfügbar und werden vom aktuellen Histogramm-Notebook nicht verwendet. Deren
+Messergebnisse sind keine Bewertung der aktuellen Musterlösung.
