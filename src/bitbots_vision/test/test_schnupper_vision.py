@@ -154,10 +154,7 @@ class TestLaunchContract(unittest.TestCase):
         for filename, target in edges.items():
             with self.subTest(filename=filename):
                 root = ElementTree.parse(BRINGUP / "launch" / filename).getroot()
-                expected = (
-                    "schnupper" if filename in {"teamplayer.launch", "simulator_teamplayer.launch"} else "original"
-                )
-                self.assertEqual(root.find("arg[@name='vision_backend']").get("default"), expected)
+                self.assertEqual(root.find("arg[@name='vision_backend']").get("default"), "original")
                 include = next(entry for entry in root.iter("include") if target in entry.get("file"))
                 self.assertEqual(include.find("arg[@name='vision_backend']").get("value"), "$(var vision_backend)")
         root = ElementTree.parse(PACKAGE / "launch" / "vision.launch").getroot()
@@ -167,7 +164,7 @@ class TestLaunchContract(unittest.TestCase):
         module = load_launch(BRINGUP / "launch" / "mujoco_simulation.launch.py")
         names = {name for name, _ in module.TEAMPLAYER_ARGS}
         self.assertTrue({"vision_backend", "vision_debug"}.issubset(names))
-        self.assertEqual(module.PRAKTIKUM_DEFAULTS["vision_backend"], "schnupper")
+        self.assertEqual(module.PRAKTIKUM_DEFAULTS["vision_backend"], "original")
 
     def test_mujoco_ball_style_templates(self):
         module = load_launch(BRINGUP / "launch" / "mujoco_simulation.launch.py")

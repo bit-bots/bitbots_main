@@ -67,7 +67,7 @@ args = [
     { arg = "world_model", default = "true" },
     { arg = "web", default = "true" },
     { arg = "ball_style", default = "orange" },
-    { arg = "vision_backend", default = "schnupper" },
+    { arg = "vision_backend", default = "original" },
 ]
 
 [tasks.sim-one]
