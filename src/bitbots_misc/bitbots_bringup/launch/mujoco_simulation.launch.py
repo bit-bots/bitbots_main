@@ -3,6 +3,7 @@ from pathlib import Path
 
 import yaml
 from ament_index_python.packages import get_package_share_directory
+from bitbots_mujoco_sim.world import compute_game_settings, generate_world_xml, parse_num_robots
 from launch import LaunchDescription
 from launch.actions import (
     DeclareLaunchArgument,
@@ -100,42 +101,15 @@ def generate_domain_bridge_config(robot_domain: int, output_dir: Path) -> Path:
     return config_path
 
 
-def generate_world_xml(num_robots: int, package_share: str, robot_type: str, one_versus_one: bool) -> Path:
-    """Generate MuJoCo world XML with the correct number of robots."""
-    template_path = Path(package_share) / "xml" / "kid_field.xml"
-    output_path = Path(package_share) / "xml" / "generated_world.xml"
-    if one_versus_one:
-        # Place the two robots mirrored at the center line, so each one starts on its own half
-        start_x = -1.0
-        offset = 2.0
-    else:
-        start_x = 1.0
-        offset = 4 * (
-            1 / num_robots
-        )  # this makes the offset be the default value when there are 4 robots and increse the less robots there are
-
-    with open(template_path) as f:
-        template = f.read()
-
-    # Replace placeholder with actual robot count
-    world_xml = (
-        template.replace("{{NUM_ROBOTS}}", str(num_robots))
-        .replace("{{OFFSET}}", str(offset))
-        .replace("{{START_X}}", str(start_x))
-        .replace("{{ROBOT_TYPE}}", robot_type)
-    )
-
-    with open(output_path, "w") as f:
-        f.write(world_xml)
-    return output_path
-
-
 def launch_setup(context):
     """Dynamically set up launches based on num_robots."""
-    num_robots = int(LaunchConfiguration("num_robots").perform(context))
-    one_versus_one = LaunchConfiguration("one_versus_one").perform(context).lower() == "true"
-    if one_versus_one:
-        num_robots = 2
+    # The one_versus_one convenience flag is expressed as a two team setup with a
+    # single robot per team, so it reuses the regular multi-team code path below.
+    if LaunchConfiguration("one_versus_one").perform(context).lower() == "true":
+        num_robots_spec = "1:1"
+    else:
+        num_robots_spec = LaunchConfiguration("num_robots").perform(context)
+    num_robots = sum(parse_num_robots(num_robots_spec))  # total robots across all teams
     robot_type = str(LaunchConfiguration("robot_type").perform(context))
     use_web = LaunchConfiguration("web").perform(context).lower() == "true"
     start_teamplayer = LaunchConfiguration("teamplayer").perform(context).lower() == "true"
@@ -150,7 +124,12 @@ def launch_setup(context):
         if value:  # Only pass if not empty string
             teamplayer_args.append(f"{arg_name}:={value}")
 
-    world_file = generate_world_xml(num_robots, package_share, robot_type, one_versus_one)
+    world_file = generate_world_xml(num_robots_spec, package_share, robot_type)
+
+    # Compute individual game settings for every robot so that each robot gets its
+    # own team affiliation, bot id and role instead of relying on hand-written
+    # per-domain config files. Ordered the same as the robot domains below.
+    game_settings = compute_game_settings(parse_num_robots(num_robots_spec))
 
     actions = []
 
@@ -168,7 +147,8 @@ def launch_setup(context):
         ),
     )
 
-    for robot_domain in range(11, num_robots + 11):  # 11 is the standart starting id for our robots
+    # 11 is the standard starting id for our robots
+    for robot_index, robot_domain in enumerate(range(11, num_robots + 11)):
         config_file = generate_domain_bridge_config(robot_domain, bridge_config_dir)
         actions.append(
             LogInfo(msg=f"Starting domain bridge for robot{robot_domain} (domain {robot_domain})"),
@@ -185,7 +165,8 @@ def launch_setup(context):
         )
 
         if not start_teamplayer:
-            # The teamplayer would start the fake localization, so it needs to be started here instead
+            # The teamplayer would normally start the fake localization, so when the
+            # teamplayer stack is not launched we start the fake localization here instead.
             if fake_localization:
                 actions.append(
                     ExecuteProcess(
@@ -195,6 +176,11 @@ def launch_setup(context):
                     )
                 )
             continue
+
+        # Pass this robot's individual game settings down to the teamplayer stack,
+        # where parameter_blackboard.launch.py applies them on top of the shared
+        # game_settings.yaml defaults.
+        robot_game_settings_args = [f"{key}:={value}" for key, value in game_settings[robot_index].items()]
 
         actions.append(
             TimerAction(
@@ -208,7 +194,8 @@ def launch_setup(context):
                             "bitbots_bringup",
                             "teamplayer.launch",
                         ]
-                        + teamplayer_args,
+                        + teamplayer_args
+                        + robot_game_settings_args,
                         output="screen",
                         additional_env={"ROS_DOMAIN_ID": str(robot_domain)},
                     ),
@@ -226,7 +213,10 @@ def generate_launch_description():
         DeclareLaunchArgument(
             "num_robots",
             default_value="1",
-            description="Number of robots in the simulation",
+            description=(
+                "Robot setup in the simulation. Either a single number for one team "
+                "(e.g. '3') or a colon separated team setup (e.g. '2:2' for a 2 vs 2)."
+            ),
         ),
         DeclareLaunchArgument(
             "one_versus_one",

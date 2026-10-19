@@ -31,6 +31,7 @@
   <depend>python3-mujoco</depend>
   <depend>python3-opencv</depend>
   <depend>python3-transforms3d</depend>
+  <depend>python3-pil</depend>
 
   <test_depend>ament_cmake_mypy</test_depend>
   <test_depend>python3-pytest</test_depend>
