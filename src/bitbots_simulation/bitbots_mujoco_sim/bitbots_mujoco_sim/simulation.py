@@ -368,7 +368,7 @@ class Simulation(Node):
         itself) and drag that whole articulated system as a rigid unit.
         """
         robot_keys = {
-            self._free_joint_key_for_body(self.model.body(f"robot_base_link_{robot_sim.robot.index}").id)
+            self._free_joint_key_for_body(self.model.body(f"robot_{robot_sim.robot.index}_base_link").id)
             for robot_sim in self.robots
         }
         robot_keys.discard(None)
