@@ -237,7 +237,7 @@ class SoccerCommandHandler(Handler):
             if self._node._robot_state_handler.is_kickable():
                 self._wait_for_controllable = False
             else:
-                self._node.get_logger().warn("Waiting for robot to be controllable before starting kick...")
+                #self._node.get_logger().warn("Waiting for robot to be controllable before starting kick...")
                 self._node.get_clock().sleep_for(Duration(seconds=0.02))
 
         # Warm start: run the policy with a defined command so it can settle into a

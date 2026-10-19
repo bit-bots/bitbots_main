@@ -63,8 +63,10 @@ class SimpleBehaviorRuntime:
 
     def kick_ball(self, direction_deg: float, strength: float = 3.0) -> bool:
         """Kick the ball in a map-frame direction in degrees and wait for completion."""
-        self.stop()
-        self.sleep(0.1)
+        start = self._node.get_clock().now()
+        while (self._node.get_clock().now() - start).nanoseconds < 0.2e9:
+            self.stop()
+            self.sleep(0.005)
         kick_started = self._blackboard.kick.start_rl_kick(float(direction_deg), float(strength))
         if not kick_started:
             return False
