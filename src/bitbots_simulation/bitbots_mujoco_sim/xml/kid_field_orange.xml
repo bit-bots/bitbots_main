@@ -1,7 +1,7 @@
 <mujoco>
   <include file="kid_field_environment.xml"/>
   <asset>
-    <texture name="ball" type="cube" builtin="flat" rgb1="1 0.32 0.015" width="64" height="64"/>
+    <texture name="ball" type="cube" builtin="flat" rgb1="1 0.32 0.015" rgb2="1 0.32 0.015" width="64" height="64"/>
     <material name="ball" texture="ball"/>
   </asset>
   <worldbody>

@@ -8,7 +8,7 @@ from pathlib import Path
 
 import cv2
 import numpy as np
-from vision_workshop import detection_metrics, evaluate, find_dataset_root, load_dataset, match_boxes
+from werkzeuge import detection_metrics, evaluate, find_dataset_root, load_dataset, match_boxes
 
 COLOR_GRID = ([0, 3, 5], [20, 30, 40], [60, 100, 140], [40, 80])
 SHAPE_GRID = ([10, 30, 60], [0, 0.3, 0.5, 0.65, 0.75], [0.4, 0.6, 0.75])

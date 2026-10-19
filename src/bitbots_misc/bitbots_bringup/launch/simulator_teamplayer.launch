@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-    <arg name="vision_backend" default="original" description="Vision backend: original or schnupper" />
+    <arg name="vision_backend" default="schnupper" description="Vision backend: original or schnupper" />
     <arg name="vision_debug" default="false" description="Publish vision debug overlays" />
     <arg name="audio" default="false" description="Whether the audio system should be started" />
     <arg name="behavior" default="true" description="Whether the behavior control system should be started" />
@@ -21,9 +21,12 @@
     <arg name="rl_motion" default="true" description="Whether to use the RL motion system instead of the regular one" />
     <arg name="web" default="true" description="Use web-based mjviser viewer instead of the native MuJoCo viewer"/>
 
+    <arg name="ball_style" default="orange" description="Ball appearance: original or orange" />
+
     <!-- load the general simulator -->
     <include file="$(find-pkg-share bitbots_mujoco_sim)/launch/simulator.launch" >
         <arg name="web" value="$(var web)" />
+        <arg name="ball_style" value="$(var ball_style)" />
     </include>
 
     <!-- load teamplayer software stack -->

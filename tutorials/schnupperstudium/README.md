@@ -105,10 +105,9 @@ mit den folgenden Dateien:
 - `loesung.ipynb`: vollständige Referenz einschließlich Detektor und Auswertung.
 - `evaluation.ipynb`: Teil 5 und Auswertung zum Übertragen der eigenen Lösung.
   Mit eigenem Kernel ausführbar; Variablen aus dem Aufgaben-Notebook werden nicht übernommen.
-- `werkzeuge.py`: einfache RGB-Anzeigen, HSV-Umrechnung und Zugang zu unseren Datensätzen.
+- `werkzeuge.py`: RGB-Anzeigen, HSV-Umrechnung, Laden der Bilder und unveränderte Auswertung.
 - `spickzettel.md`: benötigte Befehle zum Nachschlagen.
 - `abbildungen/`: HSV-Zylinder und Quellen-/Lizenzangaben für die Offline-Anzeige.
-- `vision_workshop.py`: lädt Bilder und Labels und berechnet die unveränderten Kennzahlen.
 - `download_datasets.py`: lädt und entpackt die in `werkzeuge.py` angegebenen Archive.
 - `README.md`: Einstieg und Durchführung.
 - `datasets/orange/` und `datasets/realistic/`: Bilder und `manifest.json`;

@@ -166,10 +166,10 @@ def test_local_symlink_not_reused(tmp_path):
 
 
 def test_root_falls_back_to_helper_directory(monkeypatch):
-    import vision_workshop
+    import werkzeuge
 
     def no_manifest():
         raise FileNotFoundError
 
-    monkeypatch.setattr(vision_workshop, "find_dataset_root", no_manifest)
+    monkeypatch.setattr(werkzeuge, "find_dataset_root", no_manifest)
     assert downloads.dataset_root() == Path(downloads.__file__).resolve().parent / "datasets"

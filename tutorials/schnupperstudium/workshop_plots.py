@@ -3,7 +3,7 @@
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-from vision_workshop import draw_overlay
+from werkzeuge import draw_overlay
 
 
 def show_image(image_bgr, title="Kamerabild"):

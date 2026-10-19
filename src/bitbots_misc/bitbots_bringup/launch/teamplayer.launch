@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-    <arg name="vision_backend" default="original" description="Vision backend: original or schnupper" />
+    <arg name="vision_backend" default="schnupper" description="Vision backend: original or schnupper" />
     <arg name="vision_debug" default="false" description="Publish vision debug overlays" />
     <arg name="audio" default="true" description="Whether the audio system should be started" />
     <arg name="behavior" default="true" description="Whether the behavior control system should be started" />

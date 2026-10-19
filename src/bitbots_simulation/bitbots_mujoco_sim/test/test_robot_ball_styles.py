@@ -8,9 +8,9 @@ import pytest
 XML_DIRECTORY = Path(__file__).resolve().parents[1] / "xml"
 
 
-def test_launch_defaults_to_original_and_forwards_ball_style():
+def test_launch_defaults_to_orange_and_forwards_ball_style():
     launch = ET.parse(XML_DIRECTORY.parent / "launch/simulator.launch").getroot()
-    assert launch.find("arg[@name='ball_style']").get("default") == "original"
+    assert launch.find("arg[@name='ball_style']").get("default") == "orange"
     assert launch.find("node/param[@name='ball_style']").get("value") == "$(var ball_style)"
 
 
@@ -81,6 +81,9 @@ def test_robot_scenes_preserve_physics_and_camera_interfaces(robot_count):
     assert np.any(orange.mat_texid[orange_material] >= 0)
     np.testing.assert_allclose(original.mat_rgba[original_material], [1, 1, 1, 1])
     texture = orange.texture("ball")
-    np.testing.assert_allclose(
-        orange.tex_data[texture.adr[0] : texture.adr[0] + 3] / 255, [1, 0.32, 0.015], atol=1 / 255
-    )
+    start = int(texture.adr[0])
+    size = int(texture.width[0] * texture.height[0] * texture.nchannel[0])
+    pixels = orange.tex_data[start : start + size].reshape(-1, 3)
+    # Both the camera renderer and the Viser overlay sample this cube texture.
+    expected = np.broadcast_to([1, 0.32, 0.015], pixels.shape)
+    np.testing.assert_allclose(pixels / 255, expected, atol=1 / 255)

@@ -144,3 +144,14 @@ def test_evaluation_imports_support_the_completed_detector():
     )
     exec(detector, namespace)
     assert namespace["detect_balls"](orange_image()) == (40, 20, 70, 50)
+
+
+def test_ros_detector_matches_notebook_reference():
+    from schnupper_vision.detector import detect_balls
+    from schnupper_vision.detector import zu_hsv as ros_zu_hsv
+
+    notebook_detect = notebook_functions("loesung.ipynb")["detect_balls"]
+    image = orange_image()
+    assert detect_balls(image) == notebook_detect(image)
+    assert detect_balls(np.zeros_like(image)) is None
+    np.testing.assert_array_equal(ros_zu_hsv(image, bgr=True), zu_hsv(image, bgr=True))

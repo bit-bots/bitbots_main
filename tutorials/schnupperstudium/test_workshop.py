@@ -5,7 +5,7 @@ import json
 import cv2
 import numpy as np
 import pytest
-from vision_workshop import as_boxes, box_iou, evaluate, load_dataset, match_boxes
+from werkzeuge import as_boxes, box_iou, evaluate, load_dataset, match_boxes
 
 
 def record(boxes, source="real", identifier="bild"):

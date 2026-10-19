@@ -1,25 +1,46 @@
-"""Notebook-Vertrag: Nur der Funktionsbody muss ausgetauscht werden."""
+"""Einstieg für die selbst erarbeitete Ballerkennung aus dem Notebook."""
 
 import cv2
 import numpy as np
 
 
-def detect_balls(image_bgr: np.ndarray) -> np.ndarray:
-    """Erkenne orange Bälle und liefere xyxy-Pixelboxen, ohne das Bild zu ändern."""
-    hsv = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2HSV)
-    mask = cv2.inRange(hsv, np.array([5, 100, 80]), np.array([30, 255, 255]))
-    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, np.ones((3, 3), dtype=np.uint8))
-    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    boxes = []
-    for contour in contours:
-        area = cv2.contourArea(contour)
-        perimeter = cv2.arcLength(contour, True)
-        if area < 30 or perimeter == 0:
-            continue
-        if 4 * np.pi * area / perimeter**2 < 0.75:
-            continue
-        left, top, width, height = cv2.boundingRect(contour)
-        if not 0.75 <= width / height <= 1.33:
-            continue
-        boxes.append([left, top, left + width, top + height])
-    return np.asarray(boxes, dtype=np.float64).reshape(-1, 4)
+def zu_hsv(bild: np.ndarray, *, bgr: bool = False) -> np.ndarray:
+    """Dieselbe HSV-Umrechnung wie in werkzeuge.py, ohne Notebook-Abhängigkeiten."""
+    conversion = cv2.COLOR_BGR2HSV_FULL if bgr else cv2.COLOR_RGB2HSV_FULL
+    return cv2.cvtColor(np.asarray(bild, dtype=np.uint8), conversion)
+
+
+def detect_balls(image_bgr: np.ndarray) -> tuple[int, int, int, int] | None:
+    h_von, h_bis = (0, 28)
+    s_min, v_min = (140, 80)
+    min_pixel = 100
+    min_pro_zeile = 3
+    hsv = zu_hsv(image_bgr, bgr=True)
+    h = hsv[:, :, 0]
+    s = hsv[:, :, 1]
+    v = hsv[:, :, 2]
+    maske = (h >= h_von) & (h <= h_bis) & (s >= s_min) & (v >= v_min)
+    zeilen, spalten = np.nonzero(maske)
+    if len(spalten) < min_pixel:
+        return None
+    zeilen_histogramm = []
+    for zeile in range(maske.shape[0]):
+        zeilen_histogramm.append(np.sum(maske[zeile, :]))
+    spalten_histogramm = []
+    for spalte in range(maske.shape[1]):
+        spalten_histogramm.append(np.sum(maske[:, spalte]))
+    x = int(spalten.mean())
+    y = int(zeilen.mean())
+    if zeilen_histogramm[y] < min_pro_zeile or spalten_histogramm[x] < min_pro_zeile:
+        return None
+    links = rechts = x
+    oben = unten = y
+    while unten + 1 < len(zeilen_histogramm) and zeilen_histogramm[unten + 1] >= min_pro_zeile:
+        unten += 1
+    while oben > 0 and zeilen_histogramm[oben - 1] >= min_pro_zeile:
+        oben -= 1
+    while rechts + 1 < len(spalten_histogramm) and spalten_histogramm[rechts + 1] >= min_pro_zeile:
+        rechts += 1
+    while links > 0 and spalten_histogramm[links - 1] >= min_pro_zeile:
+        links -= 1
+    return (links, oben, rechts + 1, unten + 1)

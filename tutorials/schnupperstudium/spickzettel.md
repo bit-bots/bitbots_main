@@ -18,7 +18,10 @@ Hier stehen alle Befehle, die du in `aufgabe.ipynb` und `evaluation.ipynb` brauc
 | `int(zahl)` | ganze Zahl (Nachkommastellen fallen weg) | `int(12.8)` → 12 |
 | `def name(…):` | eigene Funktion schreiben | `def histogramm(kanal):` |
 | `return wert` | Ergebnis der Funktion zurückgeben | `return x, y` |
-| `None` | kein markierter Punkt für die Anzeige | `x, y = None, None` |
+| `None` | noch kein Ergebnis oder kein Ball gefunden | `return None` |
+| `a is None`, `a is not None` | prüft, ob ein Ergebnis fehlt oder vorhanden ist | `if box is not None:` |
+| `(a, b, c, d)` | ein Tupel: mehrere Werte zusammen | `box = (links, oben, rechts, unten)` |
+| `min(a, b)`, `max(a, b)` | kleinerer beziehungsweise größerer Wert | `links = max(0, links)` |
 
 ## numpy (für Bilder und Masken)
 
@@ -33,16 +36,20 @@ Hier stehen alle Befehle, die du in `aufgabe.ipynb` und `evaluation.ipynb` brauc
 | `np.nonzero(maske)` | Zeilen und Spalten aller markierten Pixel | `zeilen, spalten = np.nonzero(maske)` |
 | `zahlen.mean()` | Mittelwert | `spalten.mean()` |
 | `maske.size` | Anzahl aller Pixel | `h.size` |
+| `bild.shape` | Bildgröße: Höhe, Breite, bei Farbbildern auch Kanäle | `hoehe, breite = maske.shape` |
+| `np.zeros_like(kanal)` | gleich großes Array, zunächst nur Nullen | `s = np.zeros_like(h)` |
+| `np.iinfo(bild.dtype)` | Wertebereich des Ganzzahl-Datentyps | `np.iinfo(bild.dtype).max` |
+| `np.full((hoehe, breite, 3), farbe, dtype=np.uint8)` | einfarbiges RGB-Bild aus einem Farbwert | `farbfeld = np.full((16, 16, 3), bild[y, x], dtype=np.uint8)` |
 
 ## werkzeuge.py (unsere Hilfsfunktionen)
 
 | Befehl | Bedeutung |
 |---|---|
 | `bilder_laden()` | lädt eine gemischte Auswahl unserer orangefarbenen Trainingsbilder als RGB-Liste |
-| `zu_hsv(bild)` | rechnet ein Bild in H, S, V um (je 0–255) |
+| `zu_hsv(bild)` | rechnet ein RGB-Bild in H, S, V um; alle Kanäle verwenden denselben Ganzzahl-Wertebereich wie das Eingabebild |
+| `zu_hsv(image_bgr, bgr=True)` | dieselbe HSV-Umrechnung für den BGR-Detektor |
 | `bild_anzeigen(bild, titel, x, y)` | zeigt ein Bild, einen Kanal oder eine Maske; mit `x`, `y` zusätzlich ein Kreuz |
 | `bild_anzeigen(bild, box=box)` | zeichnet ein einzelnes Bounding-Box-Tupel ein; `None` lässt das Bild ohne Box |
-| `np.full((hoehe, breite, 3), farbe, dtype=np.uint8)` | erzeugt ein einfarbiges RGB-Bild aus einem Farbwert |
 | `histogramm_anzeigen(histogramm, titel)` | zeigt ein Histogramm als Balkendiagramm |
 | `detektor_anzeigen(bild, detect_balls)` | wandelt das RGB-Bild für den BGR-Detektor um und zeigt seine Box |
 | `auswerten(detect_balls)` | prüft auf der vollständigen Trainingsmenge und zeigt Fehlerbilder |
@@ -61,3 +68,13 @@ Für dieselben HSV-Bereiche wie in `zu_hsv` verwende
 - Ist `rechts` noch der letzte eingeschlossene Pixel, verwende `rechts + 1`;
   entsprechend gilt das für `unten`.
 - `max(0, links)` und `min(breite, rechts)` beschränken einen Ausschnitt auf das Bild.
+
+
+## Vom Notebook zur Simulation
+
+Ersetze die vorbereitete Funktion in
+[`detector.py`](../../src/bitbots_vision/schnupper_vision/detector.py) durch deine
+Funktion aus `evaluation.ipynb`. Typangaben, Tupel und `None` bleiben gleich.
+`np` und `zu_hsv` sind dort bereits verfügbar.
+Die Befehle zum Bauen und Starten stehen in der
+[Vision-Anleitung](../../src/bitbots_vision/README.schnupper.md).

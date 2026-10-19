@@ -13,7 +13,7 @@ import numpy as np
 from cv_bridge import CvBridge
 from launch import LaunchContext
 from launch_ros.utilities import evaluate_parameters
-from schnupper_vision.detector import detect_balls
+from schnupper_vision.detector import detect_balls, zu_hsv
 from schnupper_vision.node import SchnupperVision, make_ball_array, validate_boxes
 from std_msgs.msg import Header
 
@@ -30,50 +30,47 @@ def load_launch(path):
 
 class TestDetector(unittest.TestCase):
     def test_empty_image(self):
-        result = detect_balls(np.zeros((80, 120, 3), dtype=np.uint8))
-        self.assertIsInstance(result, np.ndarray)
-        self.assertEqual(result.shape, (0, 4))
+        self.assertIsNone(detect_balls(np.zeros((80, 120, 3), dtype=np.uint8)))
 
-    def test_orange_balls_and_no_input_mutation(self):
+    def test_orange_ball_and_no_input_mutation(self):
         image = np.zeros((120, 180, 3), dtype=np.uint8)
         cv2.circle(image, (40, 50), 15, (0, 140, 255), -1)
-        cv2.circle(image, (130, 70), 12, (0, 140, 255), -1)
         cv2.circle(image, (90, 25), 10, (255, 0, 0), -1)
         before = image.copy()
-        boxes = detect_balls(image)
-        self.assertEqual(boxes.shape, (2, 4))
-        for center in ((40, 50), (130, 70)):
-            self.assertTrue(
-                any(left < center[0] < right and top < center[1] < bottom for left, top, right, bottom in boxes)
-            )
+        box = detect_balls(image)
+        self.assertIsInstance(box, tuple)
+        left, top, right, bottom = box
+        self.assertTrue(left < 40 < right and top < 50 < bottom)
         np.testing.assert_array_equal(before, image)
 
-    def test_notebook_body_needs_only_image_cv2_and_np(self):
+    def test_notebook_body_needs_only_image_zu_hsv_and_np(self):
         function = ast.parse(inspect.getsource(detect_balls)).body[0]
         function.args.args[0].annotation = None
         function.returns = None
-        namespace = {"cv2": cv2, "np": np}
+        namespace = {"zu_hsv": zu_hsv, "np": np}
         exec(
             compile(ast.fix_missing_locations(ast.Module(body=[function], type_ignores=[])), "notebook", "exec"),
             namespace,
         )
-        self.assertEqual(namespace["detect_balls"](np.zeros((40, 40, 3), dtype=np.uint8)).shape, (0, 4))
+        self.assertIsNone(namespace["detect_balls"](np.zeros((40, 40, 3), dtype=np.uint8)))
 
 
 class TestRosConversion(unittest.TestCase):
     def test_box_contract_and_clipping(self):
-        boxes = np.array([[-5, -2, 30, 20], [200, 200, 250, 250]])
-        np.testing.assert_array_equal(validate_boxes(boxes, (80, 120, 3)), [[0, 0, 30, 20]])
-        self.assertEqual(boxes[0, 0], -5)
-        self.assertEqual(validate_boxes(np.empty((0, 4)), (80, 120, 3)).shape, (0, 4))
+        box = (-5, -2, 30, 20)
+        np.testing.assert_array_equal(validate_boxes(box, (80, 120, 3)), [[0, 0, 30, 20]])
+        self.assertEqual(box[0], -5)
+        self.assertEqual(validate_boxes((200, 200, 250, 250), (80, 120, 3)).shape, (0, 4))
+        self.assertEqual(validate_boxes(None, (80, 120, 3)).shape, (0, 4))
         for invalid in (
             [],
-            np.array([]),
-            np.ones((1, 5)),
-            np.array([[0, 0, np.nan, 4]]),
-            np.array([[4, 0, 1, 3]]),
-            np.array([[0, 0, 0, 3]]),
-            np.array([["a"] * 4]),
+            np.empty((0, 4)),
+            (0, 0, 1),
+            (0, 0, np.nan, 4),
+            (4, 0, 1, 3),
+            (0, 0, 0, 3),
+            ("a",) * 4,
+            (False,) * 4,
         ):
             with self.subTest(invalid=invalid), self.assertRaises(ValueError):
                 validate_boxes(invalid, (80, 120, 3))
@@ -103,7 +100,7 @@ class TestRosConversion(unittest.TestCase):
             get_parameter=Mock(return_value=SimpleNamespace(value=True)),
             get_logger=Mock(return_value=Mock()),
         )
-        with patch("schnupper_vision.node.detect_balls", return_value=np.array([[10, 20, 30, 40]])):
+        with patch("schnupper_vision.node.detect_balls", return_value=(10, 20, 30, 40)):
             SchnupperVision.image_callback(node, image)
         self.assertEqual(node.ball_publisher.publish.call_args.args[0].header, image.header)
         debug = node.debug_publisher.publish.call_args.args[0]
@@ -113,7 +110,7 @@ class TestRosConversion(unittest.TestCase):
         self.assertFalse(bridge.imgmsg_to_cv2(image).any())
         node.debug_publisher.reset_mock()
         node.get_parameter.return_value.value = False
-        for result in (np.empty((0, 4)), np.array([1, 2]), RuntimeError("Schülerfehler")):
+        for result in (None, np.array([1, 2]), RuntimeError("Schülerfehler")):
             with self.subTest(result=result):
                 with patch("schnupper_vision.node.detect_balls") as detector:
                     if isinstance(result, Exception):
@@ -157,7 +154,10 @@ class TestLaunchContract(unittest.TestCase):
         for filename, target in edges.items():
             with self.subTest(filename=filename):
                 root = ElementTree.parse(BRINGUP / "launch" / filename).getroot()
-                self.assertEqual(root.find("arg[@name='vision_backend']").get("default"), "original")
+                expected = (
+                    "schnupper" if filename in {"teamplayer.launch", "simulator_teamplayer.launch"} else "original"
+                )
+                self.assertEqual(root.find("arg[@name='vision_backend']").get("default"), expected)
                 include = next(entry for entry in root.iter("include") if target in entry.get("file"))
                 self.assertEqual(include.find("arg[@name='vision_backend']").get("value"), "$(var vision_backend)")
         root = ElementTree.parse(PACKAGE / "launch" / "vision.launch").getroot()
@@ -167,13 +167,15 @@ class TestLaunchContract(unittest.TestCase):
         module = load_launch(BRINGUP / "launch" / "mujoco_simulation.launch.py")
         names = {name for name, _ in module.TEAMPLAYER_ARGS}
         self.assertTrue({"vision_backend", "vision_debug"}.issubset(names))
+        self.assertEqual(module.PRAKTIKUM_DEFAULTS["vision_backend"], "schnupper")
 
     def test_mujoco_ball_style_templates(self):
         module = load_launch(BRINGUP / "launch" / "mujoco_simulation.launch.py")
         declarations = {
             action.name: action for action in module.generate_launch_description().entities if hasattr(action, "name")
         }
-        self.assertEqual(declarations["ball_style"].default_value[0].perform(LaunchContext()), "original")
+        self.assertEqual(declarations["ball_style"].default_value[0].perform(LaunchContext()), "orange")
+        self.assertEqual(declarations["teamplayer"].default_value[0].perform(LaunchContext()), "true")
         with TemporaryDirectory() as directory:
             xml_dir = Path(directory) / "xml"
             xml_dir.mkdir()
@@ -183,7 +185,7 @@ class TestLaunchContract(unittest.TestCase):
                 self.assertTrue(output.startswith(style + " 2 "))
                 self.assertTrue(output.endswith(" piplus"))
                 self.assertNotIn("{{", output)
-            self.assertTrue(module.generate_world_xml(1, directory, "piplus", False).read_text().startswith("original"))
+            self.assertTrue(module.generate_world_xml(1, directory, "piplus", False).read_text().startswith("orange"))
             with self.assertRaises(ValueError):
                 module.generate_world_xml(1, directory, "piplus", False, "typo")
 
