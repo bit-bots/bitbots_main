@@ -43,7 +43,7 @@ TEAMPLAYER_ARGS = [
 
 # The practical course uses the fake localization by default, so the students can focus on the behavior
 PRAKTIKUM_DEFAULTS = {
-    "vision_backend": "schnupper",
+    "vision_backend": "original",
     "localization": "false",
     "fake_localization": "true",
 }

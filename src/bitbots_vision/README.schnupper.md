@@ -3,8 +3,9 @@
 Diese Python-Vision verbindet eure Ballerkennung mit ROS. Der Einstieg in
 `schnupper_vision/detector.py` ist zum Ausfüllen vorbereitet und liefert zunächst
 keine Treffer. Setzt eure Lösung aus `evaluation.ipynb` ein.
-In den Teamplayer-Einstiegen ist die Schnupper-Vision vorausgewählt. Sie erkennt
-nur Bälle; Roboter, Torpfosten und Linien werden nicht erkannt.
+Die Original-Vision bleibt der Standard. Mit `vision_backend:=schnupper` wählt
+ihr eure Ballerkennung aus. Sie erkennt nur Bälle; Roboter, Torpfosten und Linien
+werden nicht erkannt.
 
 ## Funktion aus dem Notebook übernehmen
 
@@ -59,21 +60,22 @@ dieser lässt sich separat mit `pixi run -e default zenoh` starten.
 
 Die Simulations-Einstiege wählen standardmäßig den orangefarbenen Ball.
 `teamplayer.launch`, `simulator_teamplayer.launch` und die Teamplayer-Stacks aus
-`mujoco_simulation.launch.py` wählen standardmäßig `vision_backend:=schnupper`.
+`mujoco_simulation.launch.py` wählen standardmäßig die Original-Vision.
+Mit `vision_backend:=schnupper` aktiviert ihr eure eigene Ballerkennung.
 `teamplayer.launch` startet den Roboter-Stack; die Simulation wird über einen
 der Simulations-Einstiege gestartet.
 
 Eine Simulation mit einem Roboter samt Stack startet ihr mit:
 
 ```bash
-pixi run -e default ros2 launch bitbots_bringup mujoco_simulation.launch.py vision_debug:=true
+pixi run -e default ros2 launch bitbots_bringup mujoco_simulation.launch.py vision_backend:=schnupper vision_debug:=true
 ```
 
 Für mehrere Roboter ergänzt ihr `num_robots`; für zwei gegnerische Roboter
 verwendet ihr `one_versus_one:=true`. Die Pixi-Aufgaben `sim` und `sim-one`
 verwenden dieselben Voreinstellungen. Mit `teamplayer:=false` kann die Simulation
 separat laufen und der Stack später in der ROS-Domain des jeweiligen Roboters
-über `teamplayer.launch sim:=true` gestartet werden.
+über `teamplayer.launch sim:=true vision_backend:=schnupper` gestartet werden.
 
 Mit `ball_style:=original` und `vision_backend:=original` könnt ihr die bisherige
 Szene und Vision auswählen. Bei `simulator_teamplayer.launch` lässt sich die
