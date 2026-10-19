@@ -14,7 +14,7 @@ DIRECTORY = Path(__file__).resolve().parent
 
 def notebook_functions(name):
     notebook = json.loads((DIRECTORY / name).read_text())
-    namespace = {"cv2": cv2, "np": np}
+    namespace = {"zu_hsv": zu_hsv, "np": np}
     for cell in notebook["cells"]:
         if cell["cell_type"] != "code":
             continue
@@ -73,7 +73,8 @@ def test_histogram_counts_every_pixel():
 def test_rgb_exercises_and_bgr_detector_use_identical_hsv():
     bgr = orange_image()
     rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
-    np.testing.assert_array_equal(zu_hsv(rgb), cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV_FULL))
+    np.testing.assert_array_equal(zu_hsv(rgb), zu_hsv(bgr, bgr=True))
+    np.testing.assert_array_equal(zu_hsv(bgr, bgr=True), cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV_FULL))
 
 
 def test_display_adapter_passes_bgr_to_detector(monkeypatch):

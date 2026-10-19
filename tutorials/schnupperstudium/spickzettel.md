@@ -53,7 +53,7 @@ Hier stehen alle Befehle, die du in `aufgabe.ipynb` und `evaluation.ipynb` brauc
 `detect_balls(image_bgr)` erhält ein BGR-Bild. Im Notebook sind die Übungsbilder
 RGB; `detektor_anzeigen` übernimmt die Umwandlung beim Testen.
 Für dieselben HSV-Bereiche wie in `zu_hsv` verwende
-`cv2.cvtColor(image_bgr, cv2.COLOR_BGR2HSV_FULL)`.
+`zu_hsv(image_bgr, bgr=True)`.
 
 - `return (links, oben, rechts, unten)` liefert genau eine Bounding Box als Tupel.
 - `return None` meldet, dass kein Ball gefunden wurde.

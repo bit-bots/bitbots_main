@@ -20,9 +20,10 @@ def bilder_laden(limit=12):
     return [cv2.cvtColor(record["image_bgr"], cv2.COLOR_BGR2RGB) for record in records]
 
 
-def zu_hsv(bild):
-    """Wandle ein RGB-Bild in die volle Ganzzahl-HSV-Darstellung von OpenCV um."""
-    return cv2.cvtColor(np.asarray(bild, dtype=np.uint8), cv2.COLOR_RGB2HSV_FULL)
+def zu_hsv(bild: np.ndarray, *, bgr: bool = False) -> np.ndarray:
+    """Wandle ein RGB- oder ausdrücklich als BGR markiertes Bild nach HSV um."""
+    conversion = cv2.COLOR_BGR2HSV_FULL if bgr else cv2.COLOR_RGB2HSV_FULL
+    return cv2.cvtColor(np.asarray(bild, dtype=np.uint8), conversion)
 
 
 def bild_anzeigen(bild, titel="", x=None, y=None, box=None, groesse=(8, 4), achsen=True):

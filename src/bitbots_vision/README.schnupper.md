@@ -19,7 +19,10 @@ Einstieg: `detect_balls(image_bgr) -> numpy.ndarray`.
 - Das Notebook liefert inzwischen **ein Box-Tupel oder `None`**. Für diese ROS-Schnittstelle
   beim Übertragen des Funktionskörpers die Rückgaben anpassen: `None` wird zu
   `np.empty((0, 4))`, ein Tupel `box` zu `np.asarray([box], dtype=float)`.
-  `cv2` und `np` sind bereits importiert. Keine Notebook-Variablen oder ROS-Aufrufe
+  Den Notebook-Aufruf `zu_hsv(image_bgr, bgr=True)` durch
+  `cv2.cvtColor(image_bgr, cv2.COLOR_BGR2HSV_FULL)` ersetzen; die Hilfsdatei wird
+  nicht auf dem Roboter benötigt. `cv2` und `np` sind bereits importiert.
+  Keine Notebook-Variablen oder ROS-Aufrufe
   voraussetzen. Das Eingabebild nicht verändern.
 
 Die mitgelieferte Funktion erfüllt diesen Vertrag ohne externe Hilfsfunktionen.

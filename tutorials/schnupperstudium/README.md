@@ -83,7 +83,8 @@ Die Messergebnisse des früheren Konturdetektors gelten nicht für diese Methode
 Die Übungsbilder werden als RGB angezeigt; `zu_hsv` verwendet HSV_FULL.
 Der abschließende `detect_balls` erhält dagegen BGR und liefert ein Box-Tupel oder `None`.
 Die Hilfsfunktion `auswerten` passt dies intern an die unveränderte Mehrbox-Auswertung an.
-Sein Funktionskörper ist eigenständig und verwendet nur `cv2` und `np`.
+Der Funktionskörper verwendet `np` und die Hilfsfunktion `zu_hsv`.
+`zu_hsv(image_bgr, bgr=True)` berücksichtigt die BGR-Kanalreihenfolge.
 Die fertige Lösung behandelt leere Masken und stoppt die Suche an allen Bildrändern.
 
 Die HSV-Abbildung liegt lokal unter `abbildungen/`; Urheber und Lizenz sind dort
