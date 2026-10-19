@@ -5,13 +5,15 @@
 # Settings for demos outside of a proper field.
 # The field is huge, so field based features like the goal obstacles
 # in the path planning are far away and don't interfere with the demo.
+# FIXME: Making the field huge causes a far too large costmap
+# FIXME:  find a better solution. 20x20 seems like a decent compromise for now.
 
 parameter_blackboard:
   ros__parameters:
     field:
       size:
-        x: 1000.0
-        y: 1000.0
+        x: 20.0
+        y: 20.0
         padding: 0.1   # Padding (area outside of the lines) of the field in all directions
       markings:
         penalty_area:

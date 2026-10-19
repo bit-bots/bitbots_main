@@ -6,9 +6,10 @@ if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
 endif()
 
-# Build with release optimizations and debug symbols by default
+# Build with -O2 optimizations and debug symbols by default, without disabling
+# assertions (unlike CMake's built-in RelWithDebInfo, which defines NDEBUG).
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE RelWithDebug)
+  add_compile_options(-O2 -g)
 endif()
 
 find_package(ament_cmake REQUIRED)
@@ -120,5 +121,21 @@ target_link_libraries(localization "${cpp_typesupport_target}"
 install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 install(TARGETS localization DESTINATION lib/${PROJECT_NAME})
+
+if(BUILD_TESTING)
+  find_package(ament_cmake_gtest REQUIRED)
+
+  ament_add_gtest(test_map_validation test/test_map_validation.cpp src/map.cpp
+                  src/RobotState.cpp src/tools.cpp)
+  ament_target_dependencies(
+    test_map_validation
+    ament_index_cpp
+    Boost
+    nav_msgs
+    OpenCV
+    particle_filter
+    rclcpp
+    tf2)
+endif()
 
 ament_package()

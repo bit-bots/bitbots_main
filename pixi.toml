@@ -37,7 +37,11 @@ description = "Cleans build and install files for all ROS 2 packages or a specif
 [tasks.test]
 description = "Runs tests for all ROS 2 packages. Pass additional colcon args (e.g. --packages-select)"
 # Skipping packages in the src/lib directory as they are not "our" responsibility. They should be tested separately in their own repositories.
-cmd = "colcon test --parallel-workers 1 --event-handlers console_direct+ --return-code-on-test-failure --packages-skip audio_common domain_bridge humanoid_base_footprint ipm_image_node soccer_ipm zed_wrapper zed_components zed_msgs zed_ros2 "
+cmd = "colcon test --parallel-workers 1 --event-handlers console_direct+ --return-code-on-test-failure --packages-skip audio_common domain_bridge humanoid_base_footprint ipm_image_node soccer_ipm zed_wrapper zed_components zed_msgs zed_ros2 launch launch_pytest launch_testing"
+
+[tasks.sit]
+description = "Sits the robot down."
+cmd = "ros2 service call /sit std_srvs/srv/Empty"
 
 [dependencies]
 # Base dependencies
@@ -61,7 +65,7 @@ eigen = ">=3.4.0,<4"
 fabric = ">=3.2.2,<4"
 flask = ">=3.1.2,<4"
 gitpython = ">=3.1.45,<4"
-git-subrepo = ">=0.4.9,<0.5"
+git-include = ">=0.1.4,<0.2"
 invoke = ">=2.2.1,<3"
 ipython = ">=9.7.0,<10"
 jaxtyping = ">=0.3.2,<0.4"
@@ -78,6 +82,7 @@ ninja = ">=1.13.2,<2"
 numpy = ">=1.26.4,<2"
 nvidia-ml-py = ">=13.595.45,<14"
 opencv = ">=4.11.0,<5"
+openssh = ">=10.5p1,<11"
 paramiko =   ">=4.0.0,<5"
 pkg-config = ">=0.29.2,<0.30"
 playsound = ">=1.3.0,<2"
@@ -152,6 +157,7 @@ ros-jazzy-rosidl-default-runtime = ">=1.6.0,<2"
 ros-jazzy-rosidl-runtime-c = ">=4.6.7,<5"
 ros-jazzy-rqt-gui = ">=1.6.0,<2"
 ros-jazzy-rqt-gui-py = ">=1.6.0,<2"
+ros-jazzy-rqt-tf-tree = ">=1.0.5,<2"
 ros-jazzy-sensor-msgs = ">=5.3.6,<6"
 ros-jazzy-std-msgs = ">=5.3.6,<6"
 ros-jazzy-std-srvs = ">=5.3.6,<6"

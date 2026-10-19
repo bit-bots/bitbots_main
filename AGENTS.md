@@ -42,6 +42,7 @@ package's manifests and nearby code before choosing tools or patterns.
 - When working on code comments or documentation, do not write down concrete values,
   as they might change later, thus making the documentation outdated.
   Instead, describe the expected behavior or refer to the relevant code sections.
+- Use quaternion helper functions instead of manual math operations.
 
 ## Development Environment
 
@@ -109,6 +110,8 @@ commands may use incompatible installations or incomplete environment state.
 - Reuse existing launch patterns and substitutions. Keep launch argument,
   parameter, topic, and namespace names consistent across launch files, config
   files, and node declarations.
+- When editing or creating launch files, consider whether there is a need for passing
+  through the `use_sim_time` parameter. Most packages should support simulation time.
 
 ## Configuration
 
@@ -157,7 +160,7 @@ commands may use incompatible installations or incomplete environment state.
 ## Repository Boundaries
 
 - Directories under `src/lib` with a `.gitrepo` file are imported using
-  git-subrepo. Treat them as separately maintained upstream projects.
+  git-include. Treat them as separately maintained upstream projects.
 - Avoid modifying imported libraries for a repository-local workaround unless
   the task explicitly requires an upstream library change.
 - When an imported library must change, keep the change focused, run that

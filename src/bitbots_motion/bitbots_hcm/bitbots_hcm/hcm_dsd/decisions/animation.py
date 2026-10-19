@@ -57,3 +57,15 @@ class PlayingExternalAnimation(AbstractHCMDecisionElement):
 
     def get_reevaluate(self):
         return True
+
+
+class ForceSitting(AbstractHCMDecisionElement):
+    def perform(self, reevaluate=True):
+        self.publish_debug_data("Sitting", self.blackboard.sitting)
+        if self.blackboard.sitting:
+            return "SITTING"
+        else:
+            return "NORMAL"
+
+    def get_reevaluate(self):
+        return True
