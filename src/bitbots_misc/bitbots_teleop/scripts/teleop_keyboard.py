@@ -40,8 +40,9 @@ a/d: left/right         i/,: up/down
 w/s: forward/back       j/l: left/right
                         u/o/m/.: combinations
 
-Controls increase / decrease with multiple presses.
-SHIFT increases with factor 10
+Controls:
+Hold keys to walk (stops on release).
+SHIFT increases speed.
 
 Head Modes:
 0: Track the last known ball position
@@ -79,12 +80,12 @@ move_bindings = {
     "d": (0, -1, 0),
     "q": (0, 0, 1),
     "e": (0, 0, -1),
-    "W": (10, 0, 0),
-    "S": (-10, 0, 0),
-    "A": (0, 10, 0),
-    "D": (0, -10, 0),
-    "Q": (0, 0, 10),
-    "E": (0, 0, -10),
+    "W": (2, 0, 0),
+    "S": (-2, 0, 0),
+    "A": (0, 2, 0),
+    "D": (0, -2, 0),
+    "Q": (0, 0, 2),
+    "E": (0, 0, -2),
 }
 head_bindings = {
     "u": (1, 1),
@@ -120,20 +121,26 @@ class TeleopKeyboard(Node):
 
         self.settings = termios.tcgetattr(sys.stdin)
 
+        self.declare_parameter("key_timeout", 0.5)
+        self.declare_parameter("speed_x", 0.5)
+        self.declare_parameter("speed_y", 0.2)
+        self.declare_parameter("speed_turn", 0.5)
+
+        self.key_timeout = self.get_parameter("key_timeout").get_parameter_value().double_value
+        self.x_speed = self.get_parameter("speed_x").get_parameter_value().double_value
+        self.y_speed = self.get_parameter("speed_y").get_parameter_value().double_value
+        self.turn_speed = self.get_parameter("speed_turn").get_parameter_value().double_value
+
         # Walking Part
         self.pub = self.create_publisher(Twist, "cmd_vel", 1)
 
-        self.head_yaw_pos = 0
-        self.head_pitch_pos = 0
+        self.head_yaw_pos = 0.0
+        self.head_pitch_pos = 0.0
 
-        self.x_speed_step = 0.01
-        self.y_speed_step = 0.01
-        self.turn_speed_step = 0.01
-
-        self.x = 0
-        self.y = 0
-        self.a_x = -1
-        self.th = 0
+        self.x = 0.0
+        self.y = 0.0
+        self.a_x = -1.0
+        self.th = 0.0
         self.status = 0
 
         self.push_force_x = 0.0
@@ -179,11 +186,18 @@ class TeleopKeyboard(Node):
 
         print(msg)
 
-    def get_key(self):
+    def get_key(self, timeout=None):
+        if timeout is None:
+            timeout = self.key_timeout
         tty.setraw(sys.stdin.fileno())
-        select.select([sys.stdin], [], [], 0)
-        key = sys.stdin.read(1)
-        termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.settings)
+        try:
+            rlist, _, _ = select.select([sys.stdin], [], [], timeout)
+            if rlist:
+                key = sys.stdin.read(1)
+            else:
+                key = ""
+        finally:
+            termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.settings)
         return key
 
     def get_walkready(self):
@@ -207,24 +221,20 @@ class TeleopKeyboard(Node):
         try:
             while True:
                 info: str = ""
-                key = self.get_key()
+                key = self.get_key(self.key_timeout)
                 if key in move_bindings.keys():
-                    self.x += move_bindings[key][0] * self.x_speed_step
-
-                    self.x = round(self.x, 2)
-                    self.y += move_bindings[key][1] * self.y_speed_step
-                    self.y = round(self.y, 2)
-                    self.th += move_bindings[key][2] * self.turn_speed_step
-                    self.th = round(self.th, 2)
-                    self.a_x = 0
+                    self.x = round(move_bindings[key][0] * self.x_speed, 2)
+                    self.y = round(move_bindings[key][1] * self.y_speed, 2)
+                    self.th = round(move_bindings[key][2] * self.turn_speed, 2)
+                    self.a_x = 0.0
                 elif key in head_bindings.keys():
                     self.head_msg.positions[0] = self.head_yaw_pos + head_bindings[key][1] * self.head_yaw_step
                     self.head_msg.positions[1] = self.head_pitch_pos + head_bindings[key][0] * self.head_pitch_step
                     self.head_pub.publish(self.head_msg)
                 elif key == "k" or key == "K":
                     # put head back in init
-                    self.head_msg.positions[0] = 0
-                    self.head_msg.positions[1] = 0
+                    self.head_msg.positions[0] = 0.0
+                    self.head_msg.positions[1] = 0.0
                     self.head_pub.publish(self.head_msg)
                 elif key == "0":
                     # Track the last known ball position
@@ -276,17 +286,15 @@ class TeleopKeyboard(Node):
                         pass
                 elif key == "f":
                     # complete walk stop
-                    self.x = 0
-                    self.y = 0
-                    self.z = 0
-                    self.a_x = -1
-                    self.th = 0
+                    self.x = 0.0
+                    self.y = 0.0
+                    self.a_x = -1.0
+                    self.th = 0.0
                 elif key == " ":
-                    self.x = 0
-                    self.y = 0
-                    self.z = 0
-                    self.a_x = 0
-                    self.th = 0
+                    self.x = 0.0
+                    self.y = 0.0
+                    self.a_x = 0.0
+                    self.th = 0.0
                     self.push_force_x = 0.0
                     self.push_force_y = 0.0
                 elif key == "\x1b":  # ESC
@@ -318,14 +326,21 @@ class TeleopKeyboard(Node):
                 elif key == "'":
                     self.push_force_y -= 10
                 elif key in ("g", "G"):
-                    self.x = 0
-                    self.y = 0
-                    self.z = 0
-                    self.a_x = 0
-                    self.th = 0
+                    self.x = 0.0
+                    self.y = 0.0
+                    self.a_x = 0.0
+                    self.th = 0.0
                 elif key == "\x03":  # CTRL-C
-                    self.a_x = -1
+                    self.a_x = -1.0
                     break
+                elif key == "":
+                    # Timeout reached without any key press
+                    if self.x == 0.0 and self.y == 0.0 and self.th == 0.0 and self.a_x == -1.0:
+                        continue
+                    self.x = 0.0
+                    self.y = 0.0
+                    self.th = 0.0
+                    self.a_x = -1.0
                 else:
                     info = f"unknown key: '{key}'"
 
