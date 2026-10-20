@@ -14,7 +14,7 @@ setup(
         ("share/" + package_name + "/config", glob.glob("config/*.yaml")),
         ("share/" + package_name + "/launch", glob.glob("launch/*.launch")),
     ],
-    scripts=["scripts/teleop_keyboard.py", "scripts/kick_teleop.py"],
+    scripts=["scripts/teleop_keyboard.py", "scripts/teleop_gui.py", "scripts/kick_teleop.py"],
     install_requires=[
         "launch",
         "setuptools",
@@ -26,6 +26,7 @@ setup(
     entry_points={
         "console_scripts": [
             "joy_node = bitbots_teleop.joy_node:main",
+            "teleop_gui = bitbots_teleop.teleop_gui:main",
         ],
     },
 )
