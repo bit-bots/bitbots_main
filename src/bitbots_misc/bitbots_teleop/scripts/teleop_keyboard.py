@@ -3,6 +3,7 @@
 # This script was based on the teleop_twist_keyboard package
 # original code can be found at https://github.com/ros-teleop/teleop_twist_keyboard
 import os
+import re
 import select
 import sys
 import termios
@@ -119,7 +120,18 @@ class TeleopKeyboard(Node):
         # create node
         super().__init__("TeleopKeyboard")
 
-        self.settings = termios.tcgetattr(sys.stdin)
+        self.kitty_supported = False
+        self._key_buffer = []
+        self.pressed_keys: set[str] = set()
+
+        if sys.stdin.isatty():
+            self.settings = termios.tcgetattr(sys.stdin)
+            self.kitty_supported = self.check_kitty_support()
+            if self.kitty_supported:
+                sys.stdout.write("\x1b[>3u")
+                sys.stdout.flush()
+        else:
+            self.settings = None
 
         self.declare_parameter("key_timeout", 0.5)
         self.declare_parameter("speed_x", 0.5)
@@ -184,24 +196,147 @@ class TeleopKeyboard(Node):
         # if not self.kick_client.wait_for_server(timeout_sec=0.1):
         #    self.get_logger().error("Kick action server not available after waiting 5 seconds")
 
+        kitty_status_str = (
+            "Kitty keyboard protocol: Available (key-up detection enabled)"
+            if self.kitty_supported
+            else "Kitty keyboard protocol: Not available (using timeout fallback)"
+        )
+        self.get_logger().info(kitty_status_str)
         print(msg)
+        print(f"[{kitty_status_str}]\n")
 
-    def get_key(self, timeout=None):
-        if timeout is None:
-            timeout = self.key_timeout
+    def check_kitty_support(self) -> bool:
+        if self.settings is None:
+            return False
         tty.setraw(sys.stdin.fileno())
         try:
-            rlist, _, _ = select.select([sys.stdin], [], [], timeout)
+            sys.stdout.write("\x1b[?u")
+            sys.stdout.flush()
+            rlist, _, _ = select.select([sys.stdin.fileno()], [], [], 0.2)
             if rlist:
-                key = sys.stdin.read(1)
-            else:
-                key = ""
+                raw_bytes = os.read(sys.stdin.fileno(), 1024)
+                while True:
+                    rlist, _, _ = select.select([sys.stdin.fileno()], [], [], 0.02)
+                    if not rlist:
+                        break
+                    raw_bytes += os.read(sys.stdin.fileno(), 1024)
+                resp = raw_bytes.decode("utf-8", errors="replace")
+                if bool(re.search(r"\x1b\[\?[\d;:]*u", resp)):
+                    return True
+            return False
         finally:
             termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.settings)
-        return key
+
+    def parse_key(self, key_str: str) -> tuple[str, int]:
+        """
+        Parses raw key string into (char, event_type):
+        event_type: 1 = press, 2 = repeat, 3 = release.
+        For legacy/plain characters, event_type is 1.
+        """
+        if not key_str:
+            return "", 0
+        if key_str.startswith("\x1b[") and key_str.endswith("u") and not key_str.startswith("\x1b[?"):
+            content = key_str[2:-1]
+            parts = content.split(";")
+            codepoint_part = parts[0]
+            codepoint_sub = codepoint_part.split(":")
+            codepoint = int(codepoint_sub[0]) if codepoint_sub[0] else 0
+            shifted_codepoint = int(codepoint_sub[1]) if len(codepoint_sub) > 1 and codepoint_sub[1] else None
+
+            modifiers = 1
+            event_type = 1
+            if len(parts) > 1:
+                mod_sub = parts[1].split(":")
+                if mod_sub[0]:
+                    modifiers = int(mod_sub[0])
+                if len(mod_sub) > 1 and mod_sub[1]:
+                    event_type = int(mod_sub[1])
+
+            is_shift = bool((modifiers - 1) & 1)
+            is_ctrl = bool((modifiers - 1) & 4)
+
+            if codepoint == 27:
+                char = "\x1b"
+            elif codepoint == 32:
+                char = " "
+            elif codepoint == 13:
+                char = "\r"
+            elif codepoint == 9:
+                char = "\t"
+            elif codepoint == 127:
+                char = "\x7f"
+            elif is_ctrl and (codepoint == 99 or codepoint == 67):
+                char = "\x03"
+            elif codepoint:
+                if shifted_codepoint is not None and is_shift:
+                    char = chr(shifted_codepoint)
+                else:
+                    base_char = chr(codepoint)
+                    char = base_char.upper() if is_shift and base_char.isalpha() else base_char
+            else:
+                char = ""
+
+            return char, event_type
+
+        return key_str, 1
+
+    def get_key(self, timeout=None):
+        if self.settings is None:
+            return ""
+        if self._key_buffer:
+            return self._key_buffer.pop(0)
+
+        if timeout is None and not self.kitty_supported:
+            timeout = self.key_timeout
+
+        tty.setraw(sys.stdin.fileno())
+        try:
+            select_args = [[sys.stdin.fileno()], [], []]
+            if timeout is not None:
+                rlist, _, _ = select.select(*select_args, timeout)
+            else:
+                rlist, _, _ = select.select(*select_args)
+            if not rlist:
+                return ""
+            raw_bytes = os.read(sys.stdin.fileno(), 1024)
+            if not raw_bytes:
+                return ""
+            text = raw_bytes.decode("utf-8", errors="replace")
+            # If text ends with an incomplete escape sequence, wait briefly for remaining bytes
+            if text.startswith("\x1b") and not (
+                text.endswith("u") or text.endswith("~") or (len(text) > 1 and text[-1].isalpha())
+            ):
+                rlist, _, _ = select.select([sys.stdin.fileno()], [], [], 0.02)
+                if rlist:
+                    extra_bytes = os.read(sys.stdin.fileno(), 1024)
+                    text += extra_bytes.decode("utf-8", errors="replace")
+
+            pattern = re.compile(r"(\x1b\[[0-9:;?<>=]*[a-zA-Z~]|\x1bO[a-zA-Z]|\x1b|[\s\S])")
+            tokens = pattern.findall(text)
+            if not tokens:
+                return ""
+            self._key_buffer.extend(tokens)
+            return self._key_buffer.pop(0)
+        finally:
+            termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.settings)
 
     def get_walkready(self):
         self.animation_client.send_goal_async(PlayAnimation.Goal(animation="walkready"))
+
+    def _update_walk_velocities(self):
+        if self.pressed_keys:
+            vx = sum(move_bindings[k][0] for k in self.pressed_keys)
+            vy = sum(move_bindings[k][1] for k in self.pressed_keys)
+            vth = sum(move_bindings[k][2] for k in self.pressed_keys)
+            self.x = round(vx * self.x_speed, 2)
+            self.y = round(vy * self.y_speed, 2)
+            self.th = round(vth * self.turn_speed, 2)
+            self.a_x = 0.0
+        else:
+            self.x = 0.0
+            self.y = 0.0
+            self.th = 0.0
+            self.a_x = -1.0
 
     # def generate_kick_goal(self, x, y, direction):
     #     kick_goal = Kick.Goal()
@@ -221,12 +356,34 @@ class TeleopKeyboard(Node):
         try:
             while True:
                 info: str = ""
-                key = self.get_key(self.key_timeout)
-                if key in move_bindings.keys():
-                    self.x = round(move_bindings[key][0] * self.x_speed, 2)
-                    self.y = round(move_bindings[key][1] * self.y_speed, 2)
-                    self.th = round(move_bindings[key][2] * self.turn_speed, 2)
-                    self.a_x = 0.0
+                raw_key = self.get_key()
+                key, event_type = self.parse_key(raw_key)
+
+                if event_type == 3:
+                    # Key release event
+                    if key in move_bindings.keys():
+                        if self.kitty_supported:
+                            self.pressed_keys.discard(key.lower())
+                            self.pressed_keys.discard(key.upper())
+                            self._update_walk_velocities()
+                        else:
+                            self.x = 0.0
+                            self.y = 0.0
+                            self.th = 0.0
+                            self.a_x = -1.0
+                    else:
+                        continue
+                elif key in move_bindings.keys():
+                    if self.kitty_supported:
+                        self.pressed_keys.discard(key.lower())
+                        self.pressed_keys.discard(key.upper())
+                        self.pressed_keys.add(key)
+                        self._update_walk_velocities()
+                    else:
+                        self.x = round(move_bindings[key][0] * self.x_speed, 2)
+                        self.y = round(move_bindings[key][1] * self.y_speed, 2)
+                        self.th = round(move_bindings[key][2] * self.turn_speed, 2)
+                        self.a_x = 0.0
                 elif key in head_bindings.keys():
                     self.head_msg.positions[0] = self.head_yaw_pos + head_bindings[key][1] * self.head_yaw_step
                     self.head_msg.positions[1] = self.head_pitch_pos + head_bindings[key][0] * self.head_pitch_step
@@ -286,6 +443,7 @@ class TeleopKeyboard(Node):
                         pass
                 elif key == "f":
                     # complete walk stop
+                    self.pressed_keys.clear()
                     self.x = 0.0
                     self.y = 0.0
                     self.a_x = -1.0
@@ -326,15 +484,19 @@ class TeleopKeyboard(Node):
                 elif key == "'":
                     self.push_force_y -= 10
                 elif key in ("g", "G"):
+                    self.pressed_keys.clear()
                     self.x = 0.0
                     self.y = 0.0
                     self.a_x = 0.0
                     self.th = 0.0
                 elif key == "\x03":  # CTRL-C
+                    self.pressed_keys.clear()
                     self.a_x = -1.0
                     break
                 elif key == "":
-                    # Timeout reached without any key press
+                    if self.kitty_supported:
+                        continue
+                    # Timeout reached without any key press (legacy fallback)
                     if self.x == 0.0 and self.y == 0.0 and self.th == 0.0 and self.a_x == -1.0:
                         continue
                     self.x = 0.0
@@ -343,6 +505,7 @@ class TeleopKeyboard(Node):
                     self.a_x = -1.0
                 else:
                     info = f"unknown key: '{key}'"
+                info = str(self.pressed_keys)
 
                 self.head_mode_pub.publish(self.head_mode_msg)
 
@@ -350,6 +513,7 @@ class TeleopKeyboard(Node):
                 twist.linear = Vector3(x=float(self.x), y=float(self.y), z=0.0)
                 twist.angular = Vector3(x=float(self.a_x), y=0.0, z=float(self.th))
                 self.pub.publish(twist)
+                key_display = f"{key} (released)" if event_type == 3 else key
                 state_str = (
                     f"x:    {self.x}     \n"
                     f"y:    {self.y}     \n"
@@ -357,7 +521,7 @@ class TeleopKeyboard(Node):
                     f"head mode: {self.head_mode_msg.head_mode}     \n"
                     f"push force x (+forward/-back): {self.push_force_x}     \n"
                     f"push force y (+left/-right):   {self.push_force_y}     \n"
-                    f"last key: '{key}'    {info + ' ' * 40 if info else ' ' * 40}"
+                    f"last key: '{key_display}'    {info + ' ' * 40 if info else ' ' * 40}"
                 )
 
                 # move cursor up to overwrite previous state output
@@ -374,7 +538,12 @@ class TeleopKeyboard(Node):
             twist.angular.x = -1.0
             self.pub.publish(twist)
 
-            termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.settings)
+            if self.kitty_supported:
+                sys.stdout.write("\x1b[<u")
+                sys.stdout.flush()
+
+            if self.settings is not None:
+                termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.settings)
 
 
 if __name__ == "__main__":
