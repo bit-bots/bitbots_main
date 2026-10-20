@@ -1,4 +1,4 @@
-# bitbots_rust_nav
+# bitbots_global_planner
 
 A best-effort A*-on-visibility-graph implementation for path planning in obstacles maps where obstacles and the robot itself are assumed to be round.
 
