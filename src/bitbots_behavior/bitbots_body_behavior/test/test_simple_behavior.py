@@ -29,19 +29,32 @@ class DummyLogger:
         self.errors.append(message)
 
 
+class DummyDuration:
+    def __init__(self, nanoseconds: int = 1_000_000_000):
+        self.nanoseconds = nanoseconds
+
+
 class DummyClockNow:
+    def __init__(self, nanoseconds: int = 1_000_000_000):
+        self.nanoseconds = nanoseconds
+
     @staticmethod
     def to_msg():
         return None
+
+    def __sub__(self, other):
+        other_ns = getattr(other, "nanoseconds", 0)
+        return DummyDuration(self.nanoseconds - other_ns)
 
 
 class DummyClock:
     def __init__(self):
         self.slept_durations = []
+        self._time_ns = 1_000_000_000
 
-    @staticmethod
-    def now():
-        return DummyClockNow()
+    def now(self):
+        self._time_ns += 300_000_000
+        return DummyClockNow(self._time_ns)
 
     def sleep_for(self, duration):
         self.slept_durations.append(duration)
@@ -132,12 +145,49 @@ class DummyWorldModel:
         pass
 
 
+class DummyGamestate:
+    def __init__(self):
+        self.main_state = 3  # GameState.STATE_PLAYING
+        self.stopped = False
+        self.has_kick_val = True
+        self.seconds_remaining = 500.0
+        self.secondary_seconds_remaining = 30.0
+        self.own_score = 2
+        self.rival_score = 1
+        self.penalized = False
+
+    def get_main_state(self):
+        return self.main_state
+
+    def is_stopped(self):
+        return self.stopped
+
+    def has_kick(self):
+        return self.has_kick_val
+
+    def get_seconds_remaining(self):
+        return self.seconds_remaining
+
+    def get_secondary_seconds_remaining(self):
+        return self.secondary_seconds_remaining
+
+    def get_own_score(self):
+        return self.own_score
+
+    def get_rival_score(self):
+        return self.rival_score
+
+    def get_is_penalized(self):
+        return self.penalized
+
+
 class DummyBlackboard:
     def __init__(self):
         self.world_model = DummyWorldModel()
         self.pathfinding = DummyPathfinding()
         self.kick = DummyKick()
         self.misc = DummyMisc()
+        self.gamestate = DummyGamestate()
 
 
 class DummyTeamData:
@@ -165,6 +215,7 @@ class DummyBlackboardForBehavior:
         self.world_model = DummyWorldModel()
         self.pathfinding = DummyPathfindingWithTimer()
         self.team_data = DummyTeamData()
+        self.gamestate = DummyGamestate()
         self.config = {"time_to_ball_divider": 2}
         self.cache_cleared = 0
 
@@ -222,6 +273,7 @@ def test_simple_behavior_api_forwards_to_runtime(monkeypatch):
     assert ball_pose.x == 4.0
     assert ball_pose.y == 5.0
 
+    simple_behavior.sleep(0.1)
     simple_behavior.sleep(0.5)
     clock = runtime._node.get_clock()
     assert [duration.nanoseconds for duration in clock.slept_durations] == [100_000_000, 500_000_000]
@@ -295,6 +347,51 @@ def test_set_goal_pose_from_pose_forwards_coordinates(monkeypatch):
     goal = runtime._blackboard.pathfinding.last_goal
     assert goal.pose.position.x == 1.5
     assert goal.pose.position.y == -0.5
+
+
+def test_game_state_queries(monkeypatch):
+    runtime = simple_behavior.SimpleBehaviorRuntime(DummyNode(), DummyBlackboard())
+    monkeypatch.setattr(simple_behavior, "_runtime", runtime)
+
+    # Defaults from DummyGamestate
+    assert simple_behavior.get_game_state() == simple_behavior.GAME_STATE_PLAYING
+    assert simple_behavior.is_game_state(simple_behavior.GAME_STATE_PLAYING)
+    assert not simple_behavior.is_game_state(simple_behavior.GAME_STATE_READY)
+    assert not simple_behavior.is_game_stopped()
+    assert not simple_behavior.is_stopped()
+    assert simple_behavior.has_kick()
+    assert simple_behavior.get_seconds_remaining() == 500.0
+    assert simple_behavior.get_secondary_seconds_remaining() == 30.0
+    assert simple_behavior.get_own_score() == 2
+    assert simple_behavior.get_rival_score() == 1
+    assert not simple_behavior.is_penalized()
+
+    # Change gamestate fields
+    runtime._blackboard.gamestate.main_state = 1  # READY
+    assert simple_behavior.get_game_state() == simple_behavior.GAME_STATE_READY
+    assert simple_behavior.is_game_state(simple_behavior.GAME_STATE_READY)
+
+    runtime._blackboard.gamestate.main_state = 2  # SET
+    assert simple_behavior.get_game_state() == simple_behavior.GAME_STATE_SET
+
+    runtime._blackboard.gamestate.main_state = 0  # INITIAL
+    assert simple_behavior.get_game_state() == simple_behavior.GAME_STATE_INITIAL
+
+    runtime._blackboard.gamestate.main_state = 4  # FINISHED
+    assert simple_behavior.get_game_state() == simple_behavior.GAME_STATE_FINISHED
+
+    runtime._blackboard.gamestate.main_state = 99  # Unknown
+    assert simple_behavior.get_game_state() == "UNKNOWN"
+
+    runtime._blackboard.gamestate.stopped = True
+    assert simple_behavior.is_game_stopped()
+    assert simple_behavior.is_stopped()
+
+    runtime._blackboard.gamestate.has_kick_val = False
+    assert not simple_behavior.has_kick()
+
+    runtime._blackboard.gamestate.penalized = True
+    assert simple_behavior.is_penalized()
 
 
 def test_simple_behavior_requires_runtime(monkeypatch):

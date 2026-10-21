@@ -100,12 +100,12 @@ The Blockly page's default run endpoint is set to ``/run`` on that host/port.
 
 The toolbox separates the pupil-facing operations by purpose. Robot commands
 are grouped under movement, ball actions, and head control; observations are
-under sensing; and pose construction and calculations are under poses and
-field. General program flow, control, logic, math, variables, and output have
-their own categories. Less commonly needed loop controls are kept under
-advanced. Pose blocks use typed connections, and the dedicated ball-position
-known block can guard access to a ball pose when the ball is not currently
-visible.
+under sensing; game controller status is under game state; and pose construction
+and calculations are under poses and field. General program flow, control,
+logic, math, variables, and output have their own categories. Less commonly
+needed loop controls are kept under advanced. Pose blocks use typed
+connections, and the dedicated ball-position known block can guard access to a
+ball pose when the ball is not currently visible.
 
 Practical notes:
 
@@ -151,6 +151,16 @@ Available functions
 - ``stop()``
 - ``get_current_pose()``
 - ``get_ball_pose()``
+- ``get_game_state()``
+- ``is_game_state(state)``
+- ``is_game_stopped()``
+- ``is_stopped()``
+- ``has_kick()``
+- ``get_seconds_remaining()``
+- ``get_secondary_seconds_remaining()``
+- ``get_own_score()``
+- ``get_rival_score()``
+- ``is_penalized()``
 - ``make_pose(x, y)``
 - ``pose_distance(first, second)``
 - ``pose_add(first, second)``

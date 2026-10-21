@@ -23,6 +23,7 @@
   <depend>rosgraph_msgs</depend>
   <depend>bitbots_msgs</depend>
   <depend>bitbots_utils</depend>
+  <depend>game_controller_hsl_interfaces</depend>
   <depend>geometry_msgs</depend>
   <depend>nav_msgs</depend>
   <depend>tf2_ros</depend>

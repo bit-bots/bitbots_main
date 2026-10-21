@@ -3,6 +3,7 @@ import math
 from typing import NamedTuple
 
 from bitbots_utils.transforms import quat_from_yaw
+from game_controller_hsl_interfaces.msg import GameState
 from geometry_msgs.msg import PoseStamped
 from rclpy.duration import Duration
 
@@ -22,6 +23,20 @@ _HEAD_MODE_LOOKUP = {
     HEAD_MODE_DONT_MOVE: HeadMode.DONT_MOVE,
     HEAD_MODE_SEARCH_BALL_PENALTY: HeadMode.SEARCH_BALL_PENALTY,
     HEAD_MODE_SEARCH_FRONT: HeadMode.SEARCH_FRONT,
+}
+
+GAME_STATE_INITIAL = "INITIAL"
+GAME_STATE_READY = "READY"
+GAME_STATE_SET = "SET"
+GAME_STATE_PLAYING = "PLAYING"
+GAME_STATE_FINISHED = "FINISHED"
+
+_GAME_STATE_LOOKUP = {
+    GameState.STATE_INITIAL: GAME_STATE_INITIAL,
+    GameState.STATE_READY: GAME_STATE_READY,
+    GameState.STATE_SET: GAME_STATE_SET,
+    GameState.STATE_PLAYING: GAME_STATE_PLAYING,
+    GameState.STATE_FINISHED: GAME_STATE_FINISHED,
 }
 
 
@@ -108,6 +123,46 @@ class SimpleBehaviorRuntime:
             return None
         return BallPose(float(ball_pose[0]), float(ball_pose[1]))
 
+    def get_game_state(self) -> str:
+        """Get the current main game state as a string (e.g. 'INITIAL', 'READY', 'SET', 'PLAYING', 'FINISHED')."""
+        return _GAME_STATE_LOOKUP.get(self._blackboard.gamestate.get_main_state(), "UNKNOWN")
+
+    def is_game_state(self, state: str) -> bool:
+        """Check if the current game state matches the given state name."""
+        return self.get_game_state() == state
+
+    def is_game_stopped(self) -> bool:
+        """Check if the game is currently stopped by the game controller."""
+        return self._blackboard.gamestate.is_stopped()
+
+    def is_stopped(self) -> bool:
+        """Check if the game is currently stopped by the game controller."""
+        return self.is_game_stopped()
+
+    def has_kick(self) -> bool:
+        """Check if our team currently has the kickoff or free kick."""
+        return self._blackboard.gamestate.has_kick()
+
+    def get_seconds_remaining(self) -> float:
+        """Get the remaining seconds of the current game half."""
+        return self._blackboard.gamestate.get_seconds_remaining()
+
+    def get_secondary_seconds_remaining(self) -> float:
+        """Get the remaining secondary seconds (e.g. for kickoff or set play)."""
+        return self._blackboard.gamestate.get_secondary_seconds_remaining()
+
+    def get_own_score(self) -> int:
+        """Get our team's current score."""
+        return self._blackboard.gamestate.get_own_score()
+
+    def get_rival_score(self) -> int:
+        """Get the opposing team's current score."""
+        return self._blackboard.gamestate.get_rival_score()
+
+    def is_penalized(self) -> bool:
+        """Check if this robot is currently penalized."""
+        return self._blackboard.gamestate.get_is_penalized()
+
     def print(self, *args, sep=" ", end="\n"):
         self._node.get_logger().info(sep.join(map(str, args)))
 
@@ -167,6 +222,56 @@ def get_ball_pose() -> BallPose | None:
     return _require_runtime().get_ball_pose()
 
 
+def get_game_state() -> str:
+    """Get the current main game state as a string (e.g. 'INITIAL', 'READY', 'SET', 'PLAYING', 'FINISHED')."""
+    return _require_runtime().get_game_state()
+
+
+def is_game_state(state: str) -> bool:
+    """Check if the current game state matches the given state name."""
+    return _require_runtime().is_game_state(state)
+
+
+def is_game_stopped() -> bool:
+    """Check if the game is currently stopped by the game controller."""
+    return _require_runtime().is_game_stopped()
+
+
+def is_stopped() -> bool:
+    """Check if the game is currently stopped by the game controller."""
+    return _require_runtime().is_stopped()
+
+
+def has_kick() -> bool:
+    """Check if our team currently has the kickoff or free kick."""
+    return _require_runtime().has_kick()
+
+
+def get_seconds_remaining() -> float:
+    """Get the remaining seconds of the current game half."""
+    return _require_runtime().get_seconds_remaining()
+
+
+def get_secondary_seconds_remaining() -> float:
+    """Get the remaining secondary seconds (e.g. for kickoff or set play)."""
+    return _require_runtime().get_secondary_seconds_remaining()
+
+
+def get_own_score() -> int:
+    """Get our team's current score."""
+    return _require_runtime().get_own_score()
+
+
+def get_rival_score() -> int:
+    """Get the opposing team's current score."""
+    return _require_runtime().get_rival_score()
+
+
+def is_penalized() -> bool:
+    """Check if this robot is currently penalized."""
+    return _require_runtime().is_penalized()
+
+
 def make_pose(x: float | int, y: float | int) -> BallPose:
     """Create a pose from map-frame coordinates."""
     return BallPose(float(x), float(y))
@@ -220,6 +325,16 @@ __all__ = [
     "stop",
     "get_current_pose",
     "get_ball_pose",
+    "get_game_state",
+    "is_game_state",
+    "is_game_stopped",
+    "is_stopped",
+    "has_kick",
+    "get_seconds_remaining",
+    "get_secondary_seconds_remaining",
+    "get_own_score",
+    "get_rival_score",
+    "is_penalized",
     "make_pose",
     "pose_distance",
     "pose_add",
@@ -232,5 +347,10 @@ __all__ = [
     "HEAD_MODE_DONT_MOVE",
     "HEAD_MODE_SEARCH_BALL_PENALTY",
     "HEAD_MODE_SEARCH_FRONT",
+    "GAME_STATE_INITIAL",
+    "GAME_STATE_READY",
+    "GAME_STATE_SET",
+    "GAME_STATE_PLAYING",
+    "GAME_STATE_FINISHED",
     "print",
 ]

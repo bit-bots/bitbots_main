@@ -69,6 +69,10 @@ def generate_domain_bridge_config(robot_domain: int, output_dir: Path) -> Path:
             "clock": {
                 "type": "rosgraph_msgs/msg/Clock",
             },
+            # Gamestate: main → robot domain
+            "gamestate": {
+                "type": "game_controller_hsl_interfaces/msg/GameState",
+            },
         },
     }
 

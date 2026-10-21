@@ -1,12 +1,11 @@
 import sys
 
+import pytest
+import rclpy
+from bitbots_teleop.teleop_gui import TeleopGUIWindow, TeleopNode
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QKeyEvent
 from PyQt5.QtWidgets import QApplication
-import pytest
-import rclpy
-
-from bitbots_teleop.teleop_gui import TeleopGUIWindow, TeleopNode
 
 
 @pytest.fixture(scope="module")

@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
 
-import os
 import sys
 import threading
 
 import rclpy
 from geometry_msgs.msg import Twist, Vector3
 from livelybot_msg.msg import PowerSwitch
-from PyQt5.QtCore import QPoint, Qt, QTimer
-from PyQt5.QtGui import QColor, QFont, QKeyEvent, QPainter, QPalette
+from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtGui import QKeyEvent
 from PyQt5.QtWidgets import (
     QApplication,
-    QFrame,
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
@@ -408,7 +406,7 @@ class TeleopGUIWindow(QMainWindow):
             self.node.vth = 0.0
             self.node.a_x = -1.0
 
-    def keyPressEvent(self, event: QKeyEvent):
+    def keyPressEvent(self, event: QKeyEvent):  # noqa: N802
         key = event.key()
         self.shift_pressed = bool(event.modifiers() & Qt.ShiftModifier)
 
@@ -495,7 +493,7 @@ class TeleopGUIWindow(QMainWindow):
 
         event.accept()
 
-    def keyReleaseEvent(self, event: QKeyEvent):
+    def keyReleaseEvent(self, event: QKeyEvent):  # noqa: N802
         if event.isAutoRepeat():
             event.accept()
             return
@@ -555,7 +553,7 @@ class TeleopGUIWindow(QMainWindow):
 
         self.status_bar_label.setText(self.last_action_text)
 
-    def closeEvent(self, event):
+    def closeEvent(self, event):  # noqa: N802
         self.node.full_stop()
         self.timer.stop()
         event.accept()

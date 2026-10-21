@@ -6,6 +6,7 @@ from pathlib import Path
 import mujoco
 import numpy as np
 from ament_index_python.packages import get_package_share_directory
+from game_controller_hsl_interfaces.msg import GameState
 from geometry_msgs.msg import PoseStamped
 from mujoco import viewer
 from rclpy.node import Node
@@ -110,6 +111,20 @@ class Simulation(Node):
         self.clock_publisher = self.create_publisher(Clock, "clock", 1)
         self.create_subscription(Float32, "real_time_factor", self.real_time_factor_callback, 1)
 
+        self.gamestate_msg = GameState()
+        self.gamestate_msg.header.stamp = self.time_message
+        self.gamestate_msg.players_per_team = len(self.robots) if len(self.robots) > 0 else 4
+        self.gamestate_msg.competition_type = GameState.COMPETITION_TYPE_SMALL
+        self.gamestate_msg.game_phase = GameState.GAME_PHASE_NORMAL
+        self.gamestate_msg.main_state = GameState.STATE_INITIAL
+        self.gamestate_msg.set_play = GameState.SET_PLAY_NONE
+        self.gamestate_msg.first_half = True
+        self.gamestate_msg.stopped = False
+        self.gamestate_msg.kicking_team = 1
+        self.gamestate_msg.seconds_remaining = 600
+        self.gamestate_msg.secondary_time = 0
+        self.gamestate_publisher = self.create_publisher(GameState, "gamestate", 1)
+
         # The ball is a free-floating body shared by all robots, so its reset lives on the
         # simulation node rather than per-robot. Use a global topic so the teleop keyboard
         # script reaches it regardless of any node namespace.
@@ -127,6 +142,7 @@ class Simulation(Node):
             {"frequency": 4, "handler": lambda: self.publish(lambda robot: robot.publish_imu_event())},
             {"frequency": 4, "handler": lambda: self.publish(lambda robot: robot.publish_ground_truth_event())},
             {"frequency": 32, "handler": lambda: self.publish(lambda robot: robot.publish_camera_event())},
+            {"frequency": 128, "handler": self.publish_gamestate_event},
         ]
 
     def _apply_jersey_overrides(self) -> None:
@@ -264,7 +280,32 @@ class Simulation(Node):
         self._add_field_textures(viewer.scene.server)
         self._add_ball_textures(viewer.scene.server)
         self._add_body_drag(viewer.scene)
+        self._add_gamestate_gui(viewer.scene.server)
         viewer.run()
+
+    def _add_gamestate_gui(self, server) -> None:
+        """Add GameState control buttons to the web viewer GUI."""
+        with server.gui.add_folder("Game State"):
+            btn_ready = server.gui.add_button("Ready")
+            btn_set = server.gui.add_button("Set")
+            btn_playing = server.gui.add_button("Playing")
+            btn_stopped = server.gui.add_button("Stopped")
+
+            @btn_ready.on_click
+            def _(_) -> None:
+                self.set_gamestate(main_state=GameState.STATE_READY, stopped=False)
+
+            @btn_set.on_click
+            def _(_) -> None:
+                self.set_gamestate(main_state=GameState.STATE_SET, stopped=False)
+
+            @btn_playing.on_click
+            def _(_) -> None:
+                self.set_gamestate(main_state=GameState.STATE_PLAYING, stopped=False)
+
+            @btn_stopped.on_click
+            def _(_) -> None:
+                self.set_gamestate(stopped=True)
 
     def _add_field_textures(self, server) -> None:
         """Render textured plane geoms (e.g. the soccer field) as flat images in viser.
@@ -612,6 +653,18 @@ class Simulation(Node):
         clock_msg = Clock()
         clock_msg.clock = self.time_message
         self.clock_publisher.publish(clock_msg)
+
+    def publish_gamestate_event(self) -> None:
+        self.gamestate_msg.header.stamp = self.time_message
+        self.gamestate_publisher.publish(self.gamestate_msg)
+
+    def set_gamestate(self, main_state: int | None = None, stopped: bool | None = None) -> None:
+        if main_state is not None:
+            self.gamestate_msg.main_state = main_state
+        if stopped is not None:
+            self.gamestate_msg.stopped = stopped
+        self.gamestate_msg.header.stamp = self.time_message
+        self.gamestate_publisher.publish(self.gamestate_msg)
 
     def publish(self, executor: Callable[["RobotSimulation"], None]) -> None:
         for robot in self.robots:

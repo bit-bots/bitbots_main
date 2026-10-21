@@ -48,6 +48,24 @@ const SIMPLE_BEHAVIOR_TOOLBOX = {
     },
     {
       kind: "category",
+      name: "Game state",
+      colour: "#1E88E5",
+      contents: [
+        {kind: "block", type: "sb_is_game_state"},
+        {kind: "block", type: "sb_get_game_state"},
+        {kind: "block", type: "sb_game_state_constant"},
+        {kind: "block", type: "sb_is_game_stopped"},
+        // Hidden for now:
+        // {kind: "block", type: "sb_has_kick"},
+        // {kind: "block", type: "sb_get_seconds_remaining"},
+        // {kind: "block", type: "sb_get_secondary_seconds_remaining"},
+        // {kind: "block", type: "sb_get_own_score"},
+        // {kind: "block", type: "sb_get_rival_score"},
+        // {kind: "block", type: "sb_is_penalized"},
+      ],
+    },
+    {
+      kind: "category",
       name: "Poses and field",
       colour: "#D98E2B",
       contents: [
@@ -177,7 +195,7 @@ Blockly.defineBlocksWithJsonArray([
   },
   {
     type: "sb_set_goal_pose_from_pose",
-    message0: "walk to pose %1",
+    message0: "set goal pose from pose %1",
     args0: [{type: "input_value", name: "POSE", check: "Pose"}],
     previousStatement: null,
     nextStatement: null,
@@ -311,6 +329,102 @@ Blockly.defineBlocksWithJsonArray([
     colour: 160,
     tooltip: "Create a pose at a distance and direction from another pose",
   },
+  {
+    type: "sb_get_game_state",
+    message0: "game state",
+    output: "String",
+    colour: 210,
+    tooltip: "Get the current game state ('INITIAL', 'READY', 'SET', 'PLAYING', 'FINISHED')",
+  },
+  {
+    type: "sb_game_state_constant",
+    message0: "game state %1",
+    args0: [
+      {
+        type: "field_dropdown",
+        name: "STATE",
+        options: [
+          ["initial", "GAME_STATE_INITIAL"],
+          ["ready", "GAME_STATE_READY"],
+          ["set", "GAME_STATE_SET"],
+          ["playing", "GAME_STATE_PLAYING"],
+          ["finished", "GAME_STATE_FINISHED"],
+        ],
+      },
+    ],
+    output: "String",
+    colour: 210,
+    tooltip: "Select a game state constant",
+  },
+  {
+    type: "sb_is_game_state",
+    message0: "game state is %1",
+    args0: [
+      {
+        type: "field_dropdown",
+        name: "STATE",
+        options: [
+          ["initial", "GAME_STATE_INITIAL"],
+          ["ready", "GAME_STATE_READY"],
+          ["set", "GAME_STATE_SET"],
+          ["playing", "GAME_STATE_PLAYING"],
+          ["finished", "GAME_STATE_FINISHED"],
+        ],
+      },
+    ],
+    output: "Boolean",
+    colour: 200,
+    tooltip: "Check if the current game state matches the selected state",
+  },
+  {
+    type: "sb_is_game_stopped",
+    message0: "game is stopped",
+    output: "Boolean",
+    colour: 200,
+    tooltip: "Check if the game is currently stopped by the game controller",
+  },
+  {
+    type: "sb_has_kick",
+    message0: "team has kick",
+    output: "Boolean",
+    colour: 200,
+    tooltip: "Check if our team currently has the kickoff or free kick",
+  },
+  {
+    type: "sb_get_seconds_remaining",
+    message0: "game seconds remaining",
+    output: "Number",
+    colour: 210,
+    tooltip: "Get the remaining seconds of the current game half",
+  },
+  {
+    type: "sb_get_secondary_seconds_remaining",
+    message0: "secondary seconds remaining",
+    output: "Number",
+    colour: 210,
+    tooltip: "Get the remaining secondary seconds (e.g. for kickoff or set play)",
+  },
+  {
+    type: "sb_get_own_score",
+    message0: "own score",
+    output: "Number",
+    colour: 210,
+    tooltip: "Get our team's current score",
+  },
+  {
+    type: "sb_get_rival_score",
+    message0: "rival score",
+    output: "Number",
+    colour: 210,
+    tooltip: "Get the opposing team's current score",
+  },
+  {
+    type: "sb_is_penalized",
+    message0: "robot is penalized",
+    output: "Boolean",
+    colour: 200,
+    tooltip: "Check if this robot is currently penalized",
+  },
 ]);
 
 const pythonGenerator = Blockly.Python;
@@ -409,6 +523,47 @@ pythonGenerator.forBlock["sb_pose_from_direction"] = function (block, generator)
   const distance = generator.valueToCode(block, "DISTANCE", pythonGenerator.ORDER_NONE) || "0.0";
   const direction = generator.valueToCode(block, "DIRECTION", pythonGenerator.ORDER_NONE) || "0.0";
   return [`pose_from_direction(${origin}, ${distance}, ${direction})`, pythonGenerator.ORDER_FUNCTION_CALL];
+};
+
+pythonGenerator.forBlock["sb_get_game_state"] = function () {
+  return ["get_game_state()", pythonGenerator.ORDER_FUNCTION_CALL];
+};
+
+pythonGenerator.forBlock["sb_game_state_constant"] = function (block) {
+  return [block.getFieldValue("STATE"), pythonGenerator.ORDER_ATOMIC];
+};
+
+pythonGenerator.forBlock["sb_is_game_state"] = function (block) {
+  const state = block.getFieldValue("STATE");
+  return [`is_game_state(${state})`, pythonGenerator.ORDER_FUNCTION_CALL];
+};
+
+pythonGenerator.forBlock["sb_is_game_stopped"] = function () {
+  return ["is_game_stopped()", pythonGenerator.ORDER_FUNCTION_CALL];
+};
+
+pythonGenerator.forBlock["sb_has_kick"] = function () {
+  return ["has_kick()", pythonGenerator.ORDER_FUNCTION_CALL];
+};
+
+pythonGenerator.forBlock["sb_get_seconds_remaining"] = function () {
+  return ["get_seconds_remaining()", pythonGenerator.ORDER_FUNCTION_CALL];
+};
+
+pythonGenerator.forBlock["sb_get_secondary_seconds_remaining"] = function () {
+  return ["get_secondary_seconds_remaining()", pythonGenerator.ORDER_FUNCTION_CALL];
+};
+
+pythonGenerator.forBlock["sb_get_own_score"] = function () {
+  return ["get_own_score()", pythonGenerator.ORDER_FUNCTION_CALL];
+};
+
+pythonGenerator.forBlock["sb_get_rival_score"] = function () {
+  return ["get_rival_score()", pythonGenerator.ORDER_FUNCTION_CALL];
+};
+
+pythonGenerator.forBlock["sb_is_penalized"] = function () {
+  return ["is_penalized()", pythonGenerator.ORDER_FUNCTION_CALL];
 };
 
 function buildDefaultWorkspaceXml() {
