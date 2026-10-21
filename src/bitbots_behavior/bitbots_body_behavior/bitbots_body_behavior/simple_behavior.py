@@ -6,6 +6,7 @@ from bitbots_utils.transforms import quat_from_yaw
 from game_controller_hsl_interfaces.msg import GameState
 from geometry_msgs.msg import PoseStamped
 from rclpy.duration import Duration
+from std_msgs.msg import Bool
 
 from bitbots_msgs.msg import HeadMode
 
@@ -166,6 +167,9 @@ class SimpleBehaviorRuntime:
     def print(self, *args, sep=" ", end="\n"):
         self._node.get_logger().info(sep.join(map(str, args)))
 
+    def set_avoid_ball(self, avoid_ball: bool):
+        self._blackboard.pathfinding.ball_obstacle_active_pub.publish(Bool(data=avoid_ball))
+
 
 _runtime: SimpleBehaviorRuntime | None = None
 
@@ -269,6 +273,11 @@ def get_rival_score() -> int:
 
 def is_penalized() -> bool:
     """Check if this robot is currently penalized."""
+    return _require_runtime().is_penalized()
+
+
+def set_avoid_ball() -> bool:
+    """Selects if the path planning avoids the ball."""
     return _require_runtime().is_penalized()
 
 

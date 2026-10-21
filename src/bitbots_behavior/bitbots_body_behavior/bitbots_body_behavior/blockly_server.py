@@ -303,9 +303,7 @@ class BlocklyRequestHandler(SimpleHTTPRequestHandler):
                 if deleted:
                     self._send_json(HTTPStatus.OK, {"ok": True, "message": f"Design '{design_name}' deleted."})
                 else:
-                    self._send_json(
-                        HTTPStatus.NOT_FOUND, {"ok": False, "error": f"Design '{design_name}' not found."}
-                    )
+                    self._send_json(HTTPStatus.NOT_FOUND, {"ok": False, "error": f"Design '{design_name}' not found."})
             except ValueError as err:
                 self._send_json(HTTPStatus.BAD_REQUEST, {"ok": False, "error": str(err)})
             return
@@ -333,9 +331,7 @@ class BlocklyRequestHandler(SimpleHTTPRequestHandler):
                 if deleted:
                     self._send_json(HTTPStatus.OK, {"ok": True, "message": f"Design '{design_name}' deleted."})
                 else:
-                    self._send_json(
-                        HTTPStatus.NOT_FOUND, {"ok": False, "error": f"Design '{design_name}' not found."}
-                    )
+                    self._send_json(HTTPStatus.NOT_FOUND, {"ok": False, "error": f"Design '{design_name}' not found."})
             except ValueError as err:
                 self._send_json(HTTPStatus.BAD_REQUEST, {"ok": False, "error": str(err)})
             return
@@ -377,9 +373,7 @@ def create_blockly_server(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Run dedicated Simple Behavior Blockly web and design storage server."
-    )
+    parser = argparse.ArgumentParser(description="Run dedicated Simple Behavior Blockly web and design storage server.")
     parser.add_argument(
         "port_positional",
         nargs="?",

@@ -20,6 +20,7 @@ const SIMPLE_BEHAVIOR_TOOLBOX = {
         {kind: "block", type: "sb_set_goal_pose"},
         {kind: "block", type: "sb_set_goal_pose_from_pose"},
         {kind: "block", type: "sb_stop"},
+        {kind: "block", type: "sb_set_avoid_ball"},
       ],
     },
     {
@@ -209,6 +210,17 @@ Blockly.defineBlocksWithJsonArray([
     nextStatement: null,
     colour: 160,
     tooltip: "Stop the current walking goal",
+  },
+  {
+    type: "sb_set_avoid_ball",
+    message0: "set avoid ball %1",
+    args0: [
+      {type: "input_value", name: "ACTIVE", check: "Boolean"},
+    ],
+    previousStatement: null,
+    nextStatement: null,
+    colour: 160,
+    tooltip: "Selects whether the robot avoids the ball",
   },
   {
     type: "sb_kick_ball",
@@ -470,6 +482,11 @@ pythonGenerator.forBlock["sb_kick_ball"] = function (block, generator) {
   const direction = generator.valueToCode(block, "DIRECTION", pythonGenerator.ORDER_NONE) || "0.0";
   const strength = generator.valueToCode(block, "STRENGTH", pythonGenerator.ORDER_NONE) || "3.0";
   return `kick_ball(${direction}, ${strength})\n`;
+};
+
+pythonGenerator.forBlock["sb_set_avoid_ball"] = function (block, generator) {
+  const active = generator.valueToCode(block, "ACTIVE", pythonGenerator.ORDER_NONE) || "False";
+  return `set_avoid_ball(${active})\n`;
 };
 
 pythonGenerator.forBlock["sb_get_current_pose"] = function () {
