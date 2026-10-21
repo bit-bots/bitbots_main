@@ -343,6 +343,7 @@ __all__ = [
     "get_secondary_seconds_remaining",
     "get_own_score",
     "get_rival_score",
+    "set_avoid_ball",
     "is_penalized",
     "make_pose",
     "pose_distance",
