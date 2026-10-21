@@ -126,6 +126,7 @@ class HardwareControlManager:
 
     def stop_cb(self, msg: Bool):
         self.blackboard.game_controller_stop = msg.data
+        self.blackboard.stopped = self.blackboard.game_controller_stop
 
     def set_manual_penalize_mode_callback(self, req: ManualPenalize.Request, resp: ManualPenalize.Response):
         """Callback for the manual penalize service."""
