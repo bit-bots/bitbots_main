@@ -637,6 +637,13 @@ function buildDefaultWorkspaceXml() {
 }
 
 const WORKSPACE_STORAGE_KEY = "bitbots-simple-behavior-blockly-workspace";
+const DESIGN_NAME_STORAGE_KEY = "bitbots-simple-behavior-blockly-design-name";
+
+function loadDefaultWorkspace(workspace) {
+  workspace.clear();
+  const defaultXml = Blockly.utils.xml.textToDom(buildDefaultWorkspaceXml());
+  Blockly.Xml.domToWorkspace(defaultXml, workspace);
+}
 
 function loadWorkspace(workspace) {
   try {
@@ -649,8 +656,7 @@ function loadWorkspace(workspace) {
     console.warn("Could not restore the saved Blockly workspace.", error);
   }
 
-  const defaultXml = Blockly.utils.xml.textToDom(buildDefaultWorkspaceXml());
-  Blockly.Xml.domToWorkspace(defaultXml, workspace);
+  loadDefaultWorkspace(workspace);
 }
 
 function saveWorkspace(workspace) {
@@ -660,6 +666,24 @@ function saveWorkspace(workspace) {
   } catch (error) {
     console.warn("Could not save the Blockly workspace.", error);
   }
+}
+
+function serializeWorkspaceToXml(workspace) {
+  const workspaceXml = Blockly.Xml.workspaceToDom(workspace);
+  return Blockly.Xml.domToText(workspaceXml);
+}
+
+function deserializeXmlToWorkspace(xmlString, workspace) {
+  const dom = Blockly.utils.xml.textToDom(xmlString);
+  workspace.clear();
+  Blockly.Xml.domToWorkspace(dom, workspace);
+}
+
+function resolveDesignsEndpoint() {
+  if (typeof window !== "undefined" && window.location && window.location.origin && window.location.origin !== "null") {
+    return `${window.location.origin}/designs`;
+  }
+  return "http://127.0.0.1:8000/designs";
 }
 
 function initializeBlocklyPage() {
@@ -674,6 +698,27 @@ function initializeBlocklyPage() {
 
   const output = document.getElementById("pythonOutput");
   const runStatus = document.getElementById("runStatus");
+  const designStatus = document.getElementById("designStatus");
+  const designNameInput = document.getElementById("designNameInput");
+  const serverDesignsSelect = document.getElementById("serverDesignsSelect");
+  const runEndpoint = document.getElementById("runEndpoint");
+
+  if (designNameInput) {
+    const savedDesignName = window.localStorage.getItem(DESIGN_NAME_STORAGE_KEY);
+    if (savedDesignName) {
+      designNameInput.value = savedDesignName;
+    }
+    designNameInput.addEventListener("input", () => {
+      window.localStorage.setItem(DESIGN_NAME_STORAGE_KEY, designNameInput.value.trim());
+    });
+  }
+
+  const setDesignStatus = (message, isError = false) => {
+    if (!designStatus) return;
+    designStatus.textContent = message;
+    designStatus.style.color = isError ? "#c62828" : "#2e7d32";
+  };
+
   const updateCode = () => {
     const raw = Blockly.Python.workspaceToCode(workspace);
     output.value = raw.trim() ? `${raw}\n` : "";
@@ -690,6 +735,278 @@ function initializeBlocklyPage() {
   });
   updateCode();
 
+  const refreshServerDesigns = async (selectDesignName = null) => {
+    if (!serverDesignsSelect) return;
+    const designsEndpoint = resolveDesignsEndpoint();
+    try {
+      const response = await fetch(designsEndpoint, {
+        method: "GET",
+        headers: {"Accept": "application/json"},
+      });
+      if (!response.ok) {
+        serverDesignsSelect.innerHTML = '<option value="">(Server offline)</option>';
+        return;
+      }
+      const data = await response.json();
+      const designs = data.designs || [];
+      serverDesignsSelect.innerHTML = "";
+      if (designs.length === 0) {
+        const option = document.createElement("option");
+        option.value = "";
+        option.textContent = "(No designs on server)";
+        serverDesignsSelect.appendChild(option);
+      } else {
+        const defaultOption = document.createElement("option");
+        defaultOption.value = "";
+        defaultOption.textContent = "-- Select design --";
+        serverDesignsSelect.appendChild(defaultOption);
+
+        for (const design of designs) {
+          const option = document.createElement("option");
+          option.value = design.name;
+          option.textContent = design.name;
+          if (selectDesignName && design.name === selectDesignName) {
+            option.selected = true;
+          }
+          serverDesignsSelect.appendChild(option);
+        }
+      }
+    } catch {
+      serverDesignsSelect.innerHTML = '<option value="">(Server offline)</option>';
+    }
+  };
+
+  // Initial fetch of server designs
+  refreshServerDesigns();
+
+  const refreshDesignsButton = document.getElementById("refreshDesignsButton");
+  if (refreshDesignsButton) {
+    refreshDesignsButton.addEventListener("click", () => {
+      refreshServerDesigns();
+      setDesignStatus("Refreshed server designs list.");
+    });
+  }
+
+  const saveServerButton = document.getElementById("saveServerButton");
+  if (saveServerButton) {
+    saveServerButton.addEventListener("click", async () => {
+      const name = (designNameInput ? designNameInput.value.trim() : "") || "default";
+      const xml = serializeWorkspaceToXml(workspace);
+      const script = output.value;
+      const designsEndpoint = resolveDesignsEndpoint();
+
+      setDesignStatus("Saving to server...");
+      try {
+        const response = await fetch(designsEndpoint, {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({
+            name: name,
+            xml: xml,
+            script: script,
+          }),
+        });
+        const result = await response.json();
+        if (response.ok && result.ok) {
+          setDesignStatus(`Saved design '${result.name || name}' to server.`);
+          if (designNameInput) {
+            designNameInput.value = result.name || name;
+            window.localStorage.setItem(DESIGN_NAME_STORAGE_KEY, designNameInput.value);
+          }
+          await refreshServerDesigns(result.name || name);
+        } else {
+          setDesignStatus(`Save failed: ${result.error || response.statusText}`, true);
+        }
+      } catch (error) {
+        setDesignStatus(`Save failed: ${error}`, true);
+      }
+    });
+  }
+
+  const loadServerButton = document.getElementById("loadServerButton");
+  if (loadServerButton) {
+    loadServerButton.addEventListener("click", async () => {
+      const selectedName = serverDesignsSelect ? serverDesignsSelect.value : "";
+      if (!selectedName) {
+        setDesignStatus("Please select a design to load.", true);
+        return;
+      }
+
+      const designsEndpoint = resolveDesignsEndpoint();
+      setDesignStatus(`Loading '${selectedName}' from server...`);
+      try {
+        const response = await fetch(`${designsEndpoint}/${encodeURIComponent(selectedName)}`, {
+          method: "GET",
+          headers: {"Accept": "application/json"},
+        });
+        const result = await response.json();
+        if (response.ok && result.ok && result.xml) {
+          deserializeXmlToWorkspace(result.xml, workspace);
+          if (designNameInput) {
+            designNameInput.value = result.name || selectedName;
+            window.localStorage.setItem(DESIGN_NAME_STORAGE_KEY, designNameInput.value);
+          }
+          saveWorkspace(workspace);
+          updateCode();
+          setDesignStatus(`Loaded design '${result.name || selectedName}' from server.`);
+        } else {
+          setDesignStatus(`Load failed: ${result.error || response.statusText}`, true);
+        }
+      } catch (error) {
+        setDesignStatus(`Load failed: ${error}`, true);
+      }
+    });
+  }
+
+  const deleteServerButton = document.getElementById("deleteServerButton");
+  if (deleteServerButton) {
+    deleteServerButton.addEventListener("click", async () => {
+      const selectedName = serverDesignsSelect ? serverDesignsSelect.value : "";
+      if (!selectedName) {
+        setDesignStatus("Please select a design to delete.", true);
+        return;
+      }
+
+      if (!window.confirm(`Delete design "${selectedName}" from server?`)) {
+        return;
+      }
+
+      const designsEndpoint = resolveDesignsEndpoint();
+      setDesignStatus(`Deleting '${selectedName}'...`);
+      try {
+        const response = await fetch(`${designsEndpoint}/${encodeURIComponent(selectedName)}`, {
+          method: "DELETE",
+          headers: {"Accept": "application/json"},
+        });
+        const result = await response.json();
+        if (response.ok && result.ok) {
+          setDesignStatus(`Deleted design '${selectedName}' from server.`);
+          await refreshServerDesigns();
+        } else {
+          setDesignStatus(`Delete failed: ${result.error || response.statusText}`, true);
+        }
+      } catch (error) {
+        setDesignStatus(`Delete failed: ${error}`, true);
+      }
+    });
+  }
+
+  const downloadDesignButton = document.getElementById("downloadDesignButton");
+  if (downloadDesignButton) {
+    downloadDesignButton.addEventListener("click", () => {
+      const name = (designNameInput ? designNameInput.value.trim() : "") || "simple_behavior_design";
+      const payload = {
+        name: name,
+        xml: serializeWorkspaceToXml(workspace),
+        format: "bitbots_simple_behavior_blockly",
+        version: 1,
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], {type: "application/json;charset=utf-8"});
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `${name}.json`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+      setDesignStatus(`Downloaded design file '${name}.json'.`);
+    });
+  }
+
+  const uploadDesignButton = document.getElementById("uploadDesignButton");
+  const uploadFileInput = document.getElementById("uploadFileInput");
+
+  const loadDesignFromFileContent = (content, filename) => {
+    try {
+      let xmlText = "";
+      let designName = filename ? filename.replace(/\.[^/.]+$/, "") : "default";
+
+      const trimmed = content.trim();
+      if (trimmed.startsWith("{")) {
+        const parsed = JSON.parse(trimmed);
+        if (parsed.xml) {
+          xmlText = parsed.xml;
+          if (parsed.name) {
+            designName = parsed.name;
+          }
+        } else {
+          throw new Error("JSON file missing 'xml' property.");
+        }
+      } else if (trimmed.startsWith("<")) {
+        xmlText = trimmed;
+      } else {
+        throw new Error("File is neither valid design JSON nor Blockly XML.");
+      }
+
+      deserializeXmlToWorkspace(xmlText, workspace);
+      if (designNameInput) {
+        designNameInput.value = designName;
+        window.localStorage.setItem(DESIGN_NAME_STORAGE_KEY, designName);
+      }
+      saveWorkspace(workspace);
+      updateCode();
+      setDesignStatus(`Uploaded design '${designName}'.`);
+    } catch (error) {
+      setDesignStatus(`Upload failed: ${error.message}`, true);
+    }
+  };
+
+  if (uploadDesignButton && uploadFileInput) {
+    uploadDesignButton.addEventListener("click", () => {
+      uploadFileInput.value = "";
+      uploadFileInput.click();
+    });
+
+    uploadFileInput.addEventListener("change", (event) => {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        loadDesignFromFileContent(e.target.result, file.name);
+      };
+      reader.onerror = () => {
+        setDesignStatus("Failed to read selected file.", true);
+      };
+      reader.readAsText(file);
+    });
+  }
+
+  const blocklyDiv = document.getElementById("blocklyDiv");
+  if (blocklyDiv) {
+    blocklyDiv.addEventListener("dragover", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+    });
+    blocklyDiv.addEventListener("drop", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const files = event.dataTransfer && event.dataTransfer.files;
+      if (files && files.length > 0) {
+        const file = files[0];
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          loadDesignFromFileContent(e.target.result, file.name);
+        };
+        reader.readAsText(file);
+      }
+    });
+  }
+
+  const newDesignButton = document.getElementById("newDesignButton");
+  if (newDesignButton) {
+    newDesignButton.addEventListener("click", () => {
+      if (window.confirm("Reset workspace to starter design? Any unsaved changes will be lost.")) {
+        loadDefaultWorkspace(workspace);
+        if (designNameInput) {
+          designNameInput.value = "default";
+          window.localStorage.setItem(DESIGN_NAME_STORAGE_KEY, "default");
+        }
+        saveWorkspace(workspace);
+        updateCode();
+        setDesignStatus("Started new design.");
+      }
+    });
+  }
+
   document.getElementById("copyButton").addEventListener("click", async () => {
     await navigator.clipboard.writeText(output.value);
   });
@@ -704,7 +1021,6 @@ function initializeBlocklyPage() {
   });
 
   const runButton = document.getElementById("runButton");
-  const runEndpoint = document.getElementById("runEndpoint");
   if (runButton && runEndpoint && runStatus) {
     runButton.addEventListener("click", async () => {
       const endpoint = runEndpoint.value.trim();

@@ -65,18 +65,35 @@ A short "go to ball and kick" example script is available at:
 Blockly dev interface
 ---------------------
 
-For quick experimentation, there is a self-contained Blockly page at:
+For quick experimentation, there is a self-contained Blockly page and server at:
 
-``docs/blockly/simple_behavior_blockly.html``
+``docs/blockly/``
 
-Run it with a local static file server from the package directory, for example:
+Run the dedicated Blockly server via Pixi, ROS 2, or standalone script:
 
 .. code-block:: bash
 
-   cd src/bitbots_behavior/bitbots_body_behavior/docs/blockly
-   python3 -m http.server 8000
+   pixi run blockly-server
 
-Then open ``http://localhost:8000/simple_behavior_blockly.html`` in a browser.
+Or run:
+
+.. code-block:: bash
+
+   ros2 run bitbots_body_behavior blockly_server --port 8000
+
+Then open ``http://localhost:8000/`` (or ``http://localhost:8000/simple_behavior_blockly.html``) in a browser.
+
+The dedicated Blockly server serves the static web interface and provides endpoints to persist and manage designs:
+
+- ``GET /designs`` to list all saved behavior designs or load one via query parameter.
+- ``GET /designs/<name>`` to retrieve a stored behavior design.
+- ``POST /designs`` to save a behavior design.
+- ``DELETE /designs/<name>`` to remove a stored behavior design.
+
+Saved designs are stored on the server inside the user's home directory (in ``~/.bitbots/simple_behavior_designs``).
+
+The Blockly page includes tools to save, load, refresh, and delete designs on the server,
+as well as options to download designs to a local file or upload and resume previously saved design files.
 
 The field coordinate lookup next to the workspace shows the coordinate system
 used by pose and goal functions. Select the same named field preset that was

@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 
+import json
 import math
 import signal
 import threading
 import time
+from pathlib import Path
 from typing import cast
 
 import pytest
-from bitbots_body_behavior import body_behavior, simple_behavior, simple_behavior_web_wrapper
+from bitbots_body_behavior import blockly_server, body_behavior, simple_behavior, simple_behavior_web_wrapper
 from rclpy.node import Node
 
 from bitbots_msgs.msg import HeadMode
@@ -783,3 +785,246 @@ def test_opponents_advanced_script():
     behavior, _, _ = create_simple_behavior_for_test(lambda: None)
     accepted, message = behavior.submit_script(code)
     assert accepted, f"Script rejected: {message}"
+
+
+def test_blockly_server_resolves_designs_directory(tmp_path):
+    custom_dir = tmp_path / "custom_designs"
+    resolved = blockly_server.BlocklyDesignStore._resolve_designs_directory(custom_dir)
+    assert resolved == custom_dir.resolve()
+    assert custom_dir.is_dir()
+
+    default_resolved = blockly_server.BlocklyDesignStore._resolve_designs_directory(None)
+    assert default_resolved == (Path.home() / ".bitbots" / "simple_behavior_designs").resolve()
+
+
+def test_blockly_server_sanitizes_design_name():
+    sanitize = blockly_server.BlocklyDesignStore.sanitize_design_name
+    assert sanitize("striker") == "striker"
+    assert sanitize("striker.json") == "striker"
+    assert sanitize("striker.xml") == "striker"
+    assert sanitize("  pass_and_kick  ") == "pass_and_kick"
+
+    with pytest.raises(ValueError):
+        sanitize("")
+    with pytest.raises(ValueError):
+        sanitize("   ")
+    with pytest.raises(ValueError):
+        sanitize("../etc/passwd")
+    with pytest.raises(ValueError):
+        sanitize("subdir/design")
+    with pytest.raises(ValueError):
+        sanitize("subdir\\design")
+    with pytest.raises(ValueError):
+        sanitize(".hidden")
+
+
+def test_blockly_design_store_crud(tmp_path):
+    designs_dir = tmp_path / "designs"
+    store = blockly_server.BlocklyDesignStore(designs_dir)
+
+    assert store.list_designs() == []
+
+    saved_name = store.save_design(
+        name="test_design",
+        xml_content="<xml><block type='main'/></xml>",
+        script_content="def main(): pass",
+        metadata={"author": "bitbots"},
+    )
+    assert saved_name == "test_design"
+
+    designs = store.list_designs()
+    assert len(designs) == 1
+    assert designs[0]["name"] == "test_design"
+    assert designs[0]["filename"] == "test_design.json"
+
+    loaded = store.load_design("test_design")
+    assert loaded["ok"] is True
+    assert loaded["name"] == "test_design"
+    assert loaded["xml"] == "<xml><block type='main'/></xml>"
+    assert loaded["script"] == "def main(): pass"
+    assert loaded["metadata"] == {"author": "bitbots"}
+
+    # Test loading a legacy / raw .xml design file
+    raw_xml_file = designs_dir / "legacy_play.xml"
+    raw_xml_file.write_text("<xml><block type='legacy'/></xml>", encoding="utf-8")
+
+    designs = store.list_designs()
+    assert len(designs) == 2
+    design_names = [d["name"] for d in designs]
+    assert "test_design" in design_names
+    assert "legacy_play" in design_names
+
+    legacy_loaded = store.load_design("legacy_play")
+    assert legacy_loaded["name"] == "legacy_play"
+    assert legacy_loaded["xml"] == "<xml><block type='legacy'/></xml>"
+
+    # Test deleting
+    assert store.delete_design("test_design") is True
+    assert store.delete_design("test_design") is False
+    with pytest.raises(FileNotFoundError):
+        store.load_design("test_design")
+
+    assert store.delete_design("legacy_play") is True
+    assert store.list_designs() == []
+
+
+def test_blockly_server_http_endpoints(tmp_path):
+    import urllib.error
+    import urllib.request
+
+    designs_dir = tmp_path / "designs_http"
+    static_dir = Path(__file__).resolve().parents[1] / "docs" / "blockly"
+
+    server = blockly_server.create_blockly_server(
+        host="127.0.0.1",
+        port=0,
+        directory=static_dir,
+        designs_directory=designs_dir,
+    )
+    server_thread = threading.Thread(target=server.serve_forever, kwargs={"poll_interval": 0.05}, daemon=True)
+    server_thread.start()
+
+    port = server.server_address[1]
+    base_url = f"http://127.0.0.1:{port}"
+
+    try:
+        # 1. Health check
+        req = urllib.request.Request(f"{base_url}/health")
+        with urllib.request.urlopen(req) as resp:
+            data = json.loads(resp.read().decode())
+            assert data["ok"] is True
+            assert data["service"] == "blockly_server"
+
+        # 2. Static file serving (HTML)
+        req = urllib.request.Request(f"{base_url}/simple_behavior_blockly.html")
+        with urllib.request.urlopen(req) as resp:
+            content = resp.read().decode()
+            assert "<!doctype html>" in content.lower()
+            assert resp.headers.get("Access-Control-Allow-Origin") == "*"
+
+        # 3. List designs when empty
+        req = urllib.request.Request(f"{base_url}/designs")
+        with urllib.request.urlopen(req) as resp:
+            data = json.loads(resp.read().decode())
+            assert data["ok"] is True
+            assert data["designs"] == []
+
+        # 4. Save design via POST /designs
+        save_payload = json.dumps(
+            {
+                "name": "striker",
+                "xml": "<xml><block type='kick'/></xml>",
+                "script": "def main(): kick_ball(0)",
+            }
+        ).encode("utf-8")
+        req = urllib.request.Request(
+            f"{base_url}/designs", data=save_payload, headers={"Content-Type": "application/json"}
+        )
+        with urllib.request.urlopen(req) as resp:
+            data = json.loads(resp.read().decode())
+            assert data["ok"] is True
+            assert data["name"] == "striker"
+
+        # 5. Load design via GET /designs/striker
+        req = urllib.request.Request(f"{base_url}/designs/striker")
+        with urllib.request.urlopen(req) as resp:
+            data = json.loads(resp.read().decode())
+            assert data["ok"] is True
+            assert data["name"] == "striker"
+            assert "<block type='kick'/>" in data["xml"]
+
+        # 6. Load design via query param GET /designs?name=striker
+        req = urllib.request.Request(f"{base_url}/designs?name=striker")
+        with urllib.request.urlopen(req) as resp:
+            data = json.loads(resp.read().decode())
+            assert data["ok"] is True
+            assert data["name"] == "striker"
+
+        # 7. Delete design via DELETE /designs/striker
+        req = urllib.request.Request(f"{base_url}/designs/striker", method="DELETE")
+        with urllib.request.urlopen(req) as resp:
+            data = json.loads(resp.read().decode())
+            assert data["ok"] is True
+
+        # 8. Loading deleted design returns 404
+        req = urllib.request.Request(f"{base_url}/designs/striker")
+        with pytest.raises(urllib.error.HTTPError) as exc_info:
+            urllib.request.urlopen(req)
+        assert exc_info.value.code == 404
+
+        # 9. Invalid design name returns 400
+        bad_payload = json.dumps({"name": "../escape", "xml": "<xml/>"}).encode("utf-8")
+        req = urllib.request.Request(
+            f"{base_url}/designs", data=bad_payload, headers={"Content-Type": "application/json"}
+        )
+        with pytest.raises(urllib.error.HTTPError) as exc_info:
+            urllib.request.urlopen(req)
+        assert exc_info.value.code == 400
+
+    finally:
+        server.shutdown()
+        server.server_close()
+        server_thread.join(timeout=1.0)
+
+
+def test_simple_behavior_web_wrapper_http_endpoints(monkeypatch):
+    import urllib.error
+    import urllib.request
+
+    dummy_node = DummyNode(
+        {
+            "simple_behavior_web_host": "127.0.0.1",
+            "simple_behavior_web_port": 0,
+            "dsd_file": "main.dsd",
+            "behavior_mode": "simple_web",
+            "simple_behavior_script": "",
+            "odom_frame": "odom",
+            "map_frame": "map",
+            "base_footprint_frame": "base_footprint",
+            "use_sim_time": False,
+        }
+    )
+
+    wrapper = simple_behavior_web_wrapper.SimpleBehaviorWebWrapper(cast(Node, dummy_node))
+    server = wrapper._http_server
+    assert server is not None
+    port = server.server_address[1]
+    base_url = f"http://127.0.0.1:{port}"
+
+    try:
+        # 1. Health check
+        req = urllib.request.Request(f"{base_url}/health")
+        with urllib.request.urlopen(req) as resp:
+            data = json.loads(resp.read().decode())
+            assert data["ok"] is True
+            assert data["state"] == "idle"
+
+        # 2. Submit valid script via POST /run
+        monkeypatch.setattr(wrapper._process_manager, "_start_process_locked", lambda: None)
+        run_payload = json.dumps(
+            {
+                "name": "test_script.py",
+                "script": "def main(): pass\n",
+            }
+        ).encode("utf-8")
+        req = urllib.request.Request(f"{base_url}/run", data=run_payload, headers={"Content-Type": "application/json"})
+        with urllib.request.urlopen(req) as resp:
+            data = json.loads(resp.read().decode())
+            assert data["ok"] is True
+
+        # 3. Submit invalid script via POST /run returns 400
+        bad_run_payload = json.dumps(
+            {
+                "name": "bad.py",
+                "script": "def invalid_syntax(:",
+            }
+        ).encode("utf-8")
+        req = urllib.request.Request(
+            f"{base_url}/run", data=bad_run_payload, headers={"Content-Type": "application/json"}
+        )
+        with pytest.raises(urllib.error.HTTPError) as exc_info:
+            urllib.request.urlopen(req)
+        assert exc_info.value.code == 400
+
+    finally:
+        wrapper.shutdown()

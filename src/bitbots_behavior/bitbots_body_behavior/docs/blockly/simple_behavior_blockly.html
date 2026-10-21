@@ -9,7 +9,37 @@
         margin: 0;
         font-family: sans-serif;
         display: grid;
-        grid-template-rows: 60vh 40vh;
+        grid-template-rows: auto minmax(0, 1fr) minmax(140px, 35vh);
+        height: 100vh;
+      }
+
+      #designToolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.5rem 0.75rem;
+        background: #f0f0f0;
+        border-bottom: 1px solid #ccc;
+      }
+
+      .toolbar-section {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+
+      #designToolbar input,
+      #designToolbar select,
+      #designToolbar button {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+      }
+
+      #designStatus {
+        margin-left: auto;
+        font-size: 0.875rem;
+        font-weight: 500;
       }
 
       #workspacePanel {
@@ -105,6 +135,27 @@
     </style>
   </head>
   <body>
+    <header id="designToolbar">
+      <div class="toolbar-section">
+        <label for="designNameInput"><strong>Design:</strong></label>
+        <input id="designNameInput" type="text" value="default" placeholder="Design name" size="14" />
+        <button id="saveServerButton" type="button" title="Save design to robot server">Save to server</button>
+        <label for="serverDesignsSelect"><strong>Saved:</strong></label>
+        <select id="serverDesignsSelect" title="Select a saved server design">
+          <option value="">(No designs loaded)</option>
+        </select>
+        <button id="loadServerButton" type="button" title="Load selected design from robot server">Load</button>
+        <button id="deleteServerButton" type="button" title="Delete selected design from robot server">Delete</button>
+        <button id="refreshDesignsButton" type="button" title="Refresh saved designs from robot server">↻</button>
+      </div>
+      <div class="toolbar-section">
+        <button id="downloadDesignButton" type="button" title="Download design file (JSON)">Download design</button>
+        <button id="uploadDesignButton" type="button" title="Upload design file from computer">Upload design</button>
+        <input id="uploadFileInput" type="file" accept=".json,.xml,application/json,text/xml" style="display: none;" />
+        <button id="newDesignButton" type="button" title="Reset workspace to default starter design">New design</button>
+      </div>
+      <span id="designStatus" role="status" aria-live="polite"></span>
+    </header>
     <section id="workspacePanel">
       <div id="blocklyDiv"></div>
       <aside id="fieldPanel">
@@ -129,10 +180,10 @@
       <div id="outputHeader">
         <strong>Generated Python script</strong>
         <label for="runEndpoint">Run endpoint</label>
-        <input id="runEndpoint" type="text" value="http://127.0.0.1:8765/run" size="34" />
+        <input id="runEndpoint" type="text" value="http://127.0.0.1:7511/run" size="34" />
         <button id="runButton" type="button">Run on robot</button>
         <button id="copyButton" type="button">Copy</button>
-        <button id="downloadButton" type="button">Download</button>
+        <button id="downloadButton" type="button">Download script</button>
         <span id="runStatus"></span>
       </div>
       <textarea id="pythonOutput" readonly></textarea>

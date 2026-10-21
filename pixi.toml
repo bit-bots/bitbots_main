@@ -204,8 +204,8 @@ description = "Send advanced opponent behavior script to robot2."
 depends-on = [{task = "behavior-send-script", args = [{script = "opponents/advanced.py"}, {url = "robo2"}]}]
 
 [tasks.blockly-server]
-description = "Start a simple Blockly static file server."
-cmd = "python -m http.server {{ port }} --bind {{ host }} --directory src/bitbots_behavior/bitbots_body_behavior/docs/blockly"
+description = "Start the dedicated Simple Behavior Blockly web and design storage server."
+cmd = "python src/bitbots_behavior/bitbots_body_behavior/docs/blockly/server.py --host {{ host }} --port {{ port }}"
 args = [
     { arg = "host", default = "0.0.0.0" },
     { arg = "port", default = "8000" },
