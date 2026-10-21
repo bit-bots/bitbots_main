@@ -213,7 +213,7 @@ args = [
 
 [tasks.teleop]
 description = "Start the keyboard teleop script."
-cmd = "ros2 run bitbots_teleop teleop_keyboard.py"
+cmd = "ros2 run bitbots_teleop teleop_gui.py"
 env = { ROS_DOMAIN_ID = "11" }
 
 [tasks.sim-gamestate]
