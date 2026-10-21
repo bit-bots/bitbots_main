@@ -276,9 +276,9 @@ def is_penalized() -> bool:
     return _require_runtime().is_penalized()
 
 
-def set_avoid_ball() -> bool:
+def set_avoid_ball(active: bool):
     """Selects if the path planning avoids the ball."""
-    return _require_runtime().is_penalized()
+    _require_runtime().set_avoid_ball(active)
 
 
 def make_pose(x: float | int, y: float | int) -> BallPose:
