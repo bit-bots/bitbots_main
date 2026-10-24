@@ -67,6 +67,10 @@ class AbstractTreeElement:
         Represent this tree element as dictionary which is JSON encodable
         """
         return {
+            # A stable identifier for this tree element. It is used to match a stack element to the
+            # exact tree element it belongs to, which is required because a chain (i.e. a sequence)
+            # may contain multiple elements with the same name (e.g. @Wait, @SomeAction, @Wait).
+            "id": id(self),
             "name": self.name,
             "parameters": self.parameters,
         }
@@ -132,51 +136,16 @@ class DecisionTreeElement(AbstractTreeElement):
         return result
 
 
-class SequenceTreeElement(AbstractTreeElement):
-    """
-    A tree element describing a sequence of actions. Each action
-    has optional parameters that will be passed to the module on
-    creation
-    """
-
-    def __init__(self, parent):
-        super().__init__(None, parent)
-        self.action_elements: list[ActionTreeElement] = []
-
-    def add_action_element(self, action_element):
-        """
-        Add an action element to the sequence
-
-        :param action_element: The action element to be added
-        :type action_element: ActionTreeElement
-        """
-        action_element.activation_reason = self.activation_reason
-        self.action_elements.append(action_element)
-
-    def set_activation_reason(self, reason):
-        self.activation_reason = reason
-        for action in self.action_elements:
-            action.set_activation_reason(reason)
-
-    def __repr__(self):
-        return "({})".format(", ".join(repr(action) for action in self.action_elements))
-
-    def repr_dict(self):
-        """
-        Represent this sequence as dictionary which is JSON encodable
-        """
-        # Get the dict from the superclass
-        result = super().repr_dict()
-        # Add additional information
-        result["type"] = "sequence"
-        result["action_elements"] = [action.repr_dict() for action in self.action_elements]
-        return result
-
-
 class ActionTreeElement(AbstractTreeElement):
     """
     A tree element describing an action. An action has optional
-    parameters that will be passed to the module on creation
+    parameters that will be passed to the module on creation.
+
+    An action may point to a ``next_element`` which is activated once the action
+    pops itself off the stack. This is how sequences (``@A, @B, @C``) are
+    represented: as a chain of actions linked via ``next_element``. The next
+    element may be any tree element, so a decision is also allowed to follow an
+    action.
     """
 
     def __init__(self, name, parent, parameters=None, unset_parameters=None):
@@ -188,9 +157,22 @@ class ActionTreeElement(AbstractTreeElement):
         :param unset_parameters: A dictionary of parameters that must be set later
         """
         super().__init__(name, parent, parameters, unset_parameters)
-        self.in_sequence = False
+        # The element that is activated when this action pops itself. None if this
+        # action is the last (or only) element in its chain.
+        self.next_element: Optional[AbstractTreeElement] = None
+
+    def set_activation_reason(self, reason):
+        """Set the activation reason for this action and propagate it along the chain"""
+        self.activation_reason = reason
+        # All elements of a chain share the activation reason of the head so that a
+        # reevaluated decision below the chain does not consider its result changed
+        # while the chain is still running.
+        if self.next_element is not None:
+            self.next_element.set_activation_reason(reason)
 
     def __repr__(self):
+        if self.next_element is not None:
+            return f"@{self.name} ({self.parameters}) -> {repr(self.next_element)}"
         return f"@{self.name} ({self.parameters})"
 
     def __str__(self):
@@ -204,4 +186,5 @@ class ActionTreeElement(AbstractTreeElement):
         result = super().repr_dict()
         # Add additional information
         result["type"] = "action"
+        result["next"] = self.next_element.repr_dict() if self.next_element is not None else None
         return result
