@@ -42,8 +42,20 @@ enable_bitbots_docs()
 
 install(TARGETS extrinsic_calibration DESTINATION lib/${PROJECT_NAME})
 
+install(PROGRAMS src/camera_time_offset_calibration.py
+        DESTINATION lib/${PROJECT_NAME})
+
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 
 install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
+
+if(BUILD_TESTING)
+  find_package(ament_cmake_pytest REQUIRED)
+
+  ament_add_pytest_test(
+    camera_time_offset_calibration_test test PYTHON_EXECUTABLE
+    "${PYTHON_EXECUTABLE}" APPEND_ENV
+    PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR}/src)
+endif()
 
 ament_package()

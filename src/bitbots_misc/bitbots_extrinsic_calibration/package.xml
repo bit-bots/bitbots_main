@@ -16,10 +16,17 @@
 
     <depend>backward_ros</depend>
     <depend>bitbots_docs</depend>
+    <depend>pinocchio</depend>
+    <depend>python3-numpy</depend>
+    <depend>python3-scipy</depend>
+    <depend>rclpy</depend>
     <depend>rot_conv</depend>
+    <depend>sensor_msgs</depend>
     <depend>std_msgs</depend>
     <depend>tf2_ros</depend>
     <depend>tf2</depend>
+
+    <test_depend>ament_cmake_pytest</test_depend>
 
     <export>
         <bitbots_documentation>
