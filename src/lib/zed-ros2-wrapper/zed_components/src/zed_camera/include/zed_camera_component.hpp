@@ -613,6 +613,7 @@ private:
   OnSetParametersCallbackHandle::SharedPtr mParamChangeCallbackHandle;
 
   double mVdPubRate = 15.0;
+  double mFrameTimeOffset = 0.0;
   int mCamBrightness = 4;
   int mCamContrast = 4;
   int mCamHue = 0;

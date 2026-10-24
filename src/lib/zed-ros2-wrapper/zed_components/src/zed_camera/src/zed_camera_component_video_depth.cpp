@@ -1658,6 +1658,7 @@ bool ZedCamera::checkGrabAndUpdateTimestamp(rclcpp::Time & out_pub_ts)
   } else {
     out_pub_ts = sl_tools::slTime2Ros(mSdkGrabTS, get_clock()->get_clock_type());
   }
+  out_pub_ts += rclcpp::Duration::from_seconds(mFrameTimeOffset);
   return true;
 }
 
@@ -2270,6 +2271,8 @@ void ZedCamera::publishPointCloud()
   } else {
     pcMsg->header.stamp = sl_tools::slTime2Ros(mMatCloud.timestamp);
   }
+  pcMsg->header.stamp =
+    rclcpp::Time(pcMsg->header.stamp) + rclcpp::Duration::from_seconds(mFrameTimeOffset);
 
   // ---> Check that `pcMsg->header.stamp` is not the same of the latest
   // published pointcloud Avoid to publish the same old data
@@ -2844,6 +2847,18 @@ bool ZedCamera::handleCommonVideoParams(
       return true;
     }
     mVdPubRate = val;
+    RCLCPP_INFO_STREAM(get_logger(), "Parameter '" << name << "' correctly set to " << val);
+    return true;
+  } else if (name == "general.frame_time_offset") {
+    rclcpp::ParameterType correctType = rclcpp::ParameterType::PARAMETER_DOUBLE;
+    if (param.get_type() != correctType) {
+      result.successful = false;
+      result.reason = name + " must be a " + rclcpp::to_string(correctType);
+      RCLCPP_WARN_STREAM(get_logger(), result.reason);
+      return true;
+    }
+    double val = param.as_double();
+    mFrameTimeOffset = val;
     RCLCPP_INFO_STREAM(get_logger(), "Parameter '" << name << "' correctly set to " << val);
     return true;
   }

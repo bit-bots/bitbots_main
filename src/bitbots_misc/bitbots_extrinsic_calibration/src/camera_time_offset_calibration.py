@@ -6,6 +6,10 @@ The body IMU measures the angular velocity and specific force of the base. The m
 is computed with the frame Jacobian (velocity) and its time variation (acceleration) at the head IMU frame. Combining
 both by rigid body kinematics yields the expected angular velocity and linear acceleration at the head IMU.
 
+The head IMU is located at the calibrated camera optical frame, which is not part of the robot model. It is looked up
+from TF relative to a frame of the robot model and attached to the model. As the optical frame axes (z forward, x
+right, y down) differ from the IMU measurement axes (x forward, y left, z up), the IMU axes are rotated accordingly.
+
 The predicted signals are cross-correlated with the measured head IMU signals over a sliding window. The lag with the
 highest correlation is the estimated offset. A positive offset means that the head IMU stamps are later than the true
 measurement time, which matches the sign of the `camera_time_offset` parameter of the MuJoCo simulation.
@@ -24,8 +28,11 @@ from rclpy.time import Time
 from scipy.signal import savgol_filter
 from sensor_msgs.msg import Imu, JointState
 from std_msgs.msg import Float64, String
+from tf2_ros import Buffer, TransformException, TransformListener
 
 LWA = pin.ReferenceFrame.LOCAL_WORLD_ALIGNED
+# Pose of the IMU measurement axes in an optical frame, the inverse of the rotation from a link to its optical frame
+IMU_AXES_IN_OPTICAL_FRAME = pin.SE3(pin.rpy.rpyToMatrix(-np.pi / 2, 0.0, -np.pi / 2), np.zeros(3)).inverse()
 
 
 @dataclass
@@ -37,16 +44,29 @@ class OffsetEstimate:
 
 
 class HeadImuPredictor:
-    """Predicts the head IMU signals from the body IMU and the joint states using a fixed base kinematic model."""
+    """Predicts the head IMU signals from the body IMU and the joint states using a fixed base kinematic model.
 
-    def __init__(self, urdf: str, body_imu_frame: str, head_imu_frame: str):
+    The head IMU is attached to `head_imu_parent_frame` of the robot model. Its pose relative to that frame is set with
+    `set_head_imu_offset` and coincides with the parent frame until then.
+    """
+
+    def __init__(self, urdf: str, body_imu_frame: str, head_imu_parent_frame: str):
         self.model = pin.buildModelFromXML(urdf)
-        self.data = self.model.createData()
-        for frame in (body_imu_frame, head_imu_frame):
+        for frame in (body_imu_frame, head_imu_parent_frame):
             if not self.model.existFrame(frame):
                 raise ValueError(f"Frame '{frame}' does not exist in the robot model")
         self.body_frame_id = self.model.getFrameId(body_imu_frame)
-        self.head_frame_id = self.model.getFrameId(head_imu_frame)
+
+        parent_frame_id = self.model.getFrameId(head_imu_parent_frame)
+        # Copy, as adding a frame invalidates references into the frame list
+        parent_frame = pin.Frame(self.model.frames[parent_frame_id])
+        self.head_parent_placement = parent_frame.placement
+        self.head_frame_id = self.model.addFrame(
+            pin.Frame(
+                "head_imu", parent_frame.parentJoint, parent_frame_id, parent_frame.placement, pin.FrameType.OP_FRAME
+            )
+        )
+        self.data = self.model.createData()
 
         # Maps joint names to their index in the configuration and velocity vectors.
         # Only single degree of freedom joints can be filled from joint states, all others stay at their neutral value.
@@ -55,6 +75,10 @@ class HeadImuPredictor:
             for name, joint in zip(self.model.names[1:], self.model.joints[1:], strict=True)
             if joint.nq == 1 and joint.nv == 1
         }
+
+    def set_head_imu_offset(self, offset: pin.SE3) -> None:
+        """Sets the pose of the head IMU measurement axes relative to the head IMU parent frame."""
+        self.model.frames[self.head_frame_id].placement = self.head_parent_placement * offset
 
     def joint_vectors(self, names: list[str], values: np.ndarray, neutral: bool) -> np.ndarray:
         """Converts joint values (samples x joints) in the order of `names` to pinocchio vectors (samples x nq/nv)."""
@@ -202,23 +226,29 @@ def stamp_to_sec(stamp) -> float:
 class CameraTimeOffsetCalibration(Node):
     def __init__(self):
         super().__init__("camera_time_offset_calibration")
-        # All parameters except the frames are read on every estimation, so they can be changed at runtime
+        # All parameters except the frames of the robot model are read on every estimation,
+        # so they can be changed at runtime
         self.declare_parameter("body_imu_frame", "imu_frame_uncalibrated")
-        self.declare_parameter("head_imu_frame", "camera_link")
+        # Calibrated camera optical frame (not part of the robot model) and the robot model frame it is looked up from
+        self.declare_parameter("head_imu_frame", "zed_left_camera_optical_frame")
+        self.declare_parameter("head_imu_parent_frame", "camera_optical_frame_left_uncalibrated")
         self.declare_parameter("window_duration", 10.0)
         self.declare_parameter("max_offset", 0.2)
         self.declare_parameter("sample_rate", 200.0)
         self.declare_parameter("smoothing_window", 0.05)
         self.declare_parameter("estimation_period", 2.0)
         self.declare_parameter("min_signal_std", 0.05)
-        self.declare_parameter("use_angular_velocity", False)
-        self.declare_parameter("use_linear_acceleration", True)
+        self.declare_parameter("use_angular_velocity", True)
+        self.declare_parameter("use_linear_acceleration", False)
 
         self.predictor: HeadImuPredictor | None = None
         self.joint_names: list[str] | None = None
         self.joint_buffer = TimeBuffer()
         self.body_imu_buffer = TimeBuffer()
         self.head_imu_buffer = TimeBuffer()
+
+        self.tf_buffer = Buffer()
+        self.tf_listener = TransformListener(self.tf_buffer, self)
 
         self.create_subscription(
             String,
@@ -236,10 +266,29 @@ class CameraTimeOffsetCalibration(Node):
     def robot_description_callback(self, msg: String) -> None:
         try:
             self.predictor = HeadImuPredictor(
-                msg.data, self.get_parameter("body_imu_frame").value, self.get_parameter("head_imu_frame").value
+                msg.data,
+                self.get_parameter("body_imu_frame").value,
+                self.get_parameter("head_imu_parent_frame").value,
             )
         except ValueError as error:
             self.get_logger().error(str(error))
+
+    def update_head_imu_offset(self) -> bool:
+        """Looks up the calibrated head IMU frame, as the calibration can change at runtime."""
+        assert self.predictor is not None
+        try:
+            transform = self.tf_buffer.lookup_transform(
+                self.get_parameter("head_imu_parent_frame").value,
+                self.get_parameter("head_imu_frame").value,
+                Time(),
+            ).transform
+        except TransformException as error:
+            self.get_logger().warn(f"Could not look up the head IMU frame: {error}", throttle_duration_sec=10.0)
+            return False
+        t, r = transform.translation, transform.rotation
+        calibrated_frame = pin.XYZQUATToSE3(np.array([t.x, t.y, t.z, r.x, r.y, r.z, r.w]))
+        self.predictor.set_head_imu_offset(calibrated_frame * IMU_AXES_IN_OPTICAL_FRAME)
+        return True
 
     def buffer_duration(self) -> float:
         return self.get_parameter("window_duration").value + 2 * self.get_parameter("max_offset").value + 1.0
@@ -276,6 +325,8 @@ class CameraTimeOffsetCalibration(Node):
             return
         if min(len(self.joint_buffer), len(self.body_imu_buffer), len(self.head_imu_buffer)) < 2:
             self.get_logger().info("Waiting for joint states and IMU data", throttle_duration_sec=10.0)
+            return
+        if not self.update_head_imu_offset():
             return
 
         window_duration = self.get_parameter("window_duration").value

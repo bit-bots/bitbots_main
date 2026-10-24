@@ -1086,6 +1086,10 @@ void ZedCamera::getGeneralParams()
       get_logger(),
       " * Publish framerate [Hz]:  " << mVdPubRate);
   }
+
+  sl_tools::getParam(
+    shared_from_this(), "general.frame_time_offset", mFrameTimeOffset,
+    mFrameTimeOffset, " * Frame timestamp offset [sec]: ", true, -1.0, 1.0);
 }
 
 void ZedCamera::getRoiParams()

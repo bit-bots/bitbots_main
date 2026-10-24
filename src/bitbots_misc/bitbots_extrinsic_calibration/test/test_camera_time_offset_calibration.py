@@ -1,7 +1,7 @@
 import numpy as np
 import pinocchio as pin
 import pytest
-from camera_time_offset_calibration import HeadImuPredictor, estimate_time_offset
+from camera_time_offset_calibration import IMU_AXES_IN_OPTICAL_FRAME, HeadImuPredictor, estimate_time_offset
 
 # Minimal robot with a body IMU frame offset from the root and a two joint head with an IMU frame
 URDF = """
@@ -119,6 +119,24 @@ def test_prediction_matches_ground_truth(predictor: HeadImuPredictor):
     expected = [truth.imu(t, predictor.head_frame_id) for t in times]
     np.testing.assert_allclose(angular_velocity, np.array([e[0] for e in expected]), atol=1e-5)
     np.testing.assert_allclose(specific_force, np.array([e[1] for e in expected]), atol=1e-3)
+
+
+def test_prediction_with_head_imu_offset(predictor: HeadImuPredictor):
+    predictor.set_head_imu_offset(pin.SE3(pin.rpy.rpyToMatrix(-1.0, 0.3, 2.0), np.array([0.03, 0.02, -0.01])))
+    truth = GroundTruth(predictor)
+    times = np.linspace(0.0, 3.0, 25)
+    angular_velocity, specific_force = predict(predictor, truth, times)
+
+    expected = [truth.imu(t, predictor.head_frame_id) for t in times]
+    np.testing.assert_allclose(angular_velocity, np.array([e[0] for e in expected]), atol=1e-5)
+    np.testing.assert_allclose(specific_force, np.array([e[1] for e in expected]), atol=1e-3)
+
+
+def test_imu_axes_in_optical_frame():
+    # The IMU x (forward), y (left) and z (up) axes are the optical z, -x and -y axes
+    np.testing.assert_allclose(
+        IMU_AXES_IN_OPTICAL_FRAME.rotation, np.array([[0, -1, 0], [0, 0, -1], [1, 0, 0]]), atol=1e-12
+    )
 
 
 def test_unknown_joints_are_ignored(predictor: HeadImuPredictor):
