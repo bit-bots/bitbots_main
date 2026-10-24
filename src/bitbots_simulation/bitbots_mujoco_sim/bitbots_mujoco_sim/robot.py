@@ -29,25 +29,30 @@ class Robot:
         def sensor(base_name: str, ros_name: str) -> Sensor:
             return Sensor(model, data, ros_name=ros_name, name=self._get_name(base_name))
 
-        def noisy_sensor(base_name: str, ros_name: str) -> NoisySensor:
+        # noise_name selects the noise_config entries, defaulting to base_name
+        def noisy_sensor(base_name: str, ros_name: str, noise_name: str | None = None) -> NoisySensor:
+            noise_name = noise_name or base_name
             return NoisySensor(
                 model,
                 data,
                 name=self._get_name(base_name),
                 ros_name=ros_name,
-                gaussian_stddev=float(self.noise_config.get(f"{base_name}_gaussian_stddev", 0.0)),
-                bias_stddev=float(self.noise_config.get(f"{base_name}_bias_stddev", 0.0)),
+                gaussian_stddev=float(self.noise_config.get(f"{noise_name}_gaussian_stddev", 0.0)),
+                bias_stddev=float(self.noise_config.get(f"{noise_name}_bias_stddev", 0.0)),
                 rng=self._rng,
             )
 
-        def quaternion_noisy_sensor(base_name: str, ros_name: str) -> QuaternionNoisySensor:
+        def quaternion_noisy_sensor(
+            base_name: str, ros_name: str, noise_name: str | None = None
+        ) -> QuaternionNoisySensor:
+            noise_name = noise_name or base_name
             return QuaternionNoisySensor(
                 model,
                 data,
                 name=self._get_name(base_name),
                 ros_name=ros_name,
-                gaussian_stddev=float(self.noise_config.get(f"{base_name}_gaussian_stddev", 0.0)),
-                bias_stddev=float(self.noise_config.get(f"{base_name}_bias_stddev", 0.0)),
+                gaussian_stddev=float(self.noise_config.get(f"{noise_name}_gaussian_stddev", 0.0)),
+                bias_stddev=float(self.noise_config.get(f"{noise_name}_bias_stddev", 0.0)),
                 rng=self._rng,
             )
 
@@ -88,6 +93,10 @@ class Robot:
                 noisy_sensor("accelerometer", "IMU_accelerometer"),
                 quaternion_noisy_sensor("orientation", "IMU_orientation"),
                 sensor("position", "IMU_position"),
+                # The head IMU uses the same noise model as the body IMU
+                noisy_sensor("head_gyro", "head_IMU_gyro", noise_name="gyro"),
+                noisy_sensor("head_accelerometer", "head_IMU_accelerometer", noise_name="accelerometer"),
+                quaternion_noisy_sensor("head_orientation", "head_IMU_orientation", noise_name="orientation"),
                 sensor("l_foot_pos", "left_foot_position"),
                 sensor("r_foot_pos", "right_foot_position"),
                 sensor("l_foot_global_linvel", "left_foot_velocity"),
@@ -124,6 +133,18 @@ class RobotSensors(list[Sensor]):
     @property
     def orientation(self) -> Sensor:
         return self.get("IMU_orientation")
+
+    @property
+    def head_gyro(self) -> Sensor:
+        return self.get("head_IMU_gyro")
+
+    @property
+    def head_accelerometer(self) -> Sensor:
+        return self.get("head_IMU_accelerometer")
+
+    @property
+    def head_orientation(self) -> Sensor:
+        return self.get("head_IMU_orientation")
 
 
 class RobotJoints(list[Joint]):

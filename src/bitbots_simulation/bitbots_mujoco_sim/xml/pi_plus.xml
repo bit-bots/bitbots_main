@@ -152,6 +152,7 @@
               <inertial pos="0.00963743 0.00075253 0.00058537" quat="0.70738 0.706786 0.00245222 0.00788061" mass="0.0584" diaginertia="7.26043e-05 7.249e-05 5.51563e-06"/>
               <camera name="head_camera" focalpixel="362.6533508300781 362.6533508300781" resolution="672 376" sensorsize="672 376" pos="0.03 0.024 0.0" xyaxes="0.0 -1.0 0.0 0.0 0.0 1.0"/>
               <geom type="mesh" class="visual" rgba="0.1 0.1 0.1 1" mesh="camera_link"/>
+              <site name="head_imu"/>
             </body>
           </body>
         </body>
@@ -277,6 +278,10 @@
     <framexaxis objtype="site" objname="imu" name="forwardvector"/>
     <framelinvel objtype="site" objname="imu" name="global_linvel"/>
     <frameangvel objtype="site" objname="imu" name="global_angvel"/>
+
+    <framequat name="head_orientation" objtype="site" objname="head_imu"/>
+    <gyro site="head_imu" name="head_gyro"/>
+    <accelerometer site="head_imu" name="head_accelerometer"/>
     <subtreeangmom name="root_angmom" body="base_link"/>
     <framelinvel objtype="site" objname="l_foot" name="l_foot_global_linvel"/>
     <framelinvel objtype="site" objname="r_foot" name="r_foot_global_linvel"/>

@@ -18,6 +18,7 @@ from transforms3d.quaternions import qmult
 from bitbots_msgs.msg import JointCommand
 from bitbots_msgs.srv import MoveBall, SimulatorPush
 from bitbots_mujoco_sim.robot import Robot
+from bitbots_mujoco_sim.sensor import Sensor
 
 BALL_JOINT_NAME = "ball-root"
 
@@ -46,7 +47,11 @@ class Simulation(Node):
         self.declare_parameter("orientation_bias_stddev", 0.0)
 
         self.declare_parameter("imu_frame", "imu_frame")
+        self.declare_parameter("head_imu_frame", "zed_imu_link")
         self.declare_parameter("camera_optical_frame", "zed_left_camera_optical_frame")
+        # Offset in seconds added to the camera image and head IMU timestamps, e.g. to emulate the latency of the
+        # real camera. It is read on every publish, so it can be changed at runtime with `ros2 param set`.
+        self.declare_parameter("camera_time_offset", 0.0)
 
         self.package_path = get_package_share_directory("bitbots_mujoco_sim")
         world_file = self.get_parameter("world_file").get_parameter_value().string_value
@@ -113,6 +118,7 @@ class Simulation(Node):
         self.create_service(MoveBall, "/move_ball", self.move_ball_callback)
 
         self.imu_frame_id = self.get_parameter("imu_frame").get_parameter_value().string_value
+        self.head_imu_frame_id = self.get_parameter("head_imu_frame").get_parameter_value().string_value
         self.camera_optical_frame_id = self.get_parameter("camera_optical_frame").get_parameter_value().string_value
         self.camera_active = True
         self.early_events = []
@@ -120,6 +126,7 @@ class Simulation(Node):
             {"frequency": 1, "handler": self.publish_clock_event},
             {"frequency": 4, "handler": lambda: self.publish(lambda robot: robot.publish_ros_joint_states_event())},
             {"frequency": 4, "handler": lambda: self.publish(lambda robot: robot.publish_imu_event())},
+            {"frequency": 4, "handler": lambda: self.publish(lambda robot: robot.publish_head_imu_event())},
             {"frequency": 32, "handler": lambda: self.publish(lambda robot: robot.publish_camera_event())},
         ]
 
@@ -602,6 +609,14 @@ class Simulation(Node):
         self.early_events.append(move_event)
         return response
 
+    @property
+    def camera_time_message(self):
+        """Simulation time shifted by the camera time offset, used for the camera and head IMU stamps."""
+        time_offset = self.get_parameter("camera_time_offset").get_parameter_value().double_value
+        # Clamp to zero, as ROS time stamps can not be negative
+        stamp_time = max(0.0, self.time + time_offset)
+        return Time(seconds=int(stamp_time), nanoseconds=int(stamp_time % 1 * 1e9)).to_msg()
+
     def publish_clock_event(self) -> None:
         clock_msg = Clock()
         clock_msg.clock = self.time_message
@@ -627,6 +642,7 @@ class RobotSimulation:
         self.node_publishers = {
             "joint_states": self.simulation.create_publisher(JointState, _topic("joint_states"), 1),
             "imu": self.simulation.create_publisher(Imu, _topic("imu/data"), 1),
+            "head_imu": self.simulation.create_publisher(Imu, _topic("zed/zed_node/imu/data"), 1),
             "camera_proc": self.simulation.create_publisher(Image, _topic("zed/zed_node/rgb/image_rect_color"), 1),
             "camera_info": self.simulation.create_publisher(CameraInfo, _topic("zed/zed_node/rgb/camera_info"), 1),
         }
@@ -669,28 +685,37 @@ class RobotSimulation:
         self.node_publishers["joint_states"].publish(js)
 
     def publish_imu_event(self) -> None:
-        imu = Imu()
+        sensors = self.robot.sensors
+        imu = self._create_imu_message(sensors.accelerometer, sensors.gyro, sensors.orientation)
         imu.header.stamp = self.simulation.time_message
         imu.header.frame_id = self.simulation.imu_frame_id
-        imu.linear_acceleration.x, imu.linear_acceleration.y, imu.linear_acceleration.z = (
-            self.robot.sensors.accelerometer.noisy_data
-        )
+        self.node_publishers["imu"].publish(imu)
+
+    def publish_head_imu_event(self) -> None:
+        sensors = self.robot.sensors
+        imu = self._create_imu_message(sensors.head_accelerometer, sensors.head_gyro, sensors.head_orientation)
+        imu.header.stamp = self.simulation.camera_time_message
+        imu.header.frame_id = self.simulation.head_imu_frame_id
+        self.node_publishers["head_imu"].publish(imu)
+
+    @staticmethod
+    def _create_imu_message(accelerometer: Sensor, gyro: Sensor, orientation: Sensor) -> Imu:
+        imu = Imu()
+        imu.linear_acceleration.x, imu.linear_acceleration.y, imu.linear_acceleration.z = accelerometer.noisy_data
 
         if imu.linear_acceleration.x == 0 and imu.linear_acceleration.y == 0 and imu.linear_acceleration.z == 0:
             imu.linear_acceleration.z = 0.001
 
-        imu.angular_velocity.x, imu.angular_velocity.y, imu.angular_velocity.z = self.robot.sensors.gyro.noisy_data
-        imu.orientation.w, imu.orientation.x, imu.orientation.y, imu.orientation.z = (
-            self.robot.sensors.orientation.noisy_data
-        )
-        self.node_publishers["imu"].publish(imu)
+        imu.angular_velocity.x, imu.angular_velocity.y, imu.angular_velocity.z = gyro.noisy_data
+        imu.orientation.w, imu.orientation.x, imu.orientation.y, imu.orientation.z = orientation.noisy_data
+        return imu
 
     def publish_camera_event(self) -> None:
         if not self.simulation.camera_active:
             return
 
         img = Image()
-        img.header.stamp = self.simulation.time_message
+        img.header.stamp = self.simulation.camera_time_message
         img.header.frame_id = self.simulation.camera_optical_frame_id
         img.encoding = "bgra8"
         img.height = self.robot.camera.height
