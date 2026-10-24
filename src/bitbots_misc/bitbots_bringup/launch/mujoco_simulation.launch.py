@@ -94,19 +94,32 @@ def launch_setup(context):
     num_robots_spec = LaunchConfiguration("num_robots").perform(context)
     num_robots = sum(parse_num_robots(num_robots_spec))  # total robots across all teams
     robot_type = str(LaunchConfiguration("robot_type").perform(context))
+    field_name = LaunchConfiguration("fieldname").perform(context)
     use_web = LaunchConfiguration("web").perform(context).lower() == "true"
     start_teamplayer = LaunchConfiguration("teamplayer").perform(context).lower() == "true"
     package_share = get_package_share_directory("bitbots_mujoco_sim")
+    blackboard_share = get_package_share_directory("bitbots_parameter_blackboard")
     bridge_config_dir = Path(package_share) / "config" / "domain_bridges"
 
+    field_config_path = Path(blackboard_share) / "config" / "fields" / field_name / "config.yaml"
+    with open(field_config_path) as field_config_file:
+        field_config = yaml.safe_load(field_config_file)
+        field_size = field_config["parameter_blackboard"]["ros__parameters"]["field"]["size"]
+
     # Get teamplayer argument values - only pass if explicitly set (not empty)
-    teamplayer_args = ["sim:=true"]  # sim is always true for mujoco simulation
+    teamplayer_args = ["sim:=true", f"fieldname:={field_name}"]  # sim is always true for mujoco simulation
     for arg_name, _ in TEAMPLAYER_ARGS:
         value = LaunchConfiguration(arg_name).perform(context)
         if value:  # Only pass if not empty string
             teamplayer_args.append(f"{arg_name}:={value}")
 
-    world_file = generate_world_xml(num_robots_spec, package_share, robot_type)
+    world_file = generate_world_xml(
+        num_robots_spec,
+        package_share,
+        robot_type,
+        field_size["x"],
+        field_size["y"],
+    )
 
     # Compute individual game settings for every robot so that each robot gets its
     # own team affiliation, bot id and role instead of relying on hand-written
@@ -197,6 +210,11 @@ def generate_launch_description():
             "robot_type",
             default_value="piplus",
             description="Set the type of robot used (piplus, x02)",
+        ),
+        DeclareLaunchArgument(
+            "fieldname",
+            default_value="hsl_kid",
+            description="Field configuration to use for the simulation",
         ),
         DeclareLaunchArgument(
             "web",

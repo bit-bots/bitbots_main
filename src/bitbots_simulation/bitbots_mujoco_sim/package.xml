@@ -22,10 +22,12 @@
   <depend>std_srvs</depend>
   <depend>rosgraph_msgs</depend>
   <depend>bitbots_msgs</depend>
+  <depend>bitbots_parameter_blackboard</depend>
   <depend>ament_index_python</depend>
   <depend>python3-numpy</depend>
   <depend>python3-mujoco</depend>
   <depend>python3-pil</depend>
+  <exec_depend>python3-yaml</exec_depend>
 
   <test_depend>ament_cmake_mypy</test_depend>
 

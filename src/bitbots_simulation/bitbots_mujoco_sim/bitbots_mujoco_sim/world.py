@@ -14,15 +14,7 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
-# Sideline offset from the field center along the y-axis.
-SIDELINE_Y = 3.25
-# Backward compatibility alias
-TEAM_LINE_Y = SIDELINE_Y
-
-# Half dimensions of the field (length 9m -> half length 4.5m).
-HALF_FIELD_LENGTH = 4.5
-
-# Clearance from the borders of the half (goal line at -4.5m/4.5m and midfield at 0.0m).
+# Clearance from the borders of each half and midfield.
 BORDER_CLEARANCE = 0.5
 
 # Yaw (rotation about z) to make a robot face inward towards the field center.
@@ -148,11 +140,15 @@ def compute_game_settings(teams: list[int]) -> list[dict]:
     return settings
 
 
-def compute_robot_poses(teams: list[int]) -> list[tuple[float, float, float]]:
+def compute_robot_poses(
+    teams: list[int], field_length: float, field_width: float
+) -> list[tuple[float, float, float]]:
     """Compute the ``(x, y, yaw)`` placement for every robot.
 
+    Field dimensions are passed in from the selected field configuration.
+
     Robots are dynamically distributed evenly along the available sideline space
-    of their own half, keeping at least 0.5m clearance from borders.
+    of their own half, keeping the configured clearance from borders.
     - Position 1 is placed on the left sideline, position 2 on the right sideline.
     - Unassigned / center positions are balanced across both sides so player
       counts per sideline are as even as possible.
@@ -167,7 +163,8 @@ def compute_robot_poses(teams: list[int]) -> list[tuple[float, float, float]]:
     poses: list[tuple[float, float, float]] = []
     game_settings = compute_game_settings(teams)
 
-    x_min = -(HALF_FIELD_LENGTH - BORDER_CLEARANCE)
+    sideline_y = field_width / 2.0
+    x_min = -(field_length / 2.0 - BORDER_CLEARANCE)
     x_max = -BORDER_CLEARANCE
 
     def compute_x_positions(k: int) -> list[float]:
@@ -228,20 +225,20 @@ def compute_robot_poses(teams: list[int]) -> list[tuple[float, float, float]]:
         for (idx, _setting), x_base in zip(left_robots, left_x, strict=True):
             if team_index % 2 == 0:
                 x = x_base
-                y = SIDELINE_Y
+                y = sideline_y
             else:
                 x = -x_base
-                y = -SIDELINE_Y
+                y = -sideline_y
             yaw = FACING_YAW if y < 0 else -FACING_YAW
             team_poses[idx] = (x, y, yaw)
 
         for (idx, _setting), x_base in zip(right_robots, right_x, strict=True):
             if team_index % 2 == 0:
                 x = x_base
-                y = -SIDELINE_Y
+                y = -sideline_y
             else:
                 x = -x_base
-                y = SIDELINE_Y
+                y = sideline_y
             yaw = FACING_YAW if y < 0 else -FACING_YAW
             team_poses[idx] = (x, y, yaw)
 
@@ -263,6 +260,8 @@ def generate_world_xml(
     num_robots: str | int,
     package_share: str,
     robot_type: str,
+    field_length: float,
+    field_width: float,
 ) -> Path:
     """Generate the MuJoCo world XML positioning every robot individually.
 
@@ -276,13 +275,15 @@ def generate_world_xml(
     robot displays its team/goalie color and player number in both the visualizer and
     camera images.
 
+    Field dimensions are passed in from the selected field configuration.
+
     Returns the path of the generated world file.
     """
     template_path = Path(package_share) / "xml" / "kid_field.xml"
     output_path = Path(package_share) / "xml" / "generated_world.xml"
 
     teams = parse_num_robots(num_robots)
-    poses = compute_robot_poses(teams)
+    poses = compute_robot_poses(teams, field_length, field_width)
     game_settings = compute_game_settings(teams)
 
     tree = ET.parse(template_path)

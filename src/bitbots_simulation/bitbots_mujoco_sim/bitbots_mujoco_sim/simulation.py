@@ -5,6 +5,7 @@ from pathlib import Path
 
 import mujoco
 import numpy as np
+import yaml
 from ament_index_python.packages import get_package_share_directory
 from mujoco import viewer
 from rclpy.node import Node
@@ -32,6 +33,7 @@ class Simulation(Node):
         self.declare_parameter("world_file", "")
         self.declare_parameter("use_namespace", True)
         self.declare_parameter("web", False)
+        self.declare_parameter("fieldname", "hsl_kid")
 
         # These default value are oriented on some real world data in standstill.
         # They are a bit worse than what was observed there.
@@ -179,7 +181,16 @@ class Simulation(Node):
         mujoco.mj_forward(self.model, self.data)
 
     def _generate_default_world(self) -> str:
-        return str(generate_world_xml("1", self.package_path, "piplus"))
+        field_name = self.get_parameter("fieldname").get_parameter_value().string_value
+        blackboard_share = get_package_share_directory("bitbots_parameter_blackboard")
+        field_config_path = Path(blackboard_share) / "config" / "fields" / field_name / "config.yaml"
+        with open(field_config_path) as field_config_file:
+            field_config = yaml.safe_load(field_config_file)
+            field_size = field_config["parameter_blackboard"]["ros__parameters"]["field"]["size"]
+
+        return str(
+            generate_world_xml("1", self.package_path, "piplus", field_size["x"], field_size["y"])
+        )
 
     def _find_robot_indices(self) -> list[int]:
         """Find all robot instances by looking for bodies named 'robot_<index>_base_link'."""
