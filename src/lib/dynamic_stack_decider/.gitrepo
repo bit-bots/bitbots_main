@@ -1,12 +1,13 @@
 ; DO NOT EDIT (unless you know what you are doing)
 ;
 ; This subdirectory is a git "subrepo", and this file is maintained by the
-; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+; git-include command (compatible with git-subrepo).
+; See https://github.com/flova/git-include
 ;
 [subrepo]
 	remote = https://github.com/bit-bots/dynamic_stack_decider.git
 	branch = master
-	commit = aa895fe01ecd50b6a01a2292ce1e825e9ab58e6a
+	commit = 430504cc8fbd10546479578ba7fb936a03149391
 	parent = 6f24d59165cd0c8f941aa327a7348f1c25bde77d
 	method = merge
-	cmdver = 0.4.9
+	cmdver = git-include/0.1.4
