@@ -17,6 +17,9 @@
 "172.20.1.16":
   hostname: "peter"
   robot_name: "Peter"
+"172.20.1.17":
+  hostname: "kiki"
+  robot_name: "Kiki"
 
 # Field
 "10.0.6.1":
@@ -37,3 +40,6 @@
 "10.0.6.6":
   hostname: "peter"
   robot_name: "Peter"
+"10.0.6.7":
+  hostname: "kiki"
+  robot_name: "Kiki"
