@@ -14,15 +14,16 @@ def make_pose(x: float, y: float, yaw: float, z: float = 0.0, roll: float = 0.0,
     return pose
 
 
-def map_to_base(map_to_odom: tuple[float, float, float], odom_pose: Pose) -> np.ndarray:
+def map_to_base(map_to_odom: tuple[float, float, float, float], odom_pose: Pose) -> np.ndarray:
+    x, y, _, yaw = map_to_odom
     odom_yaw = 2 * np.arctan2(odom_pose.orientation.z, odom_pose.orientation.w)
-    return planar_transform(*map_to_odom) @ planar_transform(odom_pose.position.x, odom_pose.position.y, odom_yaw)
+    return planar_transform(x, y, yaw) @ planar_transform(odom_pose.position.x, odom_pose.position.y, odom_yaw)
 
 
 def test_identity_odom_reproduces_ground_truth():
     world_pose = make_pose(1.0, -2.0, 0.5)
-    x, y, yaw = compute_map_to_odom(world_pose, make_pose(0.0, 0.0, 0.0), flip_side=False)
-    assert (x, y, yaw) == pytest.approx((1.0, -2.0, 0.5))
+    x, y, z, yaw = compute_map_to_odom(world_pose, make_pose(0.0, 0.0, 0.0), flip_side=False)
+    assert (x, y, z, yaw) == pytest.approx((1.0, -2.0, 0.0, 0.5))
 
 
 @pytest.mark.parametrize("flip_side", [False, True])
@@ -39,8 +40,8 @@ def test_map_to_base_matches_ground_truth(flip_side):
 
 def test_flip_side_mirrors_position_through_center():
     world_pose = make_pose(2.0, 1.0, 0.0)
-    x, y, yaw = compute_map_to_odom(world_pose, make_pose(0.0, 0.0, 0.0), flip_side=True)
-    assert (x, y, abs(yaw)) == pytest.approx((-2.0, -1.0, np.pi))
+    x, y, z, yaw = compute_map_to_odom(world_pose, make_pose(0.0, 0.0, 0.0), flip_side=True)
+    assert (x, y, z, abs(yaw)) == pytest.approx((-2.0, -1.0, 0.0, np.pi))
 
 
 def test_roll_pitch_and_height_are_ignored():
@@ -48,7 +49,19 @@ def test_roll_pitch_and_height_are_ignored():
     tilted = compute_map_to_odom(
         make_pose(1.0, 2.0, 0.3, z=0.4, roll=0.1, pitch=-0.15), make_pose(0.0, 0.0, 0.0), flip_side=False
     )
-    assert tilted == pytest.approx(upright, abs=1e-9)
+    assert tilted[:2] == pytest.approx(upright[:2], abs=1e-9)
+    assert tilted[2] == pytest.approx(0.4)
+    assert tilted[3] == pytest.approx(upright[3], abs=1e-9)
+
+
+def test_nonzero_odom_height_is_inverted():
+    world_pose = make_pose(1.0, -2.0, 0.5, z=0.25)
+    flat = compute_map_to_odom(world_pose, make_pose(0.4, 0.3, -0.7), flip_side=False)
+    elevated = compute_map_to_odom(world_pose, make_pose(0.4, 0.3, -0.7, z=0.6), flip_side=False)
+
+    assert elevated[:2] == pytest.approx(flat[:2])
+    assert elevated[2] == pytest.approx(-0.35)
+    assert elevated[3] == pytest.approx(flat[3])
 
 
 def test_field_map_msg_is_centered_and_inverted():

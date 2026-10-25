@@ -25,14 +25,14 @@ def yaw_from_quaternion(w: float, x: float, y: float, z: float) -> float:
     return quat2euler([w, x, y, z], axes="sxyz")[2]
 
 
-def compute_map_to_odom(world_pose: Pose, odom_pose: Pose, flip_side: bool) -> tuple[float, float, float]:
+def compute_map_to_odom(world_pose: Pose, odom_pose: Pose, flip_side: bool) -> tuple[float, float, float, float]:
     """
     Compute the planar map -> odom transform so that map -> base_link matches the ground truth.
 
     :param world_pose: True pose of the robot's base link in the simulation world frame
     :param odom_pose: Pose of the robot's base link in the odom frame
     :param flip_side: Whether the map frame is rotated by half a turn relative to the world frame
-    :returns: Translation (x, y) and yaw of the odom frame in the map frame
+    :returns: Translation (x, y, z) and yaw of the odom frame in the map frame
     """
     o = world_pose.orientation
     map_to_base = planar_transform(
@@ -45,7 +45,12 @@ def compute_map_to_odom(world_pose: Pose, odom_pose: Pose, flip_side: bool) -> t
     odom_to_base = planar_transform(odom_pose.position.x, odom_pose.position.y, yaw_from_quaternion(o.w, o.x, o.y, o.z))
 
     map_to_odom = map_to_base @ np.linalg.inv(odom_to_base)
-    return map_to_odom[0, 2], map_to_odom[1, 2], np.arctan2(map_to_odom[1, 0], map_to_odom[0, 0])
+    return (
+        map_to_odom[0, 2],
+        map_to_odom[1, 2],
+        world_pose.position.z - odom_pose.position.z,
+        np.arctan2(map_to_odom[1, 0], map_to_odom[0, 0]),
+    )
 
 
 class LocalizationFaker(Node):
@@ -85,8 +90,9 @@ class LocalizationFaker(Node):
         odom_pose = Pose()
         odom_pose.position.x = odom_to_base.transform.translation.x
         odom_pose.position.y = odom_to_base.transform.translation.y
+        odom_pose.position.z = odom_to_base.transform.translation.z
         odom_pose.orientation = odom_to_base.transform.rotation
-        x, y, yaw = compute_map_to_odom(msg.pose, odom_pose, self.flip_side)
+        x, y, z, yaw = compute_map_to_odom(msg.pose, odom_pose, self.flip_side)
 
         transform = TransformStamped()
         transform.header.stamp = msg.header.stamp
@@ -94,6 +100,7 @@ class LocalizationFaker(Node):
         transform.child_frame_id = self.odom_frame
         transform.transform.translation.x = float(x)
         transform.transform.translation.y = float(y)
+        transform.transform.translation.z = float(z)
         q = euler2quat(0.0, 0.0, yaw, axes="sxyz")
         transform.transform.rotation.w = float(q[0])
         transform.transform.rotation.x = float(q[1])
