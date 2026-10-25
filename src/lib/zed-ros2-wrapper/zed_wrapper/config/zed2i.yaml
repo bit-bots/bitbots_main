@@ -1,5 +1,6 @@
 # config/zed2i_yaml
 # Parameters for Stereolabs zed2i camera
+
 ---
 /**:
     ros__parameters:
@@ -7,7 +8,7 @@
             camera_model: 'zed2i'
             camera_name: 'zed2i' # overwritten by launch file
             grab_resolution: 'HD720' # The native camera grab resolution. 'HD2K', 'HD1080', 'HD720', 'VGA', 'AUTO'
-            grab_frame_rate: 30 # ZED SDK internal grabbing rate
+            grab_frame_rate: 60 # ZED SDK internal grabbing rate
 
         video:
             brightness: 4 # [DYNAMIC] Image brightness. Range: 0-8
@@ -15,6 +16,6 @@
             hue: 0 # [DYNAMIC] Image hue. Range: 0 to 11
 
         depth:
-            min_depth: 0.3 # Min: 0.3, Max: 3.0
-            max_depth: 10.0 # Max: 40.0
+            min_depth: 0.01 # Min: 0.01, Max: 3.0
+            max_depth: 15.0 # Min: 0.5, Max: 20.0
 

@@ -1,4 +1,4 @@
-// Copyright 2024 Stereolabs
+// Copyright 2025 Stereolabs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ double WinAvg::setNewSize(size_t win_size)
     mSumVals -= val;
   }
 
-  return mSumVals / mVals.size();
+  return mVals.empty() ? 0.0 : mSumVals / mVals.size();
 }
 
 double WinAvg::addValue(double val)
@@ -63,9 +63,11 @@ double WinAvg::getAvg()
 {
   std::lock_guard<std::mutex> guard(mQueueMux);
 
-  double avg = mSumVals / mVals.size();
+  if (mVals.empty()) {
+    return 0.0;
+  }
 
-  return avg;
+  return mSumVals / mVals.size();
 }
 
 }

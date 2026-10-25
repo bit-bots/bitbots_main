@@ -1,4 +1,4 @@
-// Copyright 2024 Stereolabs
+// Copyright 2025 Stereolabs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -66,19 +66,54 @@
 #include <zed_msgs/srv/set_pose.hpp>
 #include <zed_msgs/srv/set_roi.hpp>
 #include <zed_msgs/srv/start_svo_rec.hpp>
-// #include <zed_msgs/srv/save_area_memory.hpp> TODO(Walter): Uncomment when available in `zed_msgs` package from APT
+#include <zed_msgs/srv/save_area_memory.hpp>
 
 #ifdef FOUND_ISAAC_ROS_NITROS
   #include "isaac_ros_managed_nitros/managed_nitros_publisher.hpp"
   #include "isaac_ros_nitros_image_type/nitros_image.hpp"
 #endif
 
-#ifndef FOUND_FOXY
+#ifdef FOUND_POINT_CLOUD_TRANSPORT
   #include <point_cloud_transport/point_cloud_transport.hpp>
 #endif
 
 #define TIMEZERO_ROS rclcpp::Time(0, 0, RCL_ROS_TIME)
 #define TIMEZERO_SYS rclcpp::Time(0, 0, RCL_SYSTEM_TIME)
+
+constexpr auto HEARTBEAT_INTERVAL_MS = 1000;  // Publish heartbeat every second
+constexpr auto TEMP_PUB_INTERVAL_MS = 1000;  // Publish temperature every second
+
+// How much faster than the hardware IMU ODR the sensors thread polls the SDK.
+// getSensorsData(TIME_REFERENCE::CURRENT) only ever exposes the newest sample,
+// and on GMSL cameras (ZED X family) the driver delivers the samples in tight
+// bursts, so a slow poll misses the ones in the middle of a burst for good.
+// Measured capture rate on a ZED X (200 Hz ODR) on an AGX Orin, and independent
+// of the grab/compute load: 1x ODR -> 41%, 4x -> 57%, 10x -> 99.3%, 25x -> 99.8%.
+// USB cameras are far more forgiving (2x already captures the whole stream), but
+// the same value is used everywhere - the extra polls are cheap.
+constexpr auto IMU_POLL_OVERSAMPLING = 25.0;
+// How often the sensors thread refreshes its cached subscriber counts. That
+// thread polls the IMU at several kHz (see IMU_POLL_OVERSAMPLING), so counting
+// subscribers on every iteration measurably raised the node's CPU use - and the
+// cost was paid even when nothing was subscribed to the sensors topics.
+// Refreshing on a timer instead removes it. A new subscriber only starts
+// receiving data at the next refresh, so keep this short: measured on an AGX
+// Orin with a ZED X, 0.25 s gives a 0.22 s worst-case pickup and costs ~0.4% of
+// a CPU core more than a 1 s refresh.
+constexpr auto SENS_SUB_COUNT_REFRESH_SEC = 0.25;
+// Absolute ceiling for the IMU poll rate. 25x a 400 Hz IMU would be a pointless
+// 10 kHz; 5 kHz (a 200 us period) is enough for every current camera. On an AGX
+// Orin the resulting poll costs ~1.5% of one core.
+constexpr auto IMU_POLL_MAX_HZ = 5000.0;
+
+// Simulation server connection
+constexpr auto SIM_CONN_RETRY_PERIOD_SEC = 1;  // Delay between connection attempts
+constexpr auto SIM_CONN_TIMEOUT_SEC = 30.0;  // Give up connecting after this time
+
+// TypeAdapter for sl::Mat <-> sensor_msgs::msg::Image (must be outside
+// namespace stereolabs to avoid pulling sensor_msgs into stereolabs scope)
+#include "sl_type_adapter.hpp"
+using SlImageAdapter = rclcpp::TypeAdapter<stereolabs::StampedSlMat, sensor_msgs::msg::Image>;
 
 namespace stereolabs
 {
@@ -120,6 +155,8 @@ typedef rclcpp::Publisher<zed_msgs::msg::Heartbeat>::SharedPtr heartbeatStatusPu
 typedef rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr imagePub;
 typedef rclcpp::Publisher<stereo_msgs::msg::DisparityImage>::SharedPtr disparityPub;
 
+typedef rclcpp::Publisher<SlImageAdapter>::SharedPtr adaptedImagePub;
+
 typedef rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pointcloudPub;
 
 typedef rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imuPub;
@@ -150,12 +187,12 @@ typedef rclcpp::Subscription<geometry_msgs::msg::PointStamped>::SharedPtr clicke
 typedef rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr gnssFixSub;
 typedef rclcpp::Subscription<rosgraph_msgs::msg::Clock>::SharedPtr clockSub;
 
+typedef rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr enableDepthPtr;
+
 typedef rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr resetOdomSrvPtr;
 typedef rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr resetPosTrkSrvPtr;
 typedef rclcpp::Service<zed_msgs::srv::SetPose>::SharedPtr setPoseSrvPtr;
-// typedef rclcpp::Service<zed_msgs::srv::SaveAreaMemory>::SharedPtr saveAreaMemorySrvPtr; TODO(Walter): Uncomment when available in `zed_msgs` package from APT
-typedef rclcpp::Service<zed_msgs::srv::SetROI>::SharedPtr saveAreaMemorySrvPtr;
-
+typedef rclcpp::Service<zed_msgs::srv::SaveAreaMemory>::SharedPtr saveAreaMemorySrvPtr;
 typedef rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr enableObjDetPtr;
 typedef rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr enableBodyTrkPtr;
 typedef rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr enableMappingPtr;
@@ -164,6 +201,7 @@ typedef rclcpp::Service<zed_msgs::srv::StartSvoRec>::SharedPtr startSvoRecSrvPtr
 typedef rclcpp::Service<zed_msgs::srv::SetROI>::SharedPtr setRoiSrvPtr;
 typedef rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr stopSvoRecSrvPtr;
 typedef rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr pauseSvoSrvPtr;
+typedef rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr pauseSvoRecSrvPtr;
 typedef rclcpp::Service<zed_msgs::srv::SetSvoFrame>::SharedPtr setSvoFramePtr;
 typedef rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr resetRoiSrvPtr;
 typedef rclcpp::Service<robot_localization::srv::ToLL>::SharedPtr toLLSrvPtr;

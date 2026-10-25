@@ -21,8 +21,9 @@
           auto_digital_gain_range_min: 1 # Defines the minimum range of digital ISP gain in automatic control
           auto_digital_gain_range_max: 256 # Defines the maximum range of digital ISP gain in automatic control
           denoising: 50 # Defines the level of denoising applied on both left and right images. Range [0-100]
+          ae_antibanding: 1 # AE anti-banding mode. 0=OFF, 1=AUTO, 2=50Hz, 3=60Hz. Requires ZED SDK >= 5.3
 
         depth:
-          min_depth: 0.3 # Min: 0.3, Max: 3.0
-          max_depth: 10.0 # Max: 20.0
+          min_depth: 0.01 # Min: 0.01, Max: 3.0
+          max_depth: 10.0 # Min: 0.5, Max: 20.0
 

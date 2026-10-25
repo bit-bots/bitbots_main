@@ -1,4 +1,4 @@
-// Copyright 2024 Stereolabs
+// Copyright 2025 Stereolabs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,13 +15,18 @@
 #ifndef SL_TOOLS_HPP_
 #define SL_TOOLS_HPP_
 
+#include <algorithm>
+#include <cctype>
 #include <chrono>
 #include <memory>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/clock.hpp>
+#include <sensor_msgs/distortion_models.hpp>
+#include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/msg/image.hpp>
 #include <sl/Camera.hpp>
 #include <string>
+#include <type_traits>
 #include <vector>
 #include <sstream>
 
@@ -29,6 +34,27 @@
 #include "sl_win_avg.hpp"
 
 #include <rcutils/logging_macros.h>
+
+// Used to enable ZED SDK RealTime SVO pause
+//#define USE_SVO_REALTIME_PAUSE
+
+// Used to enable Positional Tracking lock check
+//#define ENABLE_PT_LOCK_CHECK
+
+// CUDA includes and macros
+#ifdef FOUND_ISAAC_ROS_NITROS
+  #include "isaac_ros_nitros_image_type/nitros_image_builder.hpp"
+
+  #define CUDA_CHECK(status) \
+  if (status != cudaSuccess) \
+  { \
+    RCLCPP_ERROR_STREAM( \
+      get_logger(), "Internal CUDA ERROR encountered: {" << std::string( \
+        cudaGetErrorName( \
+          status)) << "} {" << std::string(cudaGetErrorString(status)) << "}"); \
+    std::abort(); \
+  }
+#endif
 
 namespace sl_tools
 {
@@ -71,11 +97,47 @@ std::string getFullFilePath(const std::string & file_name);
  */
 std::string getSDKVersion(int & major, int & minor, int & sub_minor);
 
-/*! \brief Convert StereoLabs timestamp to ROS timestamp
+/*! \brief Convert a Stereolabs timestamp to ROS timestamp.
+ *
+ *  Single conversion entry point: works for any source (live grab, SVO
+ *  replay, sim-injected, /clock topic, etc.). The live-time offset configured
+ *  via \ref setSdkLiveTimeOffsetNs is applied automatically, except when
+ *  replay mode is active (set via \ref setSdkReplayMode), in which case the
+ *  timestamp passes through unchanged so file-recorded / sim-injected stamps
+ *  retain their original ROS-epoch value.
+ *
  *  \param t : Stereolabs timestamp to be converted
- *  \param t : ROS2 clock type
+ *  \param clock_type : ROS 2 clock type
  */
 rclcpp::Time slTime2Ros(sl::Timestamp t, rcl_clock_type_t clock_type = RCL_ROS_TIME);
+
+/*! \brief Set the offset (nanoseconds) added to live SDK timestamps in
+ *         \ref slTime2Ros.
+ *
+ *  Process-wide. Set once after a successful \p Camera::open() when the SDK is
+ *  configured with a monotonic \p TIMESTAMP_CLOCK (SDK >= 5.3): pass
+ *  \p ros_now_ns - sl::getCurrentTimeStamp_ns so live monotonic stamps land
+ *  in the ROS epoch. Pass 0 to disable the shim. Default: 0.
+ *  Has no effect when replay mode is active (see \ref setSdkReplayMode).
+ */
+void setSdkLiveTimeOffsetNs(int64_t offset_ns);
+
+/*! \brief Get the current live-time offset (nanoseconds). */
+int64_t getSdkLiveTimeOffsetNs();
+
+/*! \brief Mark the process as running in a replay/sim input mode.
+ *
+ *  Process-wide. Set once at component startup based on the camera input
+ *  mode: \p true for SVO playback or simulation, \p false for a live camera.
+ *  When \p true, \ref slTime2Ros bypasses the live-time offset so file-
+ *  recorded / sim-injected timestamps pass through unchanged. Default: false.
+ *  Multi-camera compositions with conflicting modes are not supported (the
+ *  underlying \p sl::Camera::setTimestampClock is also process-wide).
+ */
+void setSdkReplayMode(bool isReplay);
+
+/*! \brief Get the current replay-mode flag. */
+bool getSdkReplayMode();
 
 /*! \brief check if ZED
  * \param camModel the model to check
@@ -106,19 +168,21 @@ bool isObjDetAvailable(sl::MODEL camModel);
  * \param img : the image to publish
  * \param frameId : the id of the reference frame of the image
  * \param t : rclcpp ros::Time to stamp the image
+ * \param use_pub_timestamp : if true use the current time as timestamp instead of \ref t
  */
 std::unique_ptr<sensor_msgs::msg::Image> imageToROSmsg(
-  const sl::Mat & img, const std::string & frameId, const rclcpp::Time & t);
+  const sl::Mat & img, const std::string & frameId, const rclcpp::Time & t, bool use_pub_timestamp);
 
 /*! \brief sl::Mat to ros message conversion
  * \param left : the left image to convert and stitch
  * \param right : the right image to convert and stitch
  * \param frameId : the id of the reference frame of the image
  * \param t : rclcpp rclcpp::Time to stamp the image
+ * \param use_pub_timestamp : if true use the current time as timestamp instead of \ref t
  */
 std::unique_ptr<sensor_msgs::msg::Image> imagesToROSmsg(
   const sl::Mat & left, const sl::Mat & right, const std::string & frameId,
-  const rclcpp::Time & t);
+  const rclcpp::Time & t, bool use_pub_timestamp);
 
 /*! \brief qos value to string
  * \param qos the value to convert
@@ -145,8 +209,16 @@ bool generateROI(const std::vector<sl::float2> & poly, sl::Mat & out_roi);
  *  \param input
  *  \param error_return
  *  Syntax is [[1.0, 2.0], [3.3, 4.4, 5.5], ...] */
-std::vector<std::vector<float>> parseStringVector(
+std::vector<std::vector<float>> parseStringMultiVector_float(
   const std::string & input, std::string & error_return);
+
+/*! \brief Parse a vector of integer values from a string.
+ *  \param input
+ *  \param error_return
+ *  Syntax is [1, 2, 3, ...] */
+std::vector<int> parseStringVector_int(
+  const std::string & input,
+  std::string & error_return);
 
 /*!
  * @brief Convert thread policy to string
@@ -196,7 +268,83 @@ private:
   rclcpp::Clock::SharedPtr mClockPtr;  // Node clock interface
 };
 
+// ----> Utility functions
+
+/*! \brief Convert a string to uppercase (ASCII)
+ * \param s : the string to convert
+ * \return the uppercase string
+ */
+inline std::string toUpper(std::string s)
+{
+  std::transform(
+    s.begin(), s.end(), s.begin(),
+    [](unsigned char c) {return std::toupper(c);});
+  return s;
+}
+
 // ----> Template functions definitions
+
+// Match a YAML string (with underscores) to an sl:: SDK enum value.
+// Case-insensitive. Iterates from `first` up to (excluding) `last`,
+// comparing sl::toString() output (spaces replaced by underscores).
+// Returns true on match.
+template<typename EnumT>
+bool matchSdkEnum(
+  const std::string & str, EnumT first, EnumT last, EnumT & outVal)
+{
+  const std::string upperStr = toUpper(str);
+
+  for (int idx = static_cast<int>(first);
+    idx < static_cast<int>(last); ++idx)
+  {
+    EnumT candidate = static_cast<EnumT>(idx);
+    std::string candidate_str = sl::toString(candidate).c_str();
+    std::replace(candidate_str.begin(), candidate_str.end(), ' ', '_');
+    if (upperStr == toUpper(candidate_str)) {
+      outVal = candidate;
+      return true;
+    }
+  }
+  return false;
+}
+
+/*! \brief Read a ROS parameter and match it to an SDK enum value.
+ *  Combines getParam + matchSdkEnum + warning on mismatch + info log.
+ *  \param node : the node to get the parameter from
+ *  \param paramName : the ROS parameter name
+ *  \param defaultStr : the default string value for the parameter
+ *  \param first : first enum value to iterate from
+ *  \param last : sentinel (exclusive) enum value
+ *  \param outVal : receives the matched enum value (unchanged on mismatch)
+ *  \param logLabel : label prefix for the INFO log (empty to skip logging)
+ *  \return true if the parameter matched a valid enum value
+ */
+template<typename EnumT>
+bool getEnumParam(
+  const std::shared_ptr<rclcpp::Node> node,
+  const std::string & paramName,
+  const std::string & defaultStr,
+  EnumT first, EnumT last,
+  EnumT & outVal,
+  const std::string & logLabel = std::string())
+{
+  std::string str = defaultStr;
+  getParam(node, paramName, str, str);
+  bool ok = matchSdkEnum(str, first, last, outVal);
+  if (!ok) {
+    RCLCPP_WARN_STREAM(
+      node->get_logger(),
+      "The value of the parameter '" << paramName << "' is not valid: '"
+                                     << str << "'. Using the default value.");
+  }
+  if (!logLabel.empty()) {
+    RCLCPP_INFO_STREAM(
+      node->get_logger(),
+      logLabel << sl::toString(outVal).c_str());
+  }
+  return ok;
+}
+
 template<typename T>
 void getParam(
   const std::shared_ptr<rclcpp::Node> node,
@@ -256,7 +404,55 @@ void getParam(
     RCLCPP_INFO_STREAM(node->get_logger(), ss.str());
   }
 }
+// Validate and assign a dynamic parameter within [minVal, maxVal].
+// Returns true on success. On failure, sets result.successful = false with reason.
+template<typename T>
+bool checkParamRange(
+  const rclcpp::Parameter & param,
+  T & outVal,
+  T minVal, T maxVal,
+  rcl_interfaces::msg::SetParametersResult & result,
+  const rclcpp::Logger & logger)
+{
+  T val;
+  if constexpr (std::is_same_v<T, double>) {
+    val = param.as_double();
+  } else if constexpr (std::is_same_v<T, float>) {
+    val = static_cast<float>(param.as_double());
+  } else if constexpr (std::is_same_v<T, int>) {
+    val = param.as_int();
+  } else {
+    static_assert(
+      std::is_same_v<T, double>|| std::is_same_v<T, float>|| std::is_same_v<T, int>,
+      "checkParamRange only supports double, float and int");
+  }
+
+  if (val < minVal || val > maxVal) {
+    result.successful = false;
+    result.reason = param.get_name() + " must be in range [" +
+      std::to_string(minVal) + ", " + std::to_string(maxVal) + "]";
+    RCLCPP_WARN_STREAM(logger, result.reason);
+    return false;
+  }
+  outVal = val;
+  return true;
+}
 // <---- Template functions definitions
+
+/*! \brief Fill the distortion model and the distortion coefficients of a
+ *  `CameraInfo` message from the calibration parameters reported by the ZED SDK.
+ *
+ *  The model is taken from `sl::CameraParameters::lens_distortion_model` when the
+ *  ZED SDK provides it (>= 5.4), instead of being guessed from the camera model:
+ *  the lens, not the camera, decides it, and a fisheye ZED X One or ZED Mini is
+ *  not distinguishable from its siblings by model alone.
+ *
+ *  \param zed_params : the raw or rectified calibration parameters of one camera
+ *  \param cam_info : the message to fill
+ */
+void fillCamInfoDistortion(
+  const sl::CameraParameters & zed_params,
+  sensor_msgs::msg::CameraInfo & cam_info);
 
 }  // namespace sl_tools
 

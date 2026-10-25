@@ -38,119 +38,76 @@ void ZedCamera::getBodyTrkParams()
     mBodyTrkEnabled, mBodyTrkEnabled,
     " * Body Track. enabled: ");
 
-  bool matched = false;
+  sl_tools::getEnumParam(
+    shared_from_this(), "body_tracking.model", "HUMAN_BODY_FAST",
+    sl::BODY_TRACKING_MODEL::HUMAN_BODY_FAST,
+    sl::BODY_TRACKING_MODEL::LAST, mBodyTrkModel,
+    " * Body Track. model: ");
 
-  std::string model_str = "HUMAN_BODY_FAST";
-  sl_tools::getParam(
-    shared_from_this(), "body_tracking.model", model_str,
-    model_str);
+  sl_tools::getEnumParam(
+    shared_from_this(), "body_tracking.body_format", "BODY_34",
+    sl::BODY_FORMAT::BODY_18,
+    sl::BODY_FORMAT::LAST, mBodyTrkFmt,
+    " * Body Track. format: ");
 
-  for (int idx = static_cast<int>(sl::BODY_TRACKING_MODEL::HUMAN_BODY_FAST);
-    idx < static_cast<int>(sl::BODY_TRACKING_MODEL::LAST); idx++)
-  {
-    sl::BODY_TRACKING_MODEL test_model =
-      static_cast<sl::BODY_TRACKING_MODEL>(idx);
-    std::string test_model_str = sl::toString(test_model).c_str();
-    std::replace(
-      test_model_str.begin(), test_model_str.end(), ' ',
-      '_');      // Replace spaces with underscores to match the YAML setting
-    // DEBUG_BT(" Comparing '%s' to '%s'", test_model_str.c_str(),
-    // model_str.c_str());
-    if (model_str == test_model_str) {
-      mBodyTrkModel = test_model;
-      matched = true;
-      break;
-    }
-  }
-  if (!matched) {
+#if (ZED_SDK_MAJOR_VERSION * 10 + ZED_SDK_MINOR_VERSION) >= 55
+  sl_tools::getEnumParam(
+    shared_from_this(), "body_tracking.model_gen", "GEN_2",
+    sl::BODY_TRACKING_MODEL_GEN::GEN_1,
+    sl::BODY_TRACKING_MODEL_GEN::LAST, mBodyTrkModelGen,
+    " * Body Track. model generation: ");
+
+  // Only 'BODY_18' and 'BODY_34' have a GEN_2 network. The ZED SDK falls back to
+  // the most recent generation it has for the requested model/format, and logs it.
+  bool gen2_format = (mBodyTrkFmt == sl::BODY_FORMAT::BODY_18 ||
+    mBodyTrkFmt == sl::BODY_FORMAT::BODY_34);
+  if (mBodyTrkModelGen == sl::BODY_TRACKING_MODEL_GEN::GEN_2 && !gen2_format) {
     RCLCPP_WARN_STREAM(
       get_logger(),
-      "The value of the parameter 'body_tracking.model' is not valid: '"
-        << model_str << "'. Using the default value.");
+      "'body_tracking.model_gen' is set to 'GEN_2', but '"
+        << sl::toString(mBodyTrkFmt).c_str()
+        << "' has no GEN_2 network. The ZED SDK will fall back to 'GEN_1'. "
+        "Set 'body_tracking.body_format' to 'BODY_18' or 'BODY_34' to run GEN_2.");
   }
-  RCLCPP_INFO_STREAM(
-    get_logger(), " * Body Track. model: "
-      << sl::toString(mBodyTrkModel).c_str());
-
-  std::string fmt_str = "BODY_70";
-  sl_tools::getParam(
-    shared_from_this(), "body_tracking.body_format", fmt_str,
-    fmt_str);
-
-  for (int idx = static_cast<int>(sl::BODY_FORMAT::BODY_18);
-    idx < static_cast<int>(sl::BODY_FORMAT::LAST); idx++)
-  {
-    sl::BODY_FORMAT test_fmt = static_cast<sl::BODY_FORMAT>(idx);
-    std::string test_fmt_str = sl::toString(test_fmt).c_str();
-    std::replace(
-      test_fmt_str.begin(), test_fmt_str.end(), ' ',
-      '_');      // Replace spaces with underscores to match the YAML setting
-    // DEBUG_BT(" Comparing '%s' to '%s'", test_fmt_str.c_str(),
-    // test_fmt.c_str());
-    if (fmt_str == test_fmt_str) {
-      mBodyTrkFmt = test_fmt;
-      matched = true;
-      break;
-    }
-  }
-  if (!matched) {
-    RCLCPP_WARN_STREAM(
-      get_logger(),
-      "The value of the parameter 'body_tracking.body_format' is not valid: '"
-        << fmt_str << "'. Using the default value.");
-  }
-  RCLCPP_INFO_STREAM(
-    get_logger(), " * Body Track. format: "
-      << sl::toString(mBodyTrkFmt).c_str());
+#endif
 
   sl_tools::getParam(
     shared_from_this(),
     "body_tracking.allow_reduced_precision_inference",
     mBodyTrkReducedPrecision, mBodyTrkReducedPrecision,
     " * Body Track. allow reduced precision: ");
+#if (ZED_SDK_MAJOR_VERSION * 10 + ZED_SDK_MINOR_VERSION) >= 55
+  if (mBodyTrkReducedPrecision &&
+    mBodyTrkModelGen == sl::BODY_TRACKING_MODEL_GEN::GEN_2 && gen2_format)
+  {
+    RCLCPP_WARN(
+      get_logger(),
+      "'body_tracking.allow_reduced_precision_inference' has no effect on 'GEN_2', "
+      "which always runs in FP16.");
+  }
+#endif
 
   sl_tools::getParam(
     shared_from_this(), "body_tracking.max_range",
     mBodyTrkMaxRange, mBodyTrkMaxRange,
     " * Body Track. maximum range [m]: ", false, 0.1, 40.0);
 
-  std::string body_sel_str = "FULL";
-  sl_tools::getParam(
-    shared_from_this(), "body_tracking.body_kp_selection",
-    body_sel_str, body_sel_str,
+  sl_tools::getEnumParam(
+    shared_from_this(), "body_tracking.body_kp_selection", "FULL",
+    sl::BODY_KEYPOINTS_SELECTION::FULL,
+    sl::BODY_KEYPOINTS_SELECTION::LAST, mBodyTrkKpSelection,
     " * Body Track. KP selection: ");
-
-  DEBUG_BT("body_selection.body_kp_selection: %s", body_sel_str.c_str());
-
-  for (int idx = static_cast<int>(sl::BODY_KEYPOINTS_SELECTION::FULL);
-    idx < static_cast<int>(sl::BODY_KEYPOINTS_SELECTION::LAST); idx++)
-  {
-    sl::BODY_KEYPOINTS_SELECTION test_kp_sel =
-      static_cast<sl::BODY_KEYPOINTS_SELECTION>(idx);
-    std::string test_body_sel_str = sl::toString(test_kp_sel).c_str();
-    std::replace(
-      test_body_sel_str.begin(), test_body_sel_str.end(), ' ',
-      '_');      // Replace spaces with underscores to match the YAML setting
-    DEBUG_BT(
-      " Comparing '%s' to '%s'", test_body_sel_str.c_str(),
-      body_sel_str.c_str());
-    if (body_sel_str == test_body_sel_str) {
-      mBodyTrkKpSelection = test_kp_sel;
-      matched = true;
-      break;
-    }
-  }
-  if (!matched) {
-    RCLCPP_WARN_STREAM(
-      get_logger(),
-      "The value of the parameter "
-      "'body_tracking.body_kp_selection' is not valid: '"
-        << body_sel_str << "'. Using the default value.");
-  }
 
   sl_tools::getParam(
     shared_from_this(), "body_tracking.enable_body_fitting",
     mBodyTrkFitting, mBodyTrkFitting, " * Body fitting: ");
+  if (mBodyTrkFmt == sl::BODY_FORMAT::BODY_34 && !mBodyTrkFitting) {
+    RCLCPP_WARN(
+      get_logger(),
+      "'body_tracking.body_format' is set to 'BODY_34', which requires body fitting. "
+      "The ZED SDK will enable it even though "
+      "'body_tracking.enable_body_fitting' is false.");
+  }
 
   sl_tools::getParam(
     shared_from_this(), "body_tracking.enable_tracking",
@@ -203,10 +160,9 @@ bool ZedCamera::handleBodyTrkDynamicParams(
 
     mBodyTrkConfThresh = val;
 
-    RCLCPP_INFO_STREAM(
-      get_logger(), "Parameter '" << param.get_name()
-                                  << "' correctly set to "
-                                  << val);
+    DEBUG_STREAM_DYN_PARAMS(
+      "Parameter '" << param.get_name()
+                    << "' correctly set to " << val);
   } else if (param.get_name() ==
     "body_tracking.minimum_keypoints_threshold")
   {
@@ -220,24 +176,17 @@ bool ZedCamera::handleBodyTrkDynamicParams(
       return false;
     }
 
-    double val = param.as_int();
-
-    if ((val < 0) || (val > 70)) {
-      result.successful = false;
-      result.reason = param.get_name() +
-        " must be positive double value in the range [0,70]";
-      RCLCPP_WARN_STREAM(get_logger(), result.reason);
+    if (!sl_tools::checkParamRange(param, mBodyTrkMinKp, 0, 38, result, get_logger())) {
       return false;
     }
 
-    mBodyTrkMinKp = val;
-
-    RCLCPP_INFO_STREAM(
-      get_logger(), "Parameter '" << param.get_name()
-                                  << "' correctly set to "
-                                  << val);
+    DEBUG_STREAM_DYN_PARAMS(
+      "Parameter '" << param.get_name()
+                    << "' correctly set to "
+                    << mBodyTrkMinKp);
   }
 
+  mBodyTrkRtParamsDirty = true;
   return true;
 }
 
@@ -259,8 +208,7 @@ bool ZedCamera::startBodyTracking()
   if (mDepthDisabled) {
     RCLCPP_WARN(
       get_logger(),
-      "Cannot start Body Tracking if "
-      "`depth.depth_mode` is set to `0` [NONE]");
+      "Cannot start Body Tracking if Depth processing is disabled");
     return false;
   }
 
@@ -272,7 +220,7 @@ bool ZedCamera::startBodyTracking()
   if (!mCamera2BaseTransfValid || !mSensor2CameraTransfValid ||
     !mSensor2BaseTransfValid)
   {
-    DEBUG_OD(
+    DEBUG_BT(
       "Tracking transforms not yet ready, Body Tracking starting postponed");
     return false;
   }
@@ -284,25 +232,30 @@ bool ZedCamera::startBodyTracking()
   bt_p.body_format = mBodyTrkFmt;
   bt_p.body_selection = mBodyTrkKpSelection;
   bt_p.detection_model = mBodyTrkModel;
+#if (ZED_SDK_MAJOR_VERSION * 10 + ZED_SDK_MINOR_VERSION) >= 55
+  bt_p.model_gen = mBodyTrkModelGen;
+#endif
   bt_p.enable_body_fitting = mBodyTrkFitting;
   bt_p.enable_segmentation = false;
   bt_p.enable_tracking = mBodyTrkEnableTracking;
   bt_p.max_range = mBodyTrkMaxRange;
   bt_p.prediction_timeout_s = mBodyTrkPredTimeout;
 
-  mBodyTrkInstID = ++mAiInstanceID;
-  bt_p.instance_module_id = mBodyTrkInstID;
+  // ----> Safe enableBodyTracking
+  {
+    std::lock_guard<std::mutex> grab_lock(mGrabMutex);
+    sl::ERROR_CODE btError = mZed->enableBodyTracking(bt_p);
 
-  sl::ERROR_CODE btError = mZed->enableBodyTracking(bt_p);
+    if (btError != sl::ERROR_CODE::SUCCESS) {
+      RCLCPP_ERROR_STREAM(
+        get_logger(),
+        "Body Tracking error: " << sl::toString(btError));
 
-  if (btError != sl::ERROR_CODE::SUCCESS) {
-    RCLCPP_ERROR_STREAM(
-      get_logger(),
-      "Body Tracking error: " << sl::toString(btError));
-
-    mBodyTrkRunning = false;
-    return false;
+      mBodyTrkRunning = false;
+      return false;
+    }
   }
+  // <---- Safe enableBodyTracking
 
   DEBUG_BT("Body Tracking enabled");
 
@@ -326,13 +279,19 @@ void ZedCamera::stopBodyTracking()
     RCLCPP_INFO(get_logger(), "=== Stopping Body Tracking ===");
     mBodyTrkRunning = false;
     mBodyTrkEnabled = false;
-    mZed->disableBodyTracking();
+
+    // ----> Safe disableBodyTracking
+    {
+      std::lock_guard<std::mutex> grab_lock(mGrabMutex);
+      mZed->disableBodyTracking();
+    }
+    // <---- Safe disableBodyTracking
 
     // ----> Send an empty message to indicate that no more objects are tracked
     // (e.g clean RVIZ2)
     auto objMsg = std::make_unique<zed_msgs::msg::ObjectsStamped>();
 
-    objMsg->header.stamp = mFrameTimestamp;
+    objMsg->header.stamp = mUsePubTimestamps ? get_clock()->now() : mFrameTimestamp;
     objMsg->header.frame_id = mLeftCamFrameId;
 
     objMsg->objects.clear();
@@ -341,11 +300,11 @@ void ZedCamera::stopBodyTracking()
       "Publishing EMPTY OBJ message "
         << mPubBodyTrk->get_topic_name());
     try {
-      mPubBodyTrk->publish(std::move(objMsg));
+      if (mPubBodyTrk) {mPubBodyTrk->publish(std::move(objMsg));}
     } catch (std::system_error & e) {
-      DEBUG_STREAM_COMM("Message publishing ecception: " << e.what());
+      DEBUG_STREAM_COMM("Message publishing exception: " << e.what());
     } catch (...) {
-      DEBUG_STREAM_COMM("Message publishing generic ecception: ");
+      DEBUG_STREAM_COMM("Message publishing generic exception: ");
     }
     // <---- Send an empty message to indicate that no more objects are tracked
     // (e.g clean RVIZ2)
@@ -359,7 +318,7 @@ void ZedCamera::processBodies(rclcpp::Time t)
   size_t bt_sub_count = 0;
 
   try {
-    bt_sub_count = count_subscribers(mPubBodyTrk->get_topic_name());
+    if (mPubBodyTrk) {bt_sub_count = mPubBodyTrk->get_subscription_count();}
   } catch (...) {
     rcutils_reset_error();
     DEBUG_STREAM_OD("processBodies: Exception while counting subscribers");
@@ -375,15 +334,19 @@ void ZedCamera::processBodies(rclcpp::Time t)
 
   mBodyTrkSubscribed = true;
 
-  // ----> Process realtime dynamic parameters
-  sl::BodyTrackingRuntimeParameters bt_params_rt;
-  bt_params_rt.detection_confidence_threshold = mBodyTrkConfThresh;
-  bt_params_rt.minimum_keypoints_threshold = mBodyTrkMinKp;
-  // <---- Process realtime dynamic parameters
+  // ----> Update runtime parameters only when changed
+  if (mBodyTrkRtParamsDirty) {
+    sl::BodyTrackingRuntimeParameters bt_params_rt;
+    bt_params_rt.detection_confidence_threshold = mBodyTrkConfThresh;
+    bt_params_rt.minimum_keypoints_threshold = mBodyTrkMinKp;
+    mZed->setBodyTrackingRuntimeParameters(bt_params_rt);
+    mBodyTrkRtParamsDirty = false;
+  }
+  // <---- Update runtime parameters only when changed
 
   sl::Bodies bodies;
   sl::ERROR_CODE btRes =
-    mZed->retrieveBodies(bodies, bt_params_rt, mBodyTrkInstID);
+    mZed->retrieveBodies(bodies);
 
   if (btRes != sl::ERROR_CODE::SUCCESS) {
     RCLCPP_WARN_STREAM(
@@ -404,13 +367,13 @@ void ZedCamera::processBodies(rclcpp::Time t)
 
   auto bodyMsg = std::make_unique<zed_msgs::msg::ObjectsStamped>();
 
-  bodyMsg->header.stamp = t;
+  bodyMsg->header.stamp = mUsePubTimestamps ? get_clock()->now() : t;
   bodyMsg->header.frame_id = mLeftCamFrameId;
 
   bodyMsg->objects.resize(bodyCount);
 
   size_t idx = 0;
-  for (auto body : bodies.body_list) {
+  for (const auto & body : bodies.body_list) {
     std::string label = "Body_";
     label += std::to_string(body.id);
     DEBUG_STREAM_BT("Processing body: " << label);
@@ -476,15 +439,17 @@ void ZedCamera::processBodies(rclcpp::Time t)
     bodyMsg->objects[idx].skeleton_available = true;
 
     uint8_t kp_size = body.keypoint_2d.size();
+    uint8_t kp_size_3d = body.keypoint.size();
     DEBUG_STREAM_BT(" * Skeleton KP: " << static_cast<int>(kp_size));
     if (kp_size <= 70) {
       memcpy(
         &(bodyMsg->objects[idx].skeleton_2d.keypoints[0]),
         &(body.keypoint_2d[0]), 2 * kp_size * sizeof(float));
 
+      uint8_t kp_copy = std::min(kp_size, kp_size_3d);
       memcpy(
         &(bodyMsg->objects[idx].skeleton_3d.keypoints[0]),
-        &(body.keypoint[0]), 3 * kp_size * sizeof(float));
+        &(body.keypoint[0]), 3 * kp_copy * sizeof(float));
     }
 
     // ----------------------------------
@@ -500,11 +465,11 @@ void ZedCamera::processBodies(rclcpp::Time t)
 
   DEBUG_STREAM_OD("Publishing BODY TRK message");
   try {
-    mPubBodyTrk->publish(std::move(bodyMsg));
+    if (mPubBodyTrk) {mPubBodyTrk->publish(std::move(bodyMsg));}
   } catch (std::system_error & e) {
-    DEBUG_STREAM_COMM("Message publishing ecception: " << e.what());
+    DEBUG_STREAM_COMM("Message publishing exception: " << e.what());
   } catch (...) {
-    DEBUG_STREAM_COMM("Message publishing generic ecception: ");
+    DEBUG_STREAM_COMM("Message publishing generic exception: ");
   }
 
   // ----> Diagnostic information update

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 
 <!--
-// Copyright 2024 Stereolabs
+// Copyright 2025 Stereolabs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,13 +17,12 @@
 -->
 
 <robot xmlns:xacro="http://wiki.ros.org/xacro">
-  <xacro:include filename="$(find zed_wrapper)/urdf/include/materials.urdf.xacro" />
   <xacro:property name="M_PI"     value="3.1415926535897931" />
 
   <!--
     Parameters:
       - name: the camera's name.  should match the parameter sent to the launch file for this camera
-      - model: the type of camera, one of zed, zedm, zed2, zed2i, zedx, zedxm, virtual
+      - model: the type of camera, one of zed, zedm, zed2, zed2i, zedx, zedxm, zedxnano, virtual
       - enable_gnss: if true enable the URDF link
   -->
   <xacro:macro name="zed_camera" params="name=zed model=zed enable_gnss=false custom_baseline=0 *gnss_origin">
@@ -35,6 +34,7 @@
       <xacro:property name="screw_offset_z" value="0.0" />
       <xacro:property name="optical_offset_x" value="-0.01" />
       <xacro:property name="mono" value="false" />
+      <xacro:property name="mat" value="0.8 0.8 0.8 1.0" />
     </xacro:if>
     <xacro:if value="${model == 'zedm'}">
       <xacro:property name="baseline" value="0.063" />
@@ -44,6 +44,7 @@
       <xacro:property name="screw_offset_z" value="0.0" />
       <xacro:property name="optical_offset_x" value="0.0" />
       <xacro:property name="mono" value="false" />
+      <xacro:property name="mat" value="0 0 0 1.0" />
     </xacro:if>
     <xacro:if value="${model == 'zed2'}">
       <xacro:property name="baseline" value="0.12" />
@@ -53,6 +54,7 @@
       <xacro:property name="screw_offset_z" value="0.0" />
       <xacro:property name="optical_offset_x" value="-0.01" />
       <xacro:property name="mono" value="false" />
+      <xacro:property name="mat" value="0.25 0.25 0.25 1.0" />
     </xacro:if>
     <xacro:if value="${model == 'zed2i'}">
       <xacro:property name="baseline" value="0.12" />
@@ -62,6 +64,7 @@
       <xacro:property name="screw_offset_z" value="0.0" />
       <xacro:property name="optical_offset_x" value="-0.01" />
       <xacro:property name="mono" value="false" />
+      <xacro:property name="mat" value="0.25 0.25 0.25 1.0" />
     </xacro:if>
     <xacro:if value="${model == 'zedx'}">
       <xacro:property name="baseline" value="0.12" />
@@ -71,6 +74,17 @@
       <xacro:property name="screw_offset_z" value="-0.016" />
       <xacro:property name="optical_offset_x" value="-0.01" />
       <xacro:property name="mono" value="false" />
+      <xacro:property name="mat" value="0.25 0.25 0.25 1.0" />
+    </xacro:if>
+    <xacro:if value="${model == 'zedxhdr'}">
+      <xacro:property name="baseline" value="0.12" />
+      <xacro:property name="height" value="0.032" />
+      <xacro:property name="bottom_slope" value="0.0" />
+      <xacro:property name="screw_offset_x" value="0.0" />
+      <xacro:property name="screw_offset_z" value="-0.016" />
+      <xacro:property name="optical_offset_x" value="-0.01" />
+      <xacro:property name="mono" value="false" />
+      <xacro:property name="mat" value="0.25 0.25 0.25 1.0" />
     </xacro:if>
     <xacro:if value="${model == 'zedxm'}">
       <xacro:property name="baseline" value="0.05" />
@@ -80,6 +94,37 @@
       <xacro:property name="screw_offset_z" value="-0.016" />
       <xacro:property name="optical_offset_x" value="-0.01" />
       <xacro:property name="mono" value="false" />
+      <xacro:property name="mat" value="0.25 0.25 0.25 1.0" />
+    </xacro:if>
+    <xacro:if value="${model == 'zedxhdrmini'}">
+      <xacro:property name="baseline" value="0.05" />
+      <xacro:property name="height" value="0.032" />
+      <xacro:property name="bottom_slope" value="0.0" />
+      <xacro:property name="screw_offset_x" value="0.0" />
+      <xacro:property name="screw_offset_z" value="-0.016" />
+      <xacro:property name="optical_offset_x" value="-0.01" />
+      <xacro:property name="mono" value="false" />
+      <xacro:property name="mat" value="0.25 0.25 0.25 1.0" />
+    </xacro:if>
+    <xacro:if value="${model == 'zedxhdrmax'}">
+      <xacro:property name="baseline" value="0.170" />
+      <xacro:property name="height" value="0.032" />
+      <xacro:property name="bottom_slope" value="0.0" />
+      <xacro:property name="screw_offset_x" value="0.0" />
+      <xacro:property name="screw_offset_z" value="-0.016" />
+      <xacro:property name="optical_offset_x" value="-0.01" />
+      <xacro:property name="mono" value="false" />
+      <xacro:property name="mat" value="0.25 0.25 0.25 1.0" />
+    </xacro:if>
+    <xacro:if value="${model == 'zedxnano'}">
+      <xacro:property name="baseline" value="0.018" />
+      <xacro:property name="height" value="0.032" />
+      <xacro:property name="bottom_slope" value="0.0" />
+      <xacro:property name="screw_offset_x" value="0.0" />
+      <xacro:property name="screw_offset_z" value="-0.016" />
+      <xacro:property name="optical_offset_x" value="-0.01" />
+      <xacro:property name="mono" value="false" />
+      <xacro:property name="mat" value="0.25 0.25 0.25 1.0" />
     </xacro:if>
     <xacro:if value="${model == 'virtual'}">
       <xacro:property name="baseline" value="${custom_baseline}" />
@@ -89,6 +134,7 @@
       <xacro:property name="screw_offset_z" value="-0.0155" />
       <xacro:property name="optical_offset_x" value="0.0" />
       <xacro:property name="mono" value="false" />
+      <xacro:property name="mat" value="0.25 0.25 0.25 1.0" />
     </xacro:if>
     <xacro:if value="${model == 'zedxonegs'}">
       <xacro:property name="baseline" value="0.0" />
@@ -98,6 +144,7 @@
       <xacro:property name="screw_offset_z" value="-0.0155" />
       <xacro:property name="optical_offset_x" value="0.0" />
       <xacro:property name="mono" value="true" />
+      <xacro:property name="mat" value="0.25 0.25 0.25 1.0" />
     </xacro:if>
     <xacro:if value="${model == 'zedxone4k'}">
       <xacro:property name="baseline" value="0.0" />
@@ -107,6 +154,17 @@
       <xacro:property name="screw_offset_z" value="-0.0155" />
       <xacro:property name="optical_offset_x" value="0.0" />
       <xacro:property name="mono" value="true" />
+      <xacro:property name="mat" value="0.25 0.25 0.25 1.0" />
+    </xacro:if>
+    <xacro:if value="${model == 'zedxonehdr'}">
+      <xacro:property name="baseline" value="0.0" />
+      <xacro:property name="height" value="0.025" />
+      <xacro:property name="bottom_slope" value="0.0" />
+      <xacro:property name="screw_offset_x" value="0.00" />
+      <xacro:property name="screw_offset_z" value="-0.0125" />
+      <xacro:property name="optical_offset_x" value="0.0" />
+      <xacro:property name="mono" value="true" />
+      <xacro:property name="mat" value="0.25 0.25 0.25 1.0" />
     </xacro:if>
 
     <!-- Camera mounting point (the threaded screw hole in the bottom) -->
@@ -118,14 +176,16 @@
         <visual>
           <origin xyz="${screw_offset_x} 0 ${screw_offset_z}" rpy="0 0 0"/>
           <geometry>
-<mesh filename="file://$(find zed_msgs)/meshes/${model}.stl"/>
+            <mesh filename="file://$(find zed_msgs)/meshes/${model}.stl"/>
           </geometry>
-          <material name="${model}_mat" />
-        </visual>      
+            <material name="zed_mat">
+              <color rgba="${mat}"/>
+            </material>
+        </visual>
         <collision>
           <origin xyz="${screw_offset_x} 0 ${screw_offset_z}" rpy="0 0 0"/>
           <geometry>
-<mesh filename="file://$(find zed_msgs)/meshes/${model}.stl"/>
+            <mesh filename="file://$(find zed_msgs)/meshes/${model}.stl"/>
           </geometry>
         </collision>
       </xacro:unless>
@@ -143,14 +203,16 @@
           <visual>
             <origin xyz="0 0 0" rpy="0 0 0"/>
             <geometry>
-  <mesh filename="file://$(find zed_msgs)/meshes/${model}.stl"/>
+              <mesh filename="file://$(find zed_msgs)/meshes/${model}.stl"/>
             </geometry>
-            <material name="${model}_mat" />
+            <material name="zed_mat">
+              <color rgba="${mat}"/>
+            </material>
           </visual>
           <collision>
             <origin xyz="0 0 0" rpy="0 0 0"/>
             <geometry>
-  <mesh filename="file://$(find zed_msgs)/meshes/${model}.stl"/>
+              <mesh filename="file://$(find zed_msgs)/meshes/${model}.stl"/>
             </geometry>
           </collision>
         </xacro:if>
@@ -161,11 +223,11 @@
         <origin xyz="${optical_offset_x} ${baseline/2} 0" rpy="0 0 0" />
       </joint>
 
-      <link name="${name}_left_camera_optical_frame"/>
-      <joint name="${name}_left_camera_optical_joint" type="fixed">
+      <link name="${name}_left_camera_frame_optical"/>
+      <joint name="${name}_left_camera_joint_optical" type="fixed">
         <origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}"/>
         <parent link="${name}_left_camera_frame"/>
-        <child link="${name}_left_camera_optical_frame"/>
+        <child link="${name}_left_camera_frame_optical"/>
       </joint>
 
       <!-- Right Camera -->
@@ -174,14 +236,16 @@
           <visual>
             <origin xyz="0 0 0" rpy="0 0 0"/>
             <geometry>
-  <mesh filename="file://$(find zed_msgs)/meshes/${model}.stl"/>
+              <mesh filename="file://$(find zed_msgs)/meshes/${model}.stl"/>
             </geometry>
-            <material name="${model}_mat" />
-          </visual>      
+            <material name="zed_mat">
+              <color rgba="${mat}"/>
+            </material>
+          </visual>
           <collision>
             <origin xyz="0 0 0" rpy="0 0 0"/>
             <geometry>
-  <mesh filename="file://$(find zed_msgs)/meshes/${model}.stl"/>
+              <mesh filename="file://$(find zed_msgs)/meshes/${model}.stl"/>
             </geometry>
           </collision>
         </xacro:if>
@@ -192,11 +256,11 @@
         <origin xyz="${optical_offset_x} -${baseline/2} 0" rpy="0 0 0" />
       </joint>
 
-      <link name="${name}_right_camera_optical_frame"/>
-      <joint name="${name}_right_camera_optical_joint" type="fixed">
+      <link name="${name}_right_camera_frame_optical"/>
+      <joint name="${name}_right_camera_joint_optical" type="fixed">
         <origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}"/>
         <parent link="${name}_right_camera_frame"/>
-        <child link="${name}_right_camera_optical_frame"/>
+        <child link="${name}_right_camera_frame_optical"/>
       </joint>
 
       <!-- ZED2 Sensors -->
@@ -240,11 +304,11 @@
         <origin xyz="${optical_offset_x} 0 0" rpy="0 0 0" />
       </joint>
 
-      <link name="${name}_camera_optical_frame"/>
+      <link name="${name}_camera_frame_optical"/>
       <joint name="${name}_camera_optical_joint" type="fixed">
         <origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}"/>
         <parent link="${name}_camera_frame"/>
-        <child link="${name}_camera_optical_frame"/>
+        <child link="${name}_camera_frame_optical"/>
       </joint>
     </xacro:if>
 
