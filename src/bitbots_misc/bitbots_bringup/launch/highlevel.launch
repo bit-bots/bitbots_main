@@ -5,8 +5,7 @@
     <arg name="behavior" default="true" description="Whether the behavior control system should be started" />
     <arg name="game_controller" default="true" description="Whether the Gamecontroller module should be started" />
     <arg name="ipm" default="true" description="Whether the inverse perspective mapping should be started"/>
-    <arg name="localization" default="true" description="Whether the localization system should be started" />
-    <arg name="fake_localization" default="false" description="Whether to fake the localization with the ground truth of the simulator if the localization system is not started (only in simulation)" />
+    <arg name="localization" default="true" description="Select particle-filter localization, simulator-ground-truth localization, or a static map frame" />
     <arg name="path_planning" default="true" description="Whether the path planning should be started"/>
     <arg name="sim" default="false" description="Whether the robot is running in simulation or on real hardware" />
     <arg name="teamcom" default="false" description="Whether the team communication system should be started" />
@@ -66,24 +65,22 @@
         </include>
     </group>
     <!-- launch localization or fake localization -->
-    <group if="$(var localization)">
+    <group if="$(eval '\'$(var localization)\' == \'true\'')">
         <include file="$(find-pkg-share bitbots_localization)/launch/localization.launch">
             <arg name="sim" value="$(var sim)"/>
         </include>
     </group>
-    <group unless="$(var localization)">
-        <group if="$(var fake_localization)">
-            <!-- publish map frame from the ground truth of the simulator -->
-            <include file="$(find-pkg-share bitbots_mujoco_sim)/launch/fake_localization.launch">
-                <arg name="sim" value="$(var sim)"/>
-            </include>
-        </group>
-        <group unless="$(var fake_localization)">
-            <!-- simulate map frame -->
-            <node name="map_odom" pkg="tf2_ros" exec="static_transform_publisher" args="--x 0 --y 0 --z 0 --roll 0 --pitch 0 --yaw 0 --frame-id map --child-frame-id odom" />
-            <!-- publish perfect covariance -->
-            <!--node name="localization_covariance" pkg="bitbots_localization" exec="rviz_localization_sim.py" output="screen" /-->
-        </group>
+    <group if="$(eval '\'$(var localization)\' == \'fake\'')">
+        <!-- publish map frame from the ground truth of the simulator -->
+        <include file="$(find-pkg-share bitbots_mujoco_sim)/launch/fake_localization.launch">
+            <arg name="sim" value="$(var sim)"/>
+        </include>
+    </group>
+    <group if="$(eval '\'$(var localization)\' == \'none\'')">
+        <!-- simulate map frame -->
+        <node name="map_odom" pkg="tf2_ros" exec="static_transform_publisher" args="--x 0 --y 0 --z 0 --roll 0 --pitch 0 --yaw 0 --frame-id map --child-frame-id odom" />
+        <!-- publish perfect covariance -->
+        <!--node name="localization_covariance" pkg="bitbots_localization" exec="rviz_localization_sim.py" output="screen" /-->
     </group>
 
     <!-- launch path planning -->

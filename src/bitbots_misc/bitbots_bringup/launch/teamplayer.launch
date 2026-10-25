@@ -5,8 +5,7 @@
     <arg name="behavior_dsd_file" default="main.dsd" description="The behavior dsd file that should be used" />
     <arg name="game_controller" default="true" description="Whether the Gamecontroller module should be started" />
     <arg name="ipm" default="true" description="Whether the inverse perspective mapping should be started"/>
-    <arg name="localization" default="true" description="Whether the localization system should be started" />
-    <arg name="fake_localization" default="false" description="Whether to fake the localization with the ground truth of the simulator if the localization system is not started (only in simulation)" />
+    <arg name="localization" default="true" description="Select particle-filter localization, simulator-ground-truth localization, or a static map frame" />
     <arg name="motion" default="true" description="Whether the motion control system should be started" />
     <arg name="path_planning" default="true" description="Whether the path planning should be started"/>
     <arg name="sim" default="false" description="Whether the robot is running in simulation or on real hardware" />
@@ -55,7 +54,6 @@
         <arg name="game_controller" value="$(var game_controller)" />
         <arg name="ipm" value="$(var ipm)" />
         <arg name="localization" value="$(var localization)" />
-        <arg name="fake_localization" value="$(var fake_localization)" />
         <arg name="path_planning" value="$(var path_planning)" />
         <arg name="sim" value="$(var sim)" />
         <arg name="teamcom" value="$(var teamcom)" />

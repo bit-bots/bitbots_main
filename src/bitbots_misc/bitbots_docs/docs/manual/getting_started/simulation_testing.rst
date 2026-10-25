@@ -51,7 +51,7 @@ Test the complete software stack in simulation
 
     .. code-block:: bash
 
-        ros2 launch bitbots_bringup simulator_teamplayer.launch localization:=false fake_localization:=true
+        ros2 launch bitbots_bringup simulator_teamplayer.launch localization:=fake
 
   The fake localization assumes the robot starts on its own half and orients the map frame accordingly.
   The same arguments can be passed to ``mujoco_simulation.launch.py``, where the ground truth is bridged into each robot's domain.
