@@ -16,7 +16,7 @@ class Joint:
         self.ros_name: str = ros_name
         self.name: str = name if name is not None else ros_name
         self.joint_instance: int = model.joint(self.name)
-        self.actuator_instance: int = model.actuator(self.name.replace("_joint_", "_"))
+        self.actuator_instance: int = model.actuator(self.name.replace("_joint", ""))
 
         aid = self.actuator_instance.id
         self._default_kp: float = float(model.actuator_gainprm[aid, 0])
