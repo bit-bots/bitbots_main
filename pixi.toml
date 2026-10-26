@@ -234,6 +234,7 @@ ALSA_PLUGIN_DIR = "/usr/lib/x86_64-linux-gnu/alsa-lib"
 scripts = [
     "install/setup.sh",
     "scripts/ros.plugin.sh",
+    "scripts/activate_nixos_gl.sh",
 ]
 
 [environments]
