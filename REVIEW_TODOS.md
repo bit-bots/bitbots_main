@@ -29,6 +29,13 @@ re-check of build-system findings against the head of PR #944
       is what the deploy scripts use via tmux; defaults already diverge
       (e.g. `monitoring`). Either migrate the deploy path to the TUI or scope
       it explicitly as an operator/dev tool.
+      Decision: migrate. Done: process management split into
+      `bitbots_orchestrate` (backend with HTTP-over-Unix-socket API) and the
+      `teamplayer` TUI frontend, both in `src/bitbots_bringup`. Open: TUI
+      lacks parts of `teamplayer.launch` (player state aggregator, workspace
+      status publisher, static map→odom when localization is off); switch
+      deploy to `bitbots_orchestrate --autostart --no-zenoh`; cover the sim
+      launch files; then remove `teamplayer.launch`.
 
 ## Nits / polish
 

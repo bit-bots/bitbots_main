@@ -10,6 +10,32 @@ Global Software Overview
    - A high level data flow diagram of the software stack.
    - A list of all bitbots packages with a short description, grouped by topic.
 
+Orchestrator and Teamplayer TUI
+===============================
+
+``bitbots_bringup`` contains a process orchestrator and a terminal frontend for it.
+
+``bitbots_orchestrate`` (``pixi run orchestrate``) starts, stops and restarts the software components of the robot,
+each as its own process group, and keeps their logs.
+Its output is the combined log of all components.
+Pass ``--autostart`` to start all enabled components right away,
+and ``--help`` to see how to preselect the simulation mode, field, DSD file and components.
+
+``teamplayer`` (``pixi run teamplayer``) is a TUI that connects to a running orchestrator.
+It configures and starts the components, shows their state and logs, and restarts or stops single components.
+Quitting the TUI leaves the components running, so the TUI can be closed and reopened at any time.
+
+Both talk over an HTTP API on a Unix socket in ``$XDG_RUNTIME_DIR/bitbots_orchestrate``.
+Several orchestrators can run on one machine, e.g. for multiple simulated robots, by giving each a different ``--name``;
+pass the same ``--name`` to the TUI to connect to it.
+A second orchestrator with the same name refuses to start.
+The routes live below ``/api/v1``, see ``orchestrate/src/server.rs`` in ``bitbots_bringup``.
+For example, the current state can be queried with:
+
+.. code-block:: bash
+
+   curl --unix-socket $XDG_RUNTIME_DIR/bitbots_orchestrate/default.sock http://localhost/api/v1/status
+
 Bringup Launch Scripts
 ======================
 
