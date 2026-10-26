@@ -21,9 +21,9 @@ jobs:
 
       # Remove comments to spawn an interactive debugging ssh shell in the ci
       - name: Setup tmate session
-         uses: mxschmitt/action-tmate@v3
-         with:
-           detached: true
+        uses: mxschmitt/action-tmate@v3
+        with:
+          detached: true
 
       - name: Check out repository
         uses: actions/checkout@v7
