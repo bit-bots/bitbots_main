@@ -169,6 +169,7 @@ endfunction()
 
 # Build a standalone Rust binary and install it to lib/${PROJECT_NAME}/ so
 # it is launchable via `ros2 run ${PROJECT_NAME} <binary_name>`.
+# May be called several times per package, each crate gets its own test.
 #
 # Usage: cargo_binary(<binary_name> [PACKAGE <cargo_crate_name>])
 #   PACKAGE defaults to ${PROJECT_NAME}
@@ -199,7 +200,7 @@ function(cargo_binary BINARY_NAME)
 
   if(BUILD_TESTING)
     add_test(
-      NAME cargo_test
+      NAME cargo_test_${_ARGS_PACKAGE}
       COMMAND ${CMAKE_COMMAND} "-E" "env" "--unset=MAKEFLAGS" "--unset=MFLAGS"
         cargo test --profile colcon --package ${_ARGS_PACKAGE}
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
