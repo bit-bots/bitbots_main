@@ -1,0 +1,11 @@
+[package]
+name = "bitbots_extrinsic_calibration"
+version = "0.1.0"
+authors = ["Florian Vahl <git@flova.de>"]
+edition = "2021"
+
+[dependencies]
+r2r = "0.9"
+futures = "0.3.15"
+tokio = { version = "1", features = ["full"] }
+glam = "0.30.9"
