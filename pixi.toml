@@ -13,7 +13,8 @@ version = "0.1.0"
 [tasks]
 zenoh = "ros2 run rmw_zenoh_cpp rmw_zenohd"
 deploy = {cmd = "scripts/deploy_robots.py", description = "Deploys the current environment."}
-teamplayer = { cmd = "ros2 run bitbots_bringup teamplayer", description = "Launch the main software components" }
+orchestrate = { cmd = "ros2 run bitbots_bringup bitbots_orchestrate", description = "Run the process orchestrator for the main software components" }
+teamplayer = { cmd = "ros2 run bitbots_bringup teamplayer", description = "TUI to configure and control the main software components via the orchestrator" }
 
 # Default stage `pre-commit` enables ruff auto-formatting, stage `manual` disables ruff auto-formatting, only shows diff
 format = {cmd = "sh -c 'pre-commit run --all-files --hook-stage \"${PRE_COMMIT_STAGE:-pre-commit}\"'", description = "Runs code formatting and linting."}

@@ -8,8 +8,9 @@ use ratatui::{
     Frame,
 };
 
-use crate::app::{App, ConfigFocus, ConfirmAction, ProcState, Screen};
-use crate::components::COMPONENT_DEFS;
+use bitbots_orchestrate::api::ProcState;
+
+use crate::app::{App, ConfigFocus, ConfirmAction, Screen};
 
 // ─── Banner ───────────────────────────────────────────────────────────────────
 
@@ -44,6 +45,10 @@ fn spinner_char(tick: u64) -> char {
 // ─── Top-level dispatch ───────────────────────────────────────────────────────
 
 pub fn draw(f: &mut Frame, app: &App) {
+    if app.status.is_none() {
+        draw_waiting(f, app);
+        return;
+    }
     match &app.screen {
         Screen::Config => draw_config(f, app),
         Screen::Runtime => draw_runtime(f, app),
@@ -53,6 +58,44 @@ pub fn draw(f: &mut Frame, app: &App) {
     if app.confirm_action.is_some() {
         draw_confirm_popup(f, app);
     }
+    draw_error_line(f, app);
+}
+
+/// Shown until the orchestrator has been reached once.
+fn draw_waiting(f: &mut Frame, app: &App) {
+    let area = f.area();
+    let reason = app.connection_error.as_deref().unwrap_or("connecting…");
+    let text = format!(
+        "{BANNER}\n\nWaiting for bitbots_orchestrate at {}\n\n{reason}\n\n\
+         Start it with: ros2 run bitbots_bringup bitbots_orchestrate\n\nq: quit",
+        app.client.socket().display()
+    );
+    f.render_widget(
+        Paragraph::new(text)
+            .style(Style::default().fg(Color::Cyan))
+            .alignment(Alignment::Center)
+            .wrap(Wrap { trim: false }),
+        area,
+    );
+}
+
+/// Replaces the bottom hint line while the orchestrator is unreachable or refused an action.
+fn draw_error_line(f: &mut Frame, app: &App) {
+    let msg = match (&app.connection_error, &app.action_error) {
+        (Some(e), _) => format!(" orchestrator unreachable: {e}"),
+        (None, Some(e)) => format!(" {e}"),
+        (None, None) => return,
+    };
+    let area = f.area();
+    if area.height == 0 {
+        return;
+    }
+    let line = Rect::new(area.x, area.y + area.height - 1, area.width, 1);
+    f.render_widget(Clear, line);
+    f.render_widget(
+        Paragraph::new(msg).style(Style::default().fg(Color::White).bg(Color::Red)),
+        line,
+    );
 }
 
 // ─── Config screen ────────────────────────────────────────────────────────────
@@ -84,8 +127,10 @@ pub fn draw_config(f: &mut Frame, app: &App) {
     draw_start_button(f, app, chunks[3]);
 
     f.render_widget(
-        Paragraph::new(" Tab/↑↓/←→: navigate  Space/Enter: toggle/activate  q: exit (confirm)")
-            .style(Style::default().fg(Color::DarkGray)),
+        Paragraph::new(
+            " Tab/↑↓/←→: navigate  Space/Enter: toggle/activate  q: quit (components keep running)",
+        )
+        .style(Style::default().fg(Color::DarkGray)),
         chunks[4],
     );
 }
@@ -124,7 +169,7 @@ fn draw_config_flags(f: &mut Frame, app: &App, area: Rect) {
     let dsd_focused = app.config_focus == ConfigFocus::DsdFile;
 
     f.render_widget(
-        Paragraph::new(if app.zenoh_enabled() {
+        Paragraph::new(if app.zenoh().is_some_and(|c| c.enabled) {
             "[✓] Zenoh"
         } else {
             "[ ] Zenoh"
@@ -139,7 +184,7 @@ fn draw_config_flags(f: &mut Frame, app: &App, area: Rect) {
     );
 
     f.render_widget(
-        Paragraph::new(if app.params.sim {
+        Paragraph::new(if app.sim() {
             "[✓] Simulator"
         } else {
             "[ ] Simulator"
@@ -181,7 +226,7 @@ fn draw_config_components(f: &mut Frame, app: &App, area: Rect) {
         .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
         .split(area);
 
-    let left_count = (toggleables.len() + 1) / 2;
+    let left_count = toggleables.len().div_ceil(2);
     let (left, right) = toggleables.split_at(left_count);
     draw_component_column(f, app, col_chunks[0], left, 0);
     draw_component_column(f, app, col_chunks[1], right, left.len());
@@ -205,8 +250,7 @@ fn draw_component_column(
 
     for (local_i, &comp_idx) in comp_indices.iter().enumerate() {
         let focused = app.config_focus == ConfigFocus::Component(focus_offset + local_i);
-        let comp = &app.components[comp_idx];
-        let def = &COMPONENT_DEFS[comp_idx];
+        let comp = &app.components()[comp_idx];
 
         let check = if comp.enabled { "✓" } else { " " };
         let style = if focused {
@@ -221,7 +265,7 @@ fn draw_component_column(
 
         if local_i < chunks.len() {
             f.render_widget(
-                Paragraph::new(format!("[{check}] {}", def.name)).style(style),
+                Paragraph::new(format!("[{check}] {}", comp.name)).style(style),
                 chunks[local_i],
             );
         }
@@ -230,7 +274,7 @@ fn draw_component_column(
 
 fn draw_start_button(f: &mut Frame, app: &App, area: Rect) {
     let focused = app.config_focus == ConfigFocus::Start;
-    let has_running = app.components.iter().any(|c| c.state == ProcState::Running);
+    let has_running = app.components().iter().any(|c| c.state.is_alive());
     let label = if has_running {
         "  Continue →  "
     } else {
@@ -303,12 +347,12 @@ pub fn draw_runtime(f: &mut Frame, app: &App) {
 
 fn draw_runtime_header(f: &mut Frame, app: &App, area: Rect) {
     let running = app
-        .components
+        .components()
         .iter()
         .filter(|c| c.state == ProcState::Running)
         .count();
-    let total_enabled = app.components.iter().filter(|c| c.enabled).count();
-    let sim_badge = if app.params.sim { "  [SIM]" } else { "" };
+    let total_enabled = app.components().iter().filter(|c| c.enabled).count();
+    let sim_badge = if app.sim() { "  [SIM]" } else { "" };
     f.render_widget(
         Paragraph::new(format!(
             " Bit-Bots Teamplayer  [{running}/{total_enabled} running]{sim_badge}"
@@ -344,8 +388,7 @@ fn draw_runtime_list(f: &mut Frame, app: &App, area: Rect) {
             break;
         }
         let selected = app.runtime_selected == vis_i;
-        let comp = &app.components[comp_idx];
-        let def = &COMPONENT_DEFS[comp_idx];
+        let comp = &app.components()[comp_idx];
 
         let row_style = if selected {
             Style::default().bg(Color::DarkGray)
@@ -361,7 +404,7 @@ fn draw_runtime_list(f: &mut Frame, app: &App, area: Rect) {
 
         let line = Line::from(vec![
             Span::styled(
-                if def.infrastructure { "·" } else { " " },
+                if comp.infrastructure { "·" } else { " " },
                 Style::default().fg(Color::DarkGray),
             ),
             Span::styled(spinner, Style::default().fg(Color::Green)),
@@ -371,7 +414,7 @@ fn draw_runtime_list(f: &mut Frame, app: &App, area: Rect) {
             ),
             Span::raw("  "),
             Span::styled(
-                format!("{:<18}", def.name),
+                format!("{:<18}", comp.name),
                 if selected {
                     Style::default()
                         .fg(Color::White)
@@ -427,7 +470,7 @@ fn draw_joint_logs(f: &mut Frame, app: &App, area: Rect) {
     let inner_w = area.width.saturating_sub(2) as usize;
 
     let lines: Vec<Line<'static>> = {
-        let logs = app.all_logs.lock().unwrap();
+        let logs = &app.all_logs.lines;
         // Grab more entries than the panel height — wrapping will consume extra rows.
         let skip = logs.len().saturating_sub(inner_h * 3);
         logs.iter()
@@ -460,11 +503,10 @@ fn draw_joint_logs(f: &mut Frame, app: &App, area: Rect) {
         .map(|l| {
             let chars: usize = l.spans.iter().map(|s| s.content.chars().count()).sum();
             if inner_w > 0 {
-                (chars + inner_w - 1) / inner_w
+                chars.div_ceil(inner_w).max(1)
             } else {
                 1
             }
-            .max(1)
         })
         .sum();
     let scroll = total_rows.saturating_sub(inner_h) as u16;
@@ -482,8 +524,11 @@ fn draw_joint_logs(f: &mut Frame, app: &App, area: Rect) {
 
 pub fn draw_logs(f: &mut Frame, app: &App, comp_idx: usize) {
     let area = f.area();
-    let comp = &app.components[comp_idx];
-    let name = COMPONENT_DEFS[comp_idx].name;
+    let name = app
+        .components()
+        .get(comp_idx)
+        .map(|c| c.name.as_str())
+        .unwrap_or("?");
 
     let chunks = Layout::default()
         .direction(Direction::Vertical)
@@ -508,7 +553,7 @@ pub fn draw_logs(f: &mut Frame, app: &App, comp_idx: usize) {
     let log_height = chunks[1].height.saturating_sub(2) as usize; // inner height (minus borders)
     app.log_viewport_height.set(log_height);
     let (lines, total, scroll) = {
-        let logs = comp.logs.lock().unwrap();
+        let logs = &app.component_logs.lines;
         let total = logs.len();
         let max_scroll = total.saturating_sub(log_height);
         let scroll = app.log_scroll.min(max_scroll);
@@ -564,7 +609,7 @@ pub fn draw_all_logs(f: &mut Frame, app: &App) {
     let log_height = chunks[0].height.saturating_sub(2) as usize;
     app.log_viewport_height.set(log_height);
     let (lines, total, scroll) = {
-        let logs = app.all_logs.lock().unwrap();
+        let logs = &app.all_logs.lines;
         let total = logs.len();
         let max_scroll = total.saturating_sub(log_height);
         let scroll = app.log_scroll.min(max_scroll);
@@ -629,10 +674,6 @@ pub fn draw_all_logs(f: &mut Frame, app: &App) {
 
 pub fn draw_confirm_popup(f: &mut Frame, app: &App) {
     let (title, msg) = match &app.confirm_action {
-        Some(ConfirmAction::Quit) => (
-            " Exit ",
-            "Exit teamplayer?\nAll running components will be stopped.",
-        ),
         Some(ConfirmAction::StopAll) => (" Stop All ", "Stop all running components?"),
         None => return,
     };

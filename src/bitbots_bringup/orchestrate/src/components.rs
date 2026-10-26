@@ -1,21 +1,15 @@
-// ─── Global params ────────────────────────────────────────────────────────────
+use crate::api::Config;
 
 pub const FIELDNAME_DEFAULT_HW: &str = "labor";
 pub const FIELDNAME_DEFAULT_SIM: &str = "hsl_kid";
+pub const DSD_FILE_DEFAULT: &str = "main.dsd";
 
-#[derive(Clone, Debug)]
-pub struct GlobalParams {
-    pub sim: bool,
-    pub fieldname: String,
-    pub dsd_file: String,
-}
-
-impl Default for GlobalParams {
+impl Default for Config {
     fn default() -> Self {
         Self {
             sim: false,
             fieldname: FIELDNAME_DEFAULT_HW.to_string(),
-            dsd_file: "main.dsd".to_string(),
+            dsd_file: DSD_FILE_DEFAULT.to_string(),
         }
     }
 }
@@ -32,7 +26,7 @@ pub struct ComponentDef {
     /// Only shown/started when sim mode is active (e.g. the simulator itself)
     pub sim_component: bool,
     /// Returns the list of commands to spawn for this component
-    pub cmds: fn(&GlobalParams) -> Vec<Vec<String>>,
+    pub cmds: fn(&Config) -> Vec<Vec<String>>,
 }
 
 // ─── Command helpers ──────────────────────────────────────────────────────────
@@ -49,11 +43,15 @@ pub fn ros2_run(pkg: &str, exec: &str, extra: &[&str]) -> Vec<String> {
     v
 }
 
-fn sim(p: &GlobalParams) -> String {
+fn sim(p: &Config) -> String {
     format!("sim:={}", p.sim)
 }
 
 // ─── Static component registry ────────────────────────────────────────────────
+
+pub fn component_idx(key: &str) -> Option<usize> {
+    COMPONENT_DEFS.iter().position(|d| d.key == key)
+}
 
 pub static COMPONENT_DEFS: &[ComponentDef] = &[
     // ── Infrastructure (always started) ──────────────────────────────────────

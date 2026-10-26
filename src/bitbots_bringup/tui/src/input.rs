@@ -1,6 +1,7 @@
+use bitbots_orchestrate::api::ConfigUpdate;
 use crossterm::event::{KeyCode, KeyModifiers};
 
-use crate::app::{App, ConfigFocus, ConfirmAction, ProcState, Screen};
+use crate::app::{App, ConfigFocus, ConfirmAction, Screen};
 
 pub async fn handle_config_key(app: &mut App, key: KeyCode, modifiers: KeyModifiers) -> bool {
     match (&app.config_focus.clone(), key) {
@@ -20,61 +21,76 @@ pub async fn handle_config_key(app: &mut App, key: KeyCode, modifiers: KeyModifi
 
         // Zenoh toggle
         (ConfigFocus::Zenoh, KeyCode::Char(' ') | KeyCode::Enter) => {
-            app.set_zenoh_enabled(!app.zenoh_enabled());
+            if let Some(enabled) = app.zenoh().map(|c| c.enabled) {
+                let result = app.client.set_enabled("zenoh", !enabled).await;
+                app.apply_action(result);
+            }
         }
 
-        // Sim toggle
+        // Sim toggle; the orchestrator also switches the fieldname to the mode's default
         (ConfigFocus::Sim, KeyCode::Char(' ') | KeyCode::Enter) => {
-            app.params.sim = !app.params.sim;
-            app.apply_sim_toggle();
+            let update = ConfigUpdate {
+                sim: Some(!app.sim()),
+                ..Default::default()
+            };
+            let result = app.client.update_config(&update).await;
+            app.apply_action(result);
+            if let Some(status) = &app.status {
+                app.config_fieldname_input = status.config.fieldname.clone();
+            }
+            app.config_focus = ConfigFocus::Zenoh;
         }
 
-        // Fieldname text input
+        // Fieldname text input, sent to the orchestrator on launch
         (ConfigFocus::Fieldname, KeyCode::Char(c)) => {
             if !modifiers.contains(KeyModifiers::CONTROL) {
                 app.config_fieldname_input.push(c);
-                app.params.fieldname = app.config_fieldname_input.clone();
             }
         }
         (ConfigFocus::Fieldname, KeyCode::Backspace) => {
             app.config_fieldname_input.pop();
-            app.params.fieldname = app.config_fieldname_input.clone();
         }
 
-        // DSD file text input
+        // DSD file text input, sent to the orchestrator on launch
         (ConfigFocus::DsdFile, KeyCode::Char(c)) => {
             if !modifiers.contains(KeyModifiers::CONTROL) {
                 app.config_dsd_input.push(c);
-                app.params.dsd_file = app.config_dsd_input.clone();
             }
         }
         (ConfigFocus::DsdFile, KeyCode::Backspace) => {
             app.config_dsd_input.pop();
-            app.params.dsd_file = app.config_dsd_input.clone();
         }
 
         // Component checkbox toggle
         (ConfigFocus::Component(fi), KeyCode::Char(' ') | KeyCode::Enter) => {
-            let fi = *fi;
             let toggleables = app.toggleable_indices();
-            if fi < toggleables.len() {
-                let comp_idx = toggleables[fi];
-                app.components[comp_idx].enabled = !app.components[comp_idx].enabled;
+            if let Some(&comp_idx) = toggleables.get(*fi) {
+                let comp = &app.components()[comp_idx];
+                let (key, enabled) = (comp.key.clone(), comp.enabled);
+                let result = app.client.set_enabled(&key, !enabled).await;
+                app.apply_action(result);
             }
         }
 
         // Start / Continue button
         (ConfigFocus::Start, KeyCode::Enter | KeyCode::Char(' ')) => {
-            app.params.fieldname = app.config_fieldname_input.clone();
-            app.params.dsd_file = app.config_dsd_input.clone();
-            app.screen = Screen::Runtime;
-            app.start_all_enabled().await;
+            let update = ConfigUpdate {
+                sim: None,
+                fieldname: Some(app.config_fieldname_input.clone()),
+                dsd_file: Some(app.config_dsd_input.clone()),
+            };
+            let result = app.client.update_config(&update).await;
+            let ok = result.is_ok();
+            app.apply_action(result);
+            if ok {
+                let result = app.client.start_all().await;
+                app.apply_action(result);
+                app.screen = Screen::Runtime;
+            }
         }
 
-        // Quit
-        (_, KeyCode::Char('q') | KeyCode::Char('Q') | KeyCode::Esc) => {
-            app.confirm_action = Some(ConfirmAction::Quit);
-        }
+        // Quit; the components keep running in the orchestrator
+        (_, KeyCode::Char('q') | KeyCode::Char('Q') | KeyCode::Esc) => return true,
 
         _ => {}
     }
@@ -84,7 +100,9 @@ pub async fn handle_config_key(app: &mut App, key: KeyCode, modifiers: KeyModifi
 pub async fn handle_runtime_key(app: &mut App, key: KeyCode, _modifiers: KeyModifiers) -> bool {
     let visible = app.runtime_visible_indices();
     let sel = app.runtime_selected.min(visible.len().saturating_sub(1));
-    let comp_idx = visible.get(sel).copied();
+    let selected = visible
+        .get(sel)
+        .map(|&idx| (idx, app.components()[idx].clone()));
 
     match key {
         KeyCode::Down | KeyCode::Char('j') => {
@@ -95,37 +113,26 @@ pub async fn handle_runtime_key(app: &mut App, key: KeyCode, _modifiers: KeyModi
         }
 
         KeyCode::Char('s') => {
-            if let Some(idx) = comp_idx {
-                match app.components[idx].state {
-                    ProcState::Running | ProcState::Stopping | ProcState::Restarting => {
-                        app.stop_component(idx).await;
-                    }
-                    _ => {
-                        app.components[idx].state = ProcState::Idle;
-                        app.start_component(idx).await;
-                    }
-                }
+            if let Some((_, comp)) = selected {
+                let result = if comp.state.is_alive() {
+                    app.client.stop(&comp.key).await
+                } else {
+                    app.client.start(&comp.key).await
+                };
+                app.apply_action(result);
             }
         }
 
         KeyCode::Char('r') => {
-            if let Some(idx) = comp_idx {
-                match app.components[idx].state {
-                    ProcState::Running => app.restart_component(idx),
-                    ProcState::Stopping | ProcState::Restarting => {}
-                    _ => app.start_component(idx).await,
-                }
+            if let Some((_, comp)) = selected {
+                let result = app.client.restart(&comp.key).await;
+                app.apply_action(result);
             }
         }
 
         KeyCode::Char('l') => {
-            if let Some(idx) = comp_idx {
-                app.log_scroll = app.components[idx]
-                    .logs
-                    .lock()
-                    .unwrap()
-                    .len()
-                    .saturating_sub(1);
+            if let Some((idx, _)) = selected {
+                app.log_scroll = 0;
                 app.log_follow = true;
                 app.screen = Screen::Logs(idx);
             }
@@ -134,7 +141,7 @@ pub async fn handle_runtime_key(app: &mut App, key: KeyCode, _modifiers: KeyModi
         // Right: show sidebar if hidden, open AllLogs if sidebar already visible
         KeyCode::Right => {
             if app.show_log_panel {
-                app.log_scroll = app.all_logs.lock().unwrap().len().saturating_sub(1);
+                app.log_scroll = app.all_logs.lines.len().saturating_sub(1);
                 app.log_follow = true;
                 app.screen = Screen::AllLogs;
             } else {
@@ -147,43 +154,39 @@ pub async fn handle_runtime_key(app: &mut App, key: KeyCode, _modifiers: KeyModi
             app.show_log_panel = false;
         }
 
-        KeyCode::Char('a') => app.start_all_enabled().await,
+        KeyCode::Char('a') => {
+            let result = app.client.start_all().await;
+            app.apply_action(result);
+        }
         KeyCode::Char('x') => app.confirm_action = Some(ConfirmAction::StopAll),
         KeyCode::Esc => app.screen = Screen::Config,
-        KeyCode::Char('q') | KeyCode::Char('Q') => {
-            app.confirm_action = Some(ConfirmAction::Quit);
-        }
+        KeyCode::Char('q') | KeyCode::Char('Q') => return true,
         _ => {}
     }
     false
 }
 
-pub async fn handle_logs_key(
-    app: &mut App,
-    key: KeyCode,
-    _modifiers: KeyModifiers,
-    comp_idx: usize,
-) -> bool {
-    let log_len = app.components[comp_idx].logs.lock().unwrap().len();
+pub fn handle_logs_key(app: &mut App, key: KeyCode) -> bool {
+    let log_len = app.component_logs.lines.len();
     scroll_keys(app, key, log_len);
     match key {
         KeyCode::Esc | KeyCode::Char('q') | KeyCode::Char('l') => {
             app.screen = Screen::Runtime;
         }
-        KeyCode::Char('Q') => app.confirm_action = Some(ConfirmAction::Quit),
+        KeyCode::Char('Q') => return true,
         _ => {}
     }
     false
 }
 
 pub fn handle_all_logs_key(app: &mut App, key: KeyCode) -> bool {
-    let log_len = app.all_logs.lock().unwrap().len();
+    let log_len = app.all_logs.lines.len();
     scroll_keys(app, key, log_len);
     match key {
         KeyCode::Esc | KeyCode::Char('q') | KeyCode::Char('l') | KeyCode::Left => {
             app.screen = Screen::Runtime;
         }
-        KeyCode::Char('Q') => app.confirm_action = Some(ConfirmAction::Quit),
+        KeyCode::Char('Q') => return true,
         _ => {}
     }
     false
@@ -224,12 +227,14 @@ fn scroll_keys(app: &mut App, key: KeyCode, log_len: usize) {
     }
 }
 
-pub async fn handle_confirm_key(app: &mut App, key: KeyCode) -> bool {
+pub async fn handle_confirm_key(app: &mut App, key: KeyCode) {
     match key {
         KeyCode::Char('y') | KeyCode::Char('Y') | KeyCode::Enter => {
             match app.confirm_action.take() {
-                Some(ConfirmAction::Quit) => return true,
-                Some(ConfirmAction::StopAll) => app.stop_all().await,
+                Some(ConfirmAction::StopAll) => {
+                    let result = app.client.stop_all().await;
+                    app.apply_action(result);
+                }
                 None => {}
             }
         }
@@ -238,32 +243,32 @@ pub async fn handle_confirm_key(app: &mut App, key: KeyCode) -> bool {
         }
         _ => {}
     }
-    false
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::app::tests::offline_app;
 
     #[tokio::test]
     async fn confirm_dialog_only_reacts_to_labeled_keys() {
-        let mut app = App::new();
-        app.confirm_action = Some(ConfirmAction::Quit);
+        let mut app = offline_app();
+        app.confirm_action = Some(ConfirmAction::StopAll);
         for key in [KeyCode::Char('x'), KeyCode::Char(' '), KeyCode::Up] {
-            assert!(!handle_confirm_key(&mut app, key).await);
+            handle_confirm_key(&mut app, key).await;
             assert!(app.confirm_action.is_some(), "{key:?} must not cancel");
         }
         for key in [KeyCode::Char('n'), KeyCode::Char('N'), KeyCode::Esc] {
-            app.confirm_action = Some(ConfirmAction::Quit);
-            assert!(!handle_confirm_key(&mut app, key).await);
+            app.confirm_action = Some(ConfirmAction::StopAll);
+            handle_confirm_key(&mut app, key).await;
             assert!(app.confirm_action.is_none(), "{key:?} must cancel");
         }
         for key in [KeyCode::Char('y'), KeyCode::Char('Y'), KeyCode::Enter] {
-            app.confirm_action = Some(ConfirmAction::Quit);
-            assert!(
-                handle_confirm_key(&mut app, key).await,
-                "{key:?} must confirm"
-            );
+            app.confirm_action = Some(ConfirmAction::StopAll);
+            handle_confirm_key(&mut app, key).await;
+            assert!(app.confirm_action.is_none(), "{key:?} must confirm");
+            // There is no orchestrator in this test, the refusal must be visible.
+            assert!(app.action_error.is_some());
         }
     }
 }
