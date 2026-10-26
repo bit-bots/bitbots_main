@@ -4,7 +4,7 @@ from game_controller_hsl_interfaces.msg import GameState
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile
 
-from bitbots_mujoco_sim.world import BASE_TEAM_ID, TeamSizes
+from bitbots_mujoco_sim.world import BASE_TEAM_ID, DEFAULT_TEAM_COLORS, TeamSizes
 
 _GAME_STATES = (
     ("INITIAL", GameState.STATE_INITIAL),
@@ -13,6 +13,7 @@ _GAME_STATES = (
     ("PLAYING", GameState.STATE_PLAYING),
     ("FINISHED", GameState.STATE_FINISHED),
 )
+
 
 @dataclass
 class SimGame:
@@ -23,6 +24,8 @@ class SimGame:
 
 _TEAM_COLORS = (GameState.TEAM_BLUE, GameState.TEAM_RED)
 _GOALIE_COLORS = (GameState.TEAM_YELLOW, GameState.TEAM_GREEN)
+_TEAM_COLOR_NAMES = ("Blue", "Red")
+_ACTIVE_STATE_COLOR = (80, 180, 80)
 
 
 def build_game_state(game: SimGame, robot_setting: dict[str, int | str], team_sizes: TeamSizes) -> GameState:
@@ -66,6 +69,20 @@ def build_game_state(game: SimGame, robot_setting: dict[str, int | str], team_si
     return msg
 
 
+def score_goal(game: SimGame, scoring_team_id: int) -> None:
+    """Record a goal and reset the game to READY for the conceding team."""
+    if scoring_team_id not in (BASE_TEAM_ID, BASE_TEAM_ID + 1):
+        raise ValueError(f"Team ID {scoring_team_id} is not part of this game")
+
+    conceding_team_id = BASE_TEAM_ID + 1 if scoring_team_id == BASE_TEAM_ID else BASE_TEAM_ID
+    if scoring_team_id not in game.scores or conceding_team_id not in game.scores:
+        raise ValueError("Scores must be initialized for both game teams")
+
+    game.scores[scoring_team_id] += 1
+    game.main_state = GameState.STATE_READY
+    game.kicking_team = conceding_team_id
+
+
 class SimGameStateGui:
     """Publishes simulated GameState messages from mjviser GUI buttons."""
 
@@ -98,18 +115,44 @@ class SimGameStateGui:
     def add_to_viewer(self, server) -> None:
         tabs = server.gui.add_tab_group()
         with tabs.add_tab("Game State"):
-            buttons = server.gui.add_button_group(
-                "GAME_STATE",
-                options=[label for label, _ in _GAME_STATES],
-            )
+            self._state_buttons = {}
+            for label, value in _GAME_STATES:
+                button = server.gui.add_button(label)
+                self._state_buttons[value] = button
 
-            @buttons.on_click
-            def _on_game_state(event) -> None:
-                for label, value in _GAME_STATES:
-                    if event.target.value == label:
-                        self._game.main_state = value
-                        self._publish()
-                        return
+                def _on_game_state(event, state=value) -> None:
+                    self._game.main_state = state
+                    self._refresh_gui()
+                    self._publish()
+
+                button.on_click(_on_game_state)
+
+            self._team_score_labels = {}
+            for team_index in range(len(_TEAM_COLOR_NAMES)):
+                team_id = BASE_TEAM_ID + team_index
+                score_label = server.gui.add_markdown("")
+                self._team_score_labels[team_id] = score_label
+                goal_button = server.gui.add_button(
+                    f"Team {team_id} Goal",
+                    color=DEFAULT_TEAM_COLORS[team_index],
+                )
+
+                def _on_goal(event, scoring_team_id=team_id) -> None:
+                    score_goal(self._game, scoring_team_id)
+                    self._refresh_gui()
+                    self._publish()
+
+                goal_button.on_click(_on_goal)
+
+            self._refresh_gui()
+
+    def _refresh_gui(self) -> None:
+        for state, button in self._state_buttons.items():
+            button.color = _ACTIVE_STATE_COLOR if state == self._game.main_state else None
+
+        for team_id, score_label in self._team_score_labels.items():
+            team_color_name = _TEAM_COLOR_NAMES[team_id - BASE_TEAM_ID]
+            score_label.content = f"**Team {team_id} ({team_color_name}) score: {self._game.scores[team_id]}**"
 
     def _publish(self) -> None:
         stamp = self._node.get_clock().now().to_msg()

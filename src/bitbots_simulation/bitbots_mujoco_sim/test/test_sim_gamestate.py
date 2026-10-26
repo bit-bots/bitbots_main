@@ -1,6 +1,5 @@
 import pytest
-
-from bitbots_mujoco_sim.sim_gamestate_gui import SimGame, build_game_state
+from bitbots_mujoco_sim.sim_gamestate_gui import SimGame, build_game_state, score_goal
 from bitbots_mujoco_sim.world import compute_game_settings, parse_num_robots
 from game_controller_hsl_interfaces.msg import GameState
 
@@ -42,6 +41,25 @@ def test_game_state_supports_empty_first_team() -> None:
     assert msg.players_per_team == 2
     assert (msg.own_score, msg.rival_score) == (1, 0)
     assert (msg.own_player_color, msg.rival_player_color) == (GameState.TEAM_RED, GameState.TEAM_BLUE)
+
+
+@pytest.mark.parametrize(("scoring_team_id", "conceding_team_id"), [(6, 7), (7, 6)])
+def test_scoring_goal_resets_game_to_ready(scoring_team_id: int, conceding_team_id: int) -> None:
+    game = SimGame(main_state=GameState.STATE_PLAYING, kicking_team=scoring_team_id, scores={6: 0, 7: 0})
+
+    score_goal(game, scoring_team_id)
+
+    assert game.scores[scoring_team_id] == 1
+    assert game.scores[conceding_team_id] == 0
+    assert game.main_state == GameState.STATE_READY
+    assert game.kicking_team == conceding_team_id
+
+
+def test_scoring_goal_rejects_unknown_team() -> None:
+    game = SimGame(scores={6: 0, 7: 0})
+
+    with pytest.raises(ValueError, match="not part of this game"):
+        score_goal(game, 8)
 
 
 def test_parse_num_robots_returns_two_team_sizes() -> None:
