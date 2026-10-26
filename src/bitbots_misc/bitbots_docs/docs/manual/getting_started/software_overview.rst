@@ -21,9 +21,14 @@ Its output is the combined log of all components.
 Pass ``--autostart`` to start all enabled components right away,
 and ``--help`` to see how to preselect the simulation mode, field, DSD file and components.
 
-``teamplayer`` (``pixi run teamplayer``) is a TUI that connects to a running orchestrator.
+``teamplayer`` (``pixi run teamplayer``) is a TUI for the orchestrator.
 It configures and starts the components, shows their state and logs, and restarts or stops single components.
-Quitting the TUI leaves the components running, so the TUI can be closed and reopened at any time.
+If no orchestrator is running, it starts one in the background and accepts the same preset flags for it.
+When quitting, it asks whether to stop the orchestrator it started or to leave it running;
+an orchestrator that was already running is always left running, so the TUI can be closed and reopened at any time.
+``--attach`` only connects to a running orchestrator.
+``--headless`` runs an orchestrator in the foreground instead of the TUI and starts all enabled components;
+Ctrl-C then stops the components and the orchestrator.
 
 Both talk over an HTTP API on a Unix socket in ``$XDG_RUNTIME_DIR/bitbots_orchestrate``.
 Several orchestrators can run on one machine, e.g. for multiple simulated robots, by giving each a different ``--name``;
