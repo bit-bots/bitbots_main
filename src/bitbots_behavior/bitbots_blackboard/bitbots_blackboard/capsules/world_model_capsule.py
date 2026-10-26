@@ -114,7 +114,9 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
 
         # Otherwise, use the own ball even if it is bad
         if not self.ball_seen_self():
-            self._node.get_logger().warn("Using own ball even though it is bad, as no teammate ball is available")
+            self._node.get_logger().warn(
+                "Using own ball even though it is bad, as no teammate ball is available", throttle_duration_sec=1
+            )
         self.debug_publisher_used_ball.publish(own_ball)
         self.debug_publisher_which_ball.publish(Header(stamp=own_ball.header.stamp, frame_id="own_ball_map"))
         return own_ball

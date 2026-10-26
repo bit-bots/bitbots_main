@@ -37,6 +37,7 @@ TEAM_ROLE_ORDER = ["offense", "goalie", "defense", "defense", "defense", "offens
 
 # Default team ID for the first team. Additional teams increment from here.
 BASE_TEAM_ID = 6
+TeamSizes = tuple[int, int]
 
 # RGB color palettes for teams and goalies.
 DEFAULT_TEAM_COLORS: list[tuple[int, int, int]] = [
@@ -100,23 +101,29 @@ def get_jersey_texture(
     return output_path
 
 
-def parse_num_robots(num_robots: str | int) -> list[int]:
+def parse_num_robots(num_robots: str | int) -> TeamSizes:
     """Parse a ``num_robots`` specification into per-team robot counts.
 
-    Accepts either a single number (e.g. ``"3"`` -> a single team of three
-    robots) or a colon separated team setup (e.g. ``"2:2"`` -> two teams of two
-    robots each). Returns the robot count of every team in order.
+    Accepts either a single number (e.g. ``"3"`` -> three robots on the first
+    team and none on the second) or a colon separated setup (e.g. ``"2:2"`` ->
+    two teams of two robots each).
     """
-    teams = [int(part) for part in str(num_robots).split(":")]
+    parts = str(num_robots).split(":")
+    if len(parts) > 2:
+        raise ValueError(f"Invalid num_robots specification: {num_robots!r}")
+    if len(parts) == 1:
+        teams = (int(parts[0]), 0)
+    else:
+        teams = (int(parts[0]), int(parts[1]))
     if any(count < 0 for count in teams) or sum(teams) < 1:
         raise ValueError(f"Invalid num_robots specification: {num_robots!r}")
     return teams
 
 
-def compute_game_settings(teams: list[int]) -> list[dict]:
+def compute_game_settings(teams: TeamSizes) -> list[dict]:
     """Compute the per-robot game settings for a team setup.
 
-    Given the per-team robot counts (e.g. ``[2, 2]`` for a 2 vs 2), this returns
+    Given the per-team robot counts (e.g. ``(2, 2)`` for a 2 vs 2), this returns
     one dict of game settings per robot, ordered team by team. ``bot_id`` is unique
     within a team (1-based) while ``team_id``/``team_color`` identify the team, so
     any team layout works without hand-maintained per-robot config files.
@@ -140,7 +147,7 @@ def compute_game_settings(teams: list[int]) -> list[dict]:
                 {
                     "bot_id": robot_in_team + 1,
                     "team_id": BASE_TEAM_ID + team_index,
-                    "team_color": team_index % 2,
+                    "team_color": team_index,
                     "role": role,
                     "position_number": position_number,
                 }
@@ -148,7 +155,7 @@ def compute_game_settings(teams: list[int]) -> list[dict]:
     return settings
 
 
-def compute_robot_poses(teams: list[int]) -> list[tuple[float, float, float]]:
+def compute_robot_poses(teams: TeamSizes) -> list[tuple[float, float, float]]:
     """Compute the ``(x, y, yaw)`` placement for every robot.
 
     Robots are dynamically distributed evenly along the available sideline space
@@ -226,7 +233,7 @@ def compute_robot_poses(teams: list[int]) -> list[tuple[float, float, float]]:
         team_poses: list[tuple[float, float, float]] = [None] * count  # type: ignore[list-item]
 
         for (idx, _setting), x_base in zip(left_robots, left_x, strict=True):
-            if team_index % 2 == 0:
+            if team_index == 0:
                 x = x_base
                 y = SIDELINE_Y
             else:
@@ -236,7 +243,7 @@ def compute_robot_poses(teams: list[int]) -> list[tuple[float, float, float]]:
             team_poses[idx] = (x, y, yaw)
 
         for (idx, _setting), x_base in zip(right_robots, right_x, strict=True):
-            if team_index % 2 == 0:
+            if team_index == 0:
                 x = x_base
                 y = -SIDELINE_Y
             else:

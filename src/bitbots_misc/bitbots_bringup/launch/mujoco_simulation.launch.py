@@ -73,6 +73,12 @@ def generate_domain_bridge_config(robot_domain: int, output_dir: Path) -> Path:
             "remap": topic_suffix,
         }
 
+    config["topics"][f"{namespace}/gamestate"] = {
+        "type": "game_controller_hsl_interfaces/msg/GameState",
+        "remap": "gamestate",
+        "qos": {"durability": "transient_local"},
+    }
+
     # Command topic: robot domain → main (reversed direction)
     # Key is source topic in from_domain, remap is destination in to_domain
     config["topics"]["joint_command"] = {
@@ -96,6 +102,7 @@ def launch_setup(context):
     robot_type = str(LaunchConfiguration("robot_type").perform(context))
     use_web = LaunchConfiguration("web").perform(context).lower() == "true"
     start_teamplayer = LaunchConfiguration("teamplayer").perform(context).lower() == "true"
+    sim_gamestate = LaunchConfiguration("sim_gamestate").perform(context).lower() == "true"
     package_share = get_package_share_directory("bitbots_mujoco_sim")
     bridge_config_dir = Path(package_share) / "config" / "domain_bridges"
 
@@ -125,7 +132,14 @@ def launch_setup(context):
             name="sim_interface",
             output="screen",
             emulate_tty=True,
-            parameters=[{"world_file": str(world_file), "web": use_web}],
+            parameters=[
+                {
+                    "world_file": str(world_file),
+                    "web": use_web,
+                    "sim_gamestate": sim_gamestate,
+                    "num_robots": num_robots_spec,
+                }
+            ],
         ),
     )
 
@@ -154,7 +168,7 @@ def launch_setup(context):
         if start_teamplayer:
             actions.append(
                 TimerAction(
-                    period=3.0,
+                    period=3.0 * (robot_index + 1),
                     actions=[
                         LogInfo(msg=f"Launching teamplayer stack for robot{robot_domain} in domain {robot_domain}"),
                         ExecuteProcess(
@@ -202,6 +216,11 @@ def generate_launch_description():
             "web",
             default_value="true",
             description="Use web-based mjviser viewer instead of the native MuJoCo viewer",
+        ),
+        DeclareLaunchArgument(
+            "sim_gamestate",
+            default_value="true",
+            description="Show simulated GAME_STATE buttons in the mjviser viewer",
         ),
     ]
 

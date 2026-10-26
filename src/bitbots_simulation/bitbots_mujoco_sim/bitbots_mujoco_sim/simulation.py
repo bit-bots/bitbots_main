@@ -19,7 +19,7 @@ from transforms3d.quaternions import qmult
 from bitbots_msgs.msg import JointCommand
 from bitbots_msgs.srv import MoveBall, SimulatorPush
 from bitbots_mujoco_sim.robot import Robot
-from bitbots_mujoco_sim.world import generate_world_xml
+from bitbots_mujoco_sim.world import compute_game_settings, generate_world_xml, parse_num_robots
 
 BALL_JOINT_NAME = "ball-root"
 
@@ -32,6 +32,8 @@ class Simulation(Node):
         self.declare_parameter("world_file", "")
         self.declare_parameter("use_namespace", True)
         self.declare_parameter("web", False)
+        self.declare_parameter("sim_gamestate", True)
+        self.declare_parameter("num_robots", "")
 
         # These default value are oriented on some real world data in standstill.
         # They are a bit worse than what was observed there.
@@ -251,7 +253,17 @@ class Simulation(Node):
             # Then keep our textured ball overlays in sync with the simulated balls.
             self._update_ball_overlays(scene)
 
-        viewer = Viewer(
+        sim_gamestate_gui = None
+        if self.get_parameter("sim_gamestate").get_parameter_value().bool_value:
+            sim_gamestate_gui = self._create_sim_gamestate_gui()
+
+        class _Viewer(Viewer):
+            def _setup_gui(self) -> None:
+                super()._setup_gui()
+                if sim_gamestate_gui is not None:
+                    sim_gamestate_gui.add_to_viewer(self._server)
+
+        viewer = _Viewer(
             self.model,
             self.data,
             step_fn=lambda model, data: self.step(),
@@ -261,6 +273,30 @@ class Simulation(Node):
         self._add_ball_textures(viewer.scene.server)
         self._add_body_drag(viewer.scene)
         viewer.run()
+
+    def _create_sim_gamestate_gui(self):
+        from bitbots_mujoco_sim.sim_gamestate_gui import SimGameStateGui
+
+        num_robots_spec = self.get_parameter("num_robots").get_parameter_value().string_value
+        try:
+            team_sizes = parse_num_robots(num_robots_spec) if num_robots_spec else (len(self.robots), 0)
+            game_settings = compute_game_settings(team_sizes)
+        except ValueError as error:
+            self.get_logger().error(f"Invalid num_robots game setup; simulated GAME_STATE is disabled: {error}")
+            return None
+
+        if len(game_settings) != len(self.robots):
+            self.get_logger().error(
+                f"num_robots describes {len(game_settings)} robots, but the world contains {len(self.robots)}; "
+                "simulated GAME_STATE is disabled"
+            )
+            return None
+        if not game_settings:
+            self.get_logger().error("The world contains no robots; simulated GAME_STATE is disabled")
+            return None
+
+        robot_topics = [f"{robot.namespace}/gamestate" if self.use_namespace else "gamestate" for robot in self.robots]
+        return SimGameStateGui(self, game_settings, team_sizes, robot_topics)
 
     def _add_field_textures(self, server) -> None:
         """Render textured plane geoms (e.g. the soccer field) as flat images in viser.
@@ -366,7 +402,7 @@ class Simulation(Node):
         itself) and drag that whole articulated system as a rigid unit.
         """
         robot_keys = {
-            self._free_joint_key_for_body(self.model.body(f"robot_base_link_{robot_sim.robot.index}").id)
+            self._free_joint_key_for_body(self.model.body(f"robot_{robot_sim.robot.index}_base_link").id)
             for robot_sim in self.robots
         }
         robot_keys.discard(None)
