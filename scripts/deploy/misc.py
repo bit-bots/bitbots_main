@@ -2,6 +2,7 @@ import argparse
 import concurrent.futures
 import ipaddress
 import os
+import re
 import subprocess
 import sys
 from collections.abc import Iterable
@@ -88,6 +89,31 @@ def hide_output() -> bool | str:
         return "stdout"
     else:
         return False
+
+
+def check_ssh_configuration(user: str, host: str) -> None:
+    """Validate the SSH configuration before rsync invokes SSH as a subprocess."""
+    result = subprocess.run(
+        ["ssh", "-G", "-o", "StrictHostKeyChecking=no", f"{user}@{host}"],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode == 0:
+        return
+
+    error = result.stderr.strip()
+    permissions_error = re.search(r"Bad owner or permissions on (.+)", error)
+    if permissions_error:
+        config_path = permissions_error.group(1)
+        print_error(
+            f"OpenSSH rejected the configuration file '{config_path}' because its owner or permissions are unsafe. "
+            f"Ensure that you own the file and remove write permissions for group and others, for example with "
+            f"'chmod go-w {config_path}'."
+        )
+    else:
+        print_error(f"OpenSSH could not read the SSH configuration:\n{error}")
+
+    result.check_returncode()
 
 
 # Read the known targets

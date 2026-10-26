@@ -20,7 +20,7 @@ from rclpy.time import Time
 from ros2_numpy import numpify
 from sensor_msgs.msg import Imu, JointState
 from std_msgs.msg import Bool, Float32
-from std_srvs.srv import SetBool
+from std_srvs.srv import Empty, SetBool
 
 from bitbots_hcm import hcm_dsd
 from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
@@ -91,6 +91,7 @@ class HardwareControlManager:
         self.manual_penalize_service = self.node.create_service(
             ManualPenalize, "manual_penalize", self.set_manual_penalize_mode_callback
         )
+        self.sit_service = self.node.create_service(Empty, "sit", self.sit_callback)
 
         # Store time of the last tick
         self.last_tick_start_time = self.node.get_clock().now()
@@ -164,6 +165,12 @@ class HardwareControlManager:
     def get_state(self) -> T_RobotControlState:
         """Returns the current state of the HCM."""
         return self.blackboard.current_state
+
+    def sit_callback(self, req: Empty.Request, resp: Empty.Response):
+        """Sits the robot down and turns of the motors. (non-reversable)"""
+        self.blackboard.sitting = True
+        self.node.get_logger().warn(f"Received sit request. {self.blackboard.sitting=}")
+        return resp
 
     def set_animation_mode_callback(self, request: SetBool.Request, response: SetBool.Response):
         # Check if the robot is in a state where it is allowed to play animations

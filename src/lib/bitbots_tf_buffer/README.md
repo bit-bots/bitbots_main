@@ -27,8 +27,8 @@ First we need to clone the repository as well as one of its dependencies:
 
 ```bash
 cd <replace_with_your_ws>/src
-git clone git@github.com:bit-bots/bitbots_tf_buffer.git
-git clone git@github.com:bit-bots/ros2_python_extension.git
+git clone git@github.com:bit-bots/bitbots_tf_buffer.git -b jazzy
+git clone git@github.com:bit-bots/ros2_python_extension.git -b jazzy
 ```
 
 Then run rosdep to install the dependencies (most likely you already have them installed):

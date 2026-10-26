@@ -11,4 +11,3 @@
         throw: "throw"
       Misc:
         cheering: "cheering"
-        init: "init_sim"

@@ -29,7 +29,9 @@ endfunction()
 
 function(r2r_cargo)
   # pretend that we want to compile c code to get all library paths etc...
-  add_library(dummy INTERFACE)
+  if(NOT TARGET dummy)
+    add_library(dummy INTERFACE)
+  endif()
 
   # traverse list of wanted packages to add dependencies
   foreach(f ${ARGN})
@@ -85,7 +87,7 @@ function(r2r_cargo)
         "RUSTFLAGS=$ENV{RUSTFLAGS}"
         "CMAKE_IDL_PACKAGES=$ENV{CMAKE_IDL_PACKAGES}"
         "CMAKE_INCLUDE_DIRS=$ENV{CMAKE_INCLUDE_DIRS}"
-        cargo test --package ${PROJECT_NAME}
+        cargo test --profile colcon --package ${PROJECT_NAME}
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     )
   endif()
@@ -94,11 +96,20 @@ endfunction()
 
 # Private helper: resolve the cargo workspace target directory.
 function(_cargo_get_target_dir OUT_DIR)
+  if(DEFINED ENV{CARGO_TARGET_DIR})
+    set(${OUT_DIR} "$ENV{CARGO_TARGET_DIR}" PARENT_SCOPE)
+    return()
+  endif()
   execute_process(
     COMMAND cargo metadata --no-deps --format-version=1
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     OUTPUT_VARIABLE _METADATA_JSON
+    ERROR_VARIABLE _METADATA_ERROR
+    RESULT_VARIABLE _RESULT
     OUTPUT_STRIP_TRAILING_WHITESPACE)
+  if(NOT _RESULT EQUAL 0)
+    message(FATAL_ERROR "Failed to determine cargo target directory: ${_METADATA_ERROR}")
+  endif()
   string(JSON _TARGET_DIR GET "${_METADATA_JSON}" target_directory)
   set(${OUT_DIR} "${_TARGET_DIR}" PARENT_SCOPE)
 endfunction()
@@ -150,7 +161,7 @@ function(cargo_pyo3_extension)
       NAME cargo_test
       COMMAND ${CMAKE_COMMAND} "-E" "env" "--unset=MAKEFLAGS" "--unset=MFLAGS"
         "PYO3_PYTHON=${Python3_EXECUTABLE}"
-        cargo test --package ${_ARGS_PACKAGE} --features pyo3/extension-module
+        cargo test --profile colcon --package ${_ARGS_PACKAGE} --features pyo3/extension-module
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     )
   endif()
@@ -190,7 +201,7 @@ function(cargo_binary BINARY_NAME)
     add_test(
       NAME cargo_test
       COMMAND ${CMAKE_COMMAND} "-E" "env" "--unset=MAKEFLAGS" "--unset=MFLAGS"
-        cargo test --package ${_ARGS_PACKAGE}
+        cargo test --profile colcon --package ${_ARGS_PACKAGE}
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     )
   endif()

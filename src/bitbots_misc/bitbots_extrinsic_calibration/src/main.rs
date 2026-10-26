@@ -38,45 +38,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         node.create_publisher("/tf_static", r2r::QosProfile::default().transient_local())?;
     let ros_clock = node.get_ros_clock();
 
-    tokio::task::spawn(async move {
-        loop {
-            {
-                let params = params.lock().unwrap();
+    // Publish once at startup with the currently configured parameters
+    {
+        let params = params.lock().unwrap();
+        publish_calibration(&nl, &params, &ros_clock, &tf_static_broadcaster);
+    }
 
-                tf_static_broadcaster
-                    .publish(&TFMessage {
-                        transforms: vec![TransformStamped {
-                            header: Header {
-                                frame_id: params.parent_frame.clone(),
-                                stamp: Clock::to_builtin_time(
-                                    &ros_clock.lock().unwrap().get_now().unwrap(),
-                                ),
-                            },
-                            child_frame_id: params.child_frame.clone(),
-                            transform: Transform {
-                                translation: Vector3::default(),
-                                rotation: {
-                                    let quat = Quat::from_euler(
-                                        EulerRot::ZYX,
-                                        params.offset_z,
-                                        params.offset_y,
-                                        params.offset_x,
-                                    );
-                                    Quaternion {
-                                        x: quat.x as f64,
-                                        y: quat.y as f64,
-                                        z: quat.z as f64,
-                                        w: quat.w as f64,
-                                    }
-                                },
-                            },
-                        }],
-                    })
-                    .expect("Failed to publish updated transform");
-            }
-            // Wait for next parameter update
-            parameter_events.next().await;
+    tokio::task::spawn(async move {
+        while parameter_events.next().await.is_some() {
             r2r::log_info!(&nl, "Extrinsic parameter update");
+            let params = params.lock().unwrap();
+            publish_calibration(&nl, &params, &ros_clock, &tf_static_broadcaster);
         }
     });
 
@@ -92,4 +64,46 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tokio::signal::ctrl_c().await?;
 
     Ok(())
+}
+
+fn publish_calibration(
+    nl: &str,
+    params: &CalibrationParams,
+    ros_clock: &StdMutex<Clock>,
+    tf_static_broadcaster: &r2r::Publisher<TFMessage>,
+) {
+    let now = match ros_clock.lock().unwrap().get_now() {
+        Ok(now) => now,
+        Err(err) => {
+            r2r::log_error!(nl, "Failed to get current time: {err}");
+            return;
+        }
+    };
+    let quat = Quat::from_euler(
+        EulerRot::ZYX,
+        params.offset_z,
+        params.offset_y,
+        params.offset_x,
+    );
+    let message = TFMessage {
+        transforms: vec![TransformStamped {
+            header: Header {
+                frame_id: params.parent_frame.clone(),
+                stamp: Clock::to_builtin_time(&now),
+            },
+            child_frame_id: params.child_frame.clone(),
+            transform: Transform {
+                translation: Vector3::default(),
+                rotation: Quaternion {
+                    x: quat.x as f64,
+                    y: quat.y as f64,
+                    z: quat.z as f64,
+                    w: quat.w as f64,
+                },
+            },
+        }],
+    };
+    if let Err(err) = tf_static_broadcaster.publish(&message) {
+        r2r::log_error!(nl, "Failed to publish updated transform: {err}");
+    }
 }

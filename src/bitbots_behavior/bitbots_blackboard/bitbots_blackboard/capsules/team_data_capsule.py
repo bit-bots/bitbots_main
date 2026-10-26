@@ -7,6 +7,7 @@ from rclpy.duration import Duration
 from rclpy.time import Time
 from ros2_numpy import numpify
 from std_msgs.msg import Float32
+from tf_transformations import euler_from_quaternion
 
 from bitbots_blackboard.capsules import AbstractBlackboardCapsule, cached_capsule_function
 from bitbots_msgs.msg import Strategy, TeamData
@@ -187,6 +188,36 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
             if self.is_valid(data) and (data.strategy.role != Strategy.ROLE_GOALIE or count_goalies):
                 poses.append(data.robot_position.pose)
         return poses
+
+    def get_id_of_passive_player(self) -> list[int]:
+        """Returns the robot ids of all robots (including this one) that are currently marked passive."""
+        passive_robot_ids = []
+        data: TeamData
+        for data in self.team_data.values():
+            if self.is_valid(data) and (data.strategy.action == Strategy.ACTION_PASSIVE):
+                passive_robot_ids.append(data.robot_id)
+        if self.strategy.action == Strategy.ACTION_PASSIVE:
+            passive_robot_ids.append(self._blackboard.gamestate.get_own_id())
+        return passive_robot_ids
+
+    def get_robot_poses(self, include_own: bool = True) -> dict[int, list[float]]:
+        """Returns a mapping of robot id -> [x, y, theta] for all playing robots
+        of whom we have up-to-date information."""
+        robot_poses = {}
+        data: TeamData
+        for data in self.team_data.values():
+            if self.is_valid(data):
+                pose = data.robot_position.pose
+                robot_poses[data.robot_id] = [
+                    pose.position.x,
+                    pose.position.y,
+                    euler_from_quaternion(numpify(pose.orientation))[2],
+                ]
+        if include_own:
+            robot_poses[self._blackboard.gamestate.get_own_id()] = list(
+                self._blackboard.world_model.get_current_position()
+            )
+        return robot_poses
 
     def get_number_of_active_field_players(self, count_goalie: bool = False) -> int:
         def is_not_goalie(team_data: TeamData) -> bool:
