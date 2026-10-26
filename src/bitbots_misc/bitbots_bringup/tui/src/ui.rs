@@ -124,7 +124,7 @@ fn draw_config_flags(f: &mut Frame, app: &App, area: Rect) {
     let dsd_focused = app.config_focus == ConfigFocus::DsdFile;
 
     f.render_widget(
-        Paragraph::new(if app.params.zenoh {
+        Paragraph::new(if app.zenoh_enabled() {
             "[✓] Zenoh"
         } else {
             "[ ] Zenoh"

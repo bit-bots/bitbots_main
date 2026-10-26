@@ -37,7 +37,7 @@ impl ProcState {
             ProcState::Idle => "IDLE",
             ProcState::Running => "RUN ",
             ProcState::Stopping => "STOP",
-            ProcState::Restarting => "↺   ",
+            ProcState::Restarting => "RSTR",
             ProcState::Stopped => "DONE",
             ProcState::Crashed => "FAIL",
         }
@@ -49,7 +49,11 @@ pub struct ComponentState {
     pub enabled: bool,
     pub state: ProcState,
     pub logs: Arc<Mutex<VecDeque<String>>>,
+    /// Process group ids of the processes of the current run that have not exited yet.
     pub pids: Vec<u32>,
+    /// First exit code reported in the current run; decides between Stopped and
+    /// Crashed once all processes of the component have exited.
+    pub exit_code: Option<i32>,
     pub task_handles: Vec<tokio::task::JoinHandle<()>>,
 }
 
@@ -61,13 +65,81 @@ impl ComponentState {
             state: ProcState::Idle,
             logs: Arc::new(Mutex::new(VecDeque::with_capacity(2000))),
             pids: Vec::new(),
+            exit_code: None,
             task_handles: Vec::new(),
         }
     }
 }
 
 pub enum AppMsg {
-    ProcessExited { key: String, code: i32 },
+    ProcessExited {
+        comp_idx: usize,
+        pid: u32,
+        code: i32,
+    },
+}
+
+/// The log buffers a component's output is written to.
+#[derive(Clone)]
+struct LogSinks {
+    comp_name: &'static str,
+    logs: Arc<Mutex<VecDeque<String>>>,
+    all_logs: Arc<Mutex<VecDeque<String>>>,
+    headless_log: Arc<Mutex<VecDeque<HeadlessLine>>>,
+}
+
+impl LogSinks {
+    fn push(&self, raw: &str, is_stderr: bool) {
+        let comp_name = self.comp_name;
+        let tui_prefix = if is_stderr { "[ERR] " } else { "" };
+        let tui_entry = format!("{tui_prefix}{raw}");
+        {
+            let mut l = self.logs.lock().unwrap();
+            if l.len() >= 2000 {
+                l.pop_front();
+            }
+            l.push_back(tui_entry.clone());
+        }
+        {
+            let mut l = self.all_logs.lock().unwrap();
+            if l.len() >= 5000 {
+                l.pop_front();
+            }
+            l.push_back(format!("[{comp_name}] {tui_entry}"));
+        }
+        {
+            let tagged = format!("[{comp_name}] {raw}");
+            let mut l = self.headless_log.lock().unwrap();
+            if l.len() >= 5000 {
+                l.pop_front();
+            }
+            l.push_back(if is_stderr {
+                HeadlessLine::Stderr(tagged)
+            } else {
+                HeadlessLine::Stdout(tagged)
+            });
+        }
+    }
+
+    /// Messages from the launcher itself, as opposed to output of the child processes.
+    fn push_teamplayer(&self, msg: &str) {
+        self.push(&format!("[teamplayer] {msg}"), true);
+    }
+
+    async fn pump<R: tokio::io::AsyncRead + Unpin>(&self, mut r: BufReader<R>, is_stderr: bool) {
+        let mut line = String::new();
+        while let Ok(n) = r.read_line(&mut line).await {
+            if n == 0 {
+                break;
+            }
+            self.push(line.trim_end_matches('\n'), is_stderr);
+            line.clear();
+        }
+    }
+}
+
+pub fn component_idx(key: &str) -> Option<usize> {
+    COMPONENT_DEFS.iter().position(|d| d.key == key)
 }
 
 // ─── Screen / focus ───────────────────────────────────────────────────────────
@@ -166,7 +238,7 @@ impl App {
         dsd_file: &str,
         enable: &[String],
         disable: &[String],
-    ) {
+    ) -> anyhow::Result<()> {
         if sim {
             self.params.sim = true;
             self.apply_sim_toggle();
@@ -179,21 +251,33 @@ impl App {
         self.config_dsd_input = dsd_file.to_string();
 
         if no_zenoh {
-            if let Some(idx) = COMPONENT_DEFS.iter().position(|d| d.key == "zenoh") {
-                self.components[idx].enabled = false;
-                self.params.zenoh = false;
+            self.set_zenoh_enabled(false);
+        }
+        for (keys, enabled) in [(enable, true), (disable, false)] {
+            for key in keys {
+                let Some(idx) = component_idx(key) else {
+                    let available: Vec<&str> = COMPONENT_DEFS.iter().map(|d| d.key).collect();
+                    anyhow::bail!(
+                        "unknown component key '{key}', available keys: {}",
+                        available.join(", ")
+                    );
+                };
+                self.components[idx].enabled = enabled;
             }
         }
-        for key in enable {
-            if let Some(idx) = COMPONENT_DEFS.iter().position(|d| d.key == key.as_str()) {
-                self.components[idx].enabled = true;
-            }
-        }
-        for key in disable {
-            if let Some(idx) = COMPONENT_DEFS.iter().position(|d| d.key == key.as_str()) {
-                self.components[idx].enabled = false;
-            }
-        }
+        Ok(())
+    }
+
+    fn zenoh_idx() -> usize {
+        component_idx("zenoh").expect("the component registry contains zenoh")
+    }
+
+    pub fn zenoh_enabled(&self) -> bool {
+        self.components[Self::zenoh_idx()].enabled
+    }
+
+    pub fn set_zenoh_enabled(&mut self, enabled: bool) {
+        self.components[Self::zenoh_idx()].enabled = enabled;
     }
 
     pub fn toggleable_indices(&self) -> Vec<usize> {
@@ -207,12 +291,46 @@ impl App {
             .collect()
     }
 
-    /// Down: flags row → first component; within a column move down one row; Start → flags.
+    /// All focusable config items in reading order: flags row, left column, right column, Start.
+    fn config_focus_order(&self) -> Vec<ConfigFocus> {
+        let n = self.toggleable_indices().len();
+        [
+            ConfigFocus::Zenoh,
+            ConfigFocus::Sim,
+            ConfigFocus::Fieldname,
+            ConfigFocus::DsdFile,
+        ]
+        .into_iter()
+        .chain((0..n).map(ConfigFocus::Component))
+        .chain([ConfigFocus::Start])
+        .collect()
+    }
+
+    /// Tab: cycle forward through every item in reading order.
+    pub fn config_focus_tab(&mut self) {
+        let order = self.config_focus_order();
+        let pos = order
+            .iter()
+            .position(|f| *f == self.config_focus)
+            .unwrap_or(0);
+        self.config_focus = order[(pos + 1) % order.len()].clone();
+    }
+
+    /// Shift-Tab: cycle backward through every item in reading order.
+    pub fn config_focus_backtab(&mut self) {
+        let order = self.config_focus_order();
+        let pos = order
+            .iter()
+            .position(|f| *f == self.config_focus)
+            .unwrap_or(0);
+        self.config_focus = order[(pos + order.len() - 1) % order.len()].clone();
+    }
+
+    /// Down: flags row → first component; then down the left column, continuing at the top
+    /// of the right column; bottom of the right column → Start; Start wraps to flags.
     pub fn config_focus_next(&mut self) {
         let n = self.toggleable_indices().len();
-        let left_count = (n + 1) / 2;
         self.config_focus = match self.config_focus.clone() {
-            // Flags row: jump straight into the component grid
             ConfigFocus::Zenoh
             | ConfigFocus::Sim
             | ConfigFocus::Fieldname
@@ -223,15 +341,6 @@ impl App {
                     ConfigFocus::Start
                 }
             }
-            // Left column: move down or fall through to Start
-            ConfigFocus::Component(i) if i < left_count => {
-                if i + 1 < left_count {
-                    ConfigFocus::Component(i + 1)
-                } else {
-                    ConfigFocus::Start
-                }
-            }
-            // Right column: move down or fall through to Start
             ConfigFocus::Component(i) => {
                 if i + 1 < n {
                     ConfigFocus::Component(i + 1)
@@ -239,28 +348,20 @@ impl App {
                     ConfigFocus::Start
                 }
             }
-            // Start wraps back to flags
             ConfigFocus::Start => ConfigFocus::Zenoh,
         };
     }
 
-    /// Up: top of left column → Zenoh; top of right column → DsdFile; Start → last component; flags → Start.
+    /// Up: exact inverse of Down, except that the flags row wraps to Start.
     pub fn config_focus_prev(&mut self) {
         let n = self.toggleable_indices().len();
-        let left_count = (n + 1) / 2;
         self.config_focus = match self.config_focus.clone() {
-            // Flags row wraps to Start
             ConfigFocus::Zenoh
             | ConfigFocus::Sim
             | ConfigFocus::Fieldname
             | ConfigFocus::DsdFile => ConfigFocus::Start,
-            // Top of left column → back to flags (left side)
             ConfigFocus::Component(0) => ConfigFocus::Zenoh,
-            // Top of right column → back to flags (right side)
-            ConfigFocus::Component(i) if i == left_count => ConfigFocus::DsdFile,
-            // Move up within a column
             ConfigFocus::Component(i) => ConfigFocus::Component(i - 1),
-            // Start → bottom of whichever column is longer
             ConfigFocus::Start => {
                 if n > 0 {
                     ConfigFocus::Component(n - 1)
@@ -337,29 +438,42 @@ impl App {
         self.config_focus = ConfigFocus::Zenoh;
     }
 
-    pub async fn start_component(&mut self, comp_idx: usize) {
-        let def = &COMPONENT_DEFS[comp_idx];
-        let cmds = (def.cmds)(&self.params);
-        let key = def.key.to_string();
-        let comp_name = def.name; // &'static str
+    fn log_sinks(&self, comp_idx: usize) -> LogSinks {
+        LogSinks {
+            comp_name: COMPONENT_DEFS[comp_idx].name,
+            logs: self.components[comp_idx].logs.clone(),
+            all_logs: self.all_logs.clone(),
+            headless_log: self.headless_log.clone(),
+        }
+    }
 
-        let logs = self.components[comp_idx].logs.clone();
-        let all_logs = self.all_logs.clone();
-        let headless_log = self.headless_log.clone();
-        self.components[comp_idx].state = ProcState::Running;
-        self.components[comp_idx].pids.clear();
-        self.components[comp_idx].task_handles.clear();
+    pub async fn start_component(&mut self, comp_idx: usize) {
+        let cmds = (COMPONENT_DEFS[comp_idx].cmds)(&self.params);
+        self.spawn_commands(comp_idx, cmds);
+    }
+
+    /// Spawn all commands of a component, each in its own process group.
+    ///
+    /// If one command fails to spawn, the already spawned ones are terminated and the
+    /// component ends up as Crashed once they have exited.
+    fn spawn_commands(&mut self, comp_idx: usize, cmds: Vec<Vec<String>>) {
+        // Starting over while processes of the previous run are alive would orphan them.
+        assert!(
+            self.components[comp_idx].pids.is_empty(),
+            "start of {} while processes of the previous run are still alive",
+            COMPONENT_DEFS[comp_idx].key
+        );
+        let sinks = self.log_sinks(comp_idx);
+        let msg_tx = self.msg_tx.clone();
+        let comp = &mut self.components[comp_idx];
+        comp.state = ProcState::Running;
+        comp.exit_code = None;
+        comp.task_handles.clear();
 
         for cmd_args in cmds {
             if cmd_args.is_empty() {
                 continue;
             }
-            let tx = self.msg_tx.clone();
-            let logs = logs.clone();
-            let all_logs = all_logs.clone();
-            let headless_log = headless_log.clone();
-            let key = key.clone();
-
             let mut child = match Command::new(&cmd_args[0])
                 .args(&cmd_args[1..])
                 .stdout(std::process::Stdio::piped())
@@ -370,81 +484,41 @@ impl App {
             {
                 Ok(c) => c,
                 Err(e) => {
-                    let entry = format!("[ERROR] spawn failed: {e}");
-                    logs.lock().unwrap().push_back(entry.clone());
-                    all_logs
-                        .lock()
-                        .unwrap()
-                        .push_back(format!("[{comp_name}] {entry}"));
-                    let _ = tx.send(AppMsg::ProcessExited { key, code: -1 });
+                    sinks
+                        .push_teamplayer(&format!("failed to spawn `{}`: {e}", cmd_args.join(" ")));
+                    comp.exit_code = Some(-1);
+                    if comp.pids.is_empty() {
+                        comp.state = ProcState::Crashed;
+                    } else {
+                        sinks.push_teamplayer("stopping the already started processes");
+                        sigterm_pids(&comp.pids);
+                        comp.state = ProcState::Stopping;
+                    }
                     return;
                 }
             };
 
-            if let Some(pid) = child.id() {
-                self.components[comp_idx].pids.push(pid);
-            }
+            let pid = child
+                .id()
+                .expect("a freshly spawned child that was never awaited has a pid");
+            comp.pids.push(pid);
 
             let stdout = child.stdout.take().map(BufReader::new);
             let stderr = child.stderr.take().map(BufReader::new);
+            let tx = msg_tx.clone();
+            let sinks = sinks.clone();
 
             let handle = tokio::spawn(async move {
-                async fn pump<R: tokio::io::AsyncRead + Unpin>(
-                    mut r: BufReader<R>,
-                    logs: Arc<Mutex<VecDeque<String>>>,
-                    all_logs: Arc<Mutex<VecDeque<String>>>,
-                    headless_log: Arc<Mutex<VecDeque<HeadlessLine>>>,
-                    is_stderr: bool,
-                    comp_name: &'static str,
-                ) {
-                    let tui_prefix = if is_stderr { "[ERR] " } else { "" };
-                    let mut line = String::new();
-                    while let Ok(n) = r.read_line(&mut line).await {
-                        if n == 0 {
-                            break;
-                        }
-                        let raw = line.trim_end_matches('\n');
-                        let tui_entry = format!("{}{}", tui_prefix, raw);
-                        {
-                            let mut l = logs.lock().unwrap();
-                            if l.len() >= 2000 {
-                                l.pop_front();
-                            }
-                            l.push_back(tui_entry.clone());
-                        }
-                        {
-                            let mut l = all_logs.lock().unwrap();
-                            if l.len() >= 5000 {
-                                l.pop_front();
-                            }
-                            l.push_back(format!("[{comp_name}] {tui_entry}"));
-                        }
-                        {
-                            let tagged = format!("[{comp_name}] {raw}");
-                            let mut l = headless_log.lock().unwrap();
-                            if l.len() >= 5000 {
-                                l.pop_front();
-                            }
-                            l.push_back(if is_stderr {
-                                HeadlessLine::Stderr(tagged)
-                            } else {
-                                HeadlessLine::Stdout(tagged)
-                            });
-                        }
-                        line.clear();
-                    }
-                }
                 // Read stdout and stderr concurrently so neither blocks the other.
-                let (logs2, all2, hl2) = (logs.clone(), all_logs.clone(), headless_log.clone());
                 tokio::join!(
-                    async move {
+                    async {
                         if let Some(r) = stdout {
-                            pump(r, logs2, all2, hl2, false, comp_name).await;
+                            sinks.pump(r, false).await;
                         }
                     },
-                    async move {
+                    async {
                         if let Some(r) = stderr {
-                            pump(r, logs, all_logs, headless_log, true, comp_name).await;
+                            sinks.pump(r, true).await;
                         }
                     }
                 );
@@ -453,9 +527,13 @@ impl App {
                     .await
                     .map(|s| s.code().unwrap_or(-1))
                     .unwrap_or(-1);
-                let _ = tx.send(AppMsg::ProcessExited { key, code });
+                let _ = tx.send(AppMsg::ProcessExited {
+                    comp_idx,
+                    pid,
+                    code,
+                });
             });
-            self.components[comp_idx].task_handles.push(handle);
+            comp.task_handles.push(handle);
         }
     }
 
@@ -503,33 +581,57 @@ impl App {
     }
 
     /// Drain the message queue and return the indices of components that need restarting.
+    ///
+    /// A component only leaves Running/Stopping/Restarting once all of its processes have
+    /// exited, so a multi-process component is never restarted while parts of it still run.
     pub fn drain_messages(&mut self) -> Vec<usize> {
         let mut to_restart = Vec::new();
         while let Ok(msg) = self.msg_rx.try_recv() {
             match msg {
-                AppMsg::ProcessExited { key, code } => {
-                    if let Some((idx, comp)) = self
-                        .components
-                        .iter_mut()
-                        .enumerate()
-                        .find(|(_, c)| COMPONENT_DEFS[c.comp_idx].key == key)
-                    {
-                        match comp.state {
-                            ProcState::Restarting => {
-                                comp.pids.clear();
-                                comp.state = ProcState::Idle;
-                                to_restart.push(idx);
-                            }
-                            ProcState::Stopping | ProcState::Running => {
-                                comp.state = if code == 0 {
-                                    ProcState::Stopped
-                                } else {
-                                    ProcState::Crashed
-                                };
-                                comp.pids.clear();
-                            }
-                            _ => {}
+                AppMsg::ProcessExited {
+                    comp_idx,
+                    pid,
+                    code,
+                } => {
+                    let sinks = self.log_sinks(comp_idx);
+                    let comp = &mut self.components[comp_idx];
+                    let Some(pos) = comp.pids.iter().position(|&p| p == pid) else {
+                        sinks.push_teamplayer(&format!(
+                            "exit of untracked pid {pid} (code {code}) reported, ignoring it"
+                        ));
+                        continue;
+                    };
+                    comp.pids.swap_remove(pos);
+                    comp.exit_code.get_or_insert(code);
+
+                    if comp.state == ProcState::Running {
+                        sinks.push_teamplayer(&format!(
+                            "process {pid} exited unexpectedly with code {code}"
+                        ));
+                        if !comp.pids.is_empty() {
+                            // Do not leave the component half running.
+                            sinks.push_teamplayer("stopping the remaining processes");
+                            sigterm_pids(&comp.pids);
+                            comp.state = ProcState::Stopping;
                         }
+                    }
+
+                    if !comp.pids.is_empty() {
+                        continue;
+                    }
+                    match comp.state {
+                        ProcState::Restarting => {
+                            comp.state = ProcState::Idle;
+                            to_restart.push(comp_idx);
+                        }
+                        ProcState::Stopping | ProcState::Running => {
+                            comp.state = if comp.exit_code == Some(0) {
+                                ProcState::Stopped
+                            } else {
+                                ProcState::Crashed
+                            };
+                        }
+                        _ => {}
                     }
                 }
             }
@@ -543,5 +645,187 @@ fn sigterm_pids(pids: &[u32]) {
     use nix::unistd::Pid;
     for &pid in pids {
         let _ = killpg(Pid::from_raw(pid as i32), Signal::SIGTERM);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::time::Duration;
+
+    fn cmd(args: &[&str]) -> Vec<String> {
+        args.iter().map(|s| s.to_string()).collect()
+    }
+
+    fn world_model_idx() -> usize {
+        component_idx("world_model").unwrap()
+    }
+
+    /// Drain messages until the component settles in a non-transitional state.
+    async fn wait_settled(app: &mut App, comp_idx: usize) -> Vec<usize> {
+        let mut to_restart = Vec::new();
+        for _ in 0..200 {
+            to_restart.extend(app.drain_messages());
+            if !to_restart.is_empty()
+                || !matches!(
+                    app.components[comp_idx].state,
+                    ProcState::Running | ProcState::Stopping | ProcState::Restarting
+                )
+            {
+                return to_restart;
+            }
+            tokio::time::sleep(Duration::from_millis(25)).await;
+        }
+        panic!(
+            "component did not settle, state {:?}",
+            app.components[comp_idx].state
+        );
+    }
+
+    #[tokio::test]
+    async fn restart_waits_for_all_processes_of_a_component() {
+        let mut app = App::new();
+        let idx = world_model_idx();
+        app.spawn_commands(idx, vec![cmd(&["sleep", "30"]), cmd(&["sleep", "30"])]);
+        assert_eq!(app.components[idx].pids.len(), 2);
+
+        app.restart_component(idx);
+        let to_restart = wait_settled(&mut app, idx).await;
+        assert_eq!(to_restart, vec![idx]);
+        assert!(app.components[idx].pids.is_empty());
+
+        // The new run must not be affected by exit reports of the old one.
+        app.spawn_commands(idx, vec![cmd(&["sleep", "30"]), cmd(&["sleep", "30"])]);
+        tokio::time::sleep(Duration::from_millis(100)).await;
+        assert!(app.drain_messages().is_empty());
+        assert_eq!(app.components[idx].state, ProcState::Running);
+        assert_eq!(app.components[idx].pids.len(), 2);
+
+        app.stop_component(idx).await;
+        wait_settled(&mut app, idx).await;
+        assert!(app.components[idx].pids.is_empty());
+    }
+
+    #[tokio::test]
+    async fn partial_spawn_failure_stops_started_processes() {
+        let mut app = App::new();
+        let idx = world_model_idx();
+        app.spawn_commands(
+            idx,
+            vec![
+                cmd(&["sleep", "30"]),
+                cmd(&["/nonexistent/teamplayer-test-binary"]),
+            ],
+        );
+        assert_eq!(app.components[idx].state, ProcState::Stopping);
+
+        wait_settled(&mut app, idx).await;
+        assert_eq!(app.components[idx].state, ProcState::Crashed);
+        assert!(app.components[idx].pids.is_empty());
+    }
+
+    #[tokio::test]
+    async fn spawn_failure_of_only_process_crashes_immediately() {
+        let mut app = App::new();
+        let idx = world_model_idx();
+        app.spawn_commands(idx, vec![cmd(&["/nonexistent/teamplayer-test-binary"])]);
+        assert_eq!(app.components[idx].state, ProcState::Crashed);
+        assert!(app.components[idx].pids.is_empty());
+    }
+
+    #[tokio::test]
+    async fn crash_of_one_process_stops_its_siblings() {
+        let mut app = App::new();
+        let idx = world_model_idx();
+        app.spawn_commands(
+            idx,
+            vec![cmd(&["sh", "-c", "exit 3"]), cmd(&["sleep", "30"])],
+        );
+        wait_settled(&mut app, idx).await;
+        assert_eq!(app.components[idx].state, ProcState::Crashed);
+        assert_eq!(app.components[idx].exit_code, Some(3));
+        assert!(app.components[idx].pids.is_empty());
+    }
+
+    #[tokio::test]
+    async fn clean_exit_is_reported_as_stopped() {
+        let mut app = App::new();
+        let idx = world_model_idx();
+        app.spawn_commands(idx, vec![cmd(&["true"])]);
+        wait_settled(&mut app, idx).await;
+        assert_eq!(app.components[idx].state, ProcState::Stopped);
+    }
+
+    #[test]
+    fn cli_zenoh_flags_share_one_state() {
+        let mut app = App::new();
+        app.apply_cli_presets(false, true, None, "main.dsd", &["zenoh".into()], &[])
+            .unwrap();
+        assert!(app.zenoh_enabled());
+        app.apply_cli_presets(false, false, None, "main.dsd", &[], &["zenoh".into()])
+            .unwrap();
+        assert!(!app.zenoh_enabled());
+    }
+
+    #[test]
+    fn cli_rejects_unknown_component_keys() {
+        let mut app = App::new();
+        assert!(app
+            .apply_cli_presets(false, false, None, "main.dsd", &["nope".into()], &[])
+            .is_err());
+        assert!(app
+            .apply_cli_presets(false, false, None, "main.dsd", &[], &["nope".into()])
+            .is_err());
+    }
+
+    #[test]
+    fn down_and_up_visit_every_component_and_are_inverse() {
+        let mut app = App::new();
+        let n = app.toggleable_indices().len();
+        assert!(n >= 2, "test needs both config columns populated");
+
+        app.config_focus = ConfigFocus::Zenoh;
+        let mut visited = Vec::new();
+        loop {
+            app.config_focus_next();
+            if app.config_focus == ConfigFocus::Start {
+                break;
+            }
+            visited.push(app.config_focus.clone());
+        }
+        let expected: Vec<ConfigFocus> = (0..n).map(ConfigFocus::Component).collect();
+        assert_eq!(visited, expected);
+
+        for i in (0..n).rev() {
+            app.config_focus_prev();
+            assert_eq!(app.config_focus, ConfigFocus::Component(i));
+        }
+        app.config_focus_prev();
+        assert_eq!(app.config_focus, ConfigFocus::Zenoh);
+    }
+
+    #[test]
+    fn tab_cycles_through_all_items() {
+        let mut app = App::new();
+        let order = app.config_focus_order();
+        app.config_focus = order[0].clone();
+        for expected in order.iter().skip(1).chain(order.first()) {
+            app.config_focus_tab();
+            assert_eq!(&app.config_focus, expected);
+        }
+        app.config_focus_backtab();
+        assert_eq!(&app.config_focus, order.last().unwrap());
+    }
+
+    #[test]
+    fn left_right_move_between_columns() {
+        let mut app = App::new();
+        let n = app.toggleable_indices().len();
+        let left_count = n.div_ceil(2);
+        app.config_focus = ConfigFocus::Component(0);
+        app.config_focus_right();
+        assert_eq!(app.config_focus, ConfigFocus::Component(left_count));
+        app.config_focus_left();
+        assert_eq!(app.config_focus, ConfigFocus::Component(0));
     }
 }

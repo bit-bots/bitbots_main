@@ -6,7 +6,6 @@ pub const FIELDNAME_DEFAULT_SIM: &str = "hsl_kid";
 #[derive(Clone, Debug)]
 pub struct GlobalParams {
     pub sim: bool,
-    pub zenoh: bool,
     pub fieldname: String,
     pub dsd_file: String,
 }
@@ -15,7 +14,6 @@ impl Default for GlobalParams {
     fn default() -> Self {
         Self {
             sim: false,
-            zenoh: true,
             fieldname: FIELDNAME_DEFAULT_HW.to_string(),
             dsd_file: "main.dsd".to_string(),
         }

@@ -90,7 +90,7 @@ async fn main() -> Result<()> {
         &cli.dsd_file,
         &cli.enable,
         &cli.disable,
-    );
+    )?;
 
     let result = if cli.headless {
         run_headless(&mut app).await

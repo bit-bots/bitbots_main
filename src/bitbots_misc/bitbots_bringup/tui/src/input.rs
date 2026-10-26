@@ -1,18 +1,18 @@
 use crossterm::event::{KeyCode, KeyModifiers};
 
 use crate::app::{App, ConfigFocus, ConfirmAction, ProcState, Screen};
-use crate::components::COMPONENT_DEFS;
 
 pub async fn handle_config_key(app: &mut App, key: KeyCode, modifiers: KeyModifiers) -> bool {
     match (&app.config_focus.clone(), key) {
         // Navigation
         (_, KeyCode::Tab) => {
             if modifiers.contains(KeyModifiers::SHIFT) {
-                app.config_focus_prev();
+                app.config_focus_backtab();
             } else {
-                app.config_focus_next();
+                app.config_focus_tab();
             }
         }
+        (_, KeyCode::BackTab) => app.config_focus_backtab(),
         (_, KeyCode::Down) => app.config_focus_next(),
         (_, KeyCode::Up) => app.config_focus_prev(),
         (_, KeyCode::Right) => app.config_focus_right(),
@@ -20,10 +20,7 @@ pub async fn handle_config_key(app: &mut App, key: KeyCode, modifiers: KeyModifi
 
         // Zenoh toggle
         (ConfigFocus::Zenoh, KeyCode::Char(' ') | KeyCode::Enter) => {
-            app.params.zenoh = !app.params.zenoh;
-            if let Some(idx) = COMPONENT_DEFS.iter().position(|d| d.key == "zenoh") {
-                app.components[idx].enabled = app.params.zenoh;
-            }
+            app.set_zenoh_enabled(!app.zenoh_enabled());
         }
 
         // Sim toggle
@@ -236,9 +233,37 @@ pub async fn handle_confirm_key(app: &mut App, key: KeyCode) -> bool {
                 None => {}
             }
         }
-        _ => {
+        KeyCode::Char('n') | KeyCode::Char('N') | KeyCode::Esc => {
             app.confirm_action = None;
         }
+        _ => {}
     }
     false
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn confirm_dialog_only_reacts_to_labeled_keys() {
+        let mut app = App::new();
+        app.confirm_action = Some(ConfirmAction::Quit);
+        for key in [KeyCode::Char('x'), KeyCode::Char(' '), KeyCode::Up] {
+            assert!(!handle_confirm_key(&mut app, key).await);
+            assert!(app.confirm_action.is_some(), "{key:?} must not cancel");
+        }
+        for key in [KeyCode::Char('n'), KeyCode::Char('N'), KeyCode::Esc] {
+            app.confirm_action = Some(ConfirmAction::Quit);
+            assert!(!handle_confirm_key(&mut app, key).await);
+            assert!(app.confirm_action.is_none(), "{key:?} must cancel");
+        }
+        for key in [KeyCode::Char('y'), KeyCode::Char('Y'), KeyCode::Enter] {
+            app.confirm_action = Some(ConfirmAction::Quit);
+            assert!(
+                handle_confirm_key(&mut app, key).await,
+                "{key:?} must confirm"
+            );
+        }
+    }
 }
