@@ -64,10 +64,14 @@ pub fn draw(f: &mut Frame, app: &App) {
 /// Shown until the orchestrator has been reached once.
 fn draw_waiting(f: &mut Frame, app: &App) {
     let area = f.area();
-    let reason = app.connection_error.as_deref().unwrap_or("connecting…");
+    let reason = app
+        .orchestrator_failure
+        .as_deref()
+        .or(app.connection_error.as_deref())
+        .unwrap_or("connecting…");
     let text = format!(
         "{BANNER}\n\nWaiting for bitbots_orchestrate at {}\n\n{reason}\n\n\
-         Start it with: ros2 run bitbots_bringup bitbots_orchestrate\n\nq: quit",
+         Start it with `pixi run orchestrate`, or run teamplayer without --attach\n\nq: quit",
         app.client.socket().display()
     );
     f.render_widget(
@@ -82,6 +86,12 @@ fn draw_waiting(f: &mut Frame, app: &App) {
 /// Replaces the bottom hint line while the orchestrator is unreachable or refused an action.
 fn draw_error_line(f: &mut Frame, app: &App) {
     let msg = match (&app.connection_error, &app.action_error) {
+        _ if app.orchestrator_failure.is_some() => {
+            format!(
+                " {}",
+                app.orchestrator_failure.as_deref().unwrap_or_default()
+            )
+        }
         (Some(e), _) => format!(" orchestrator unreachable: {e}"),
         (None, Some(e)) => format!(" {e}"),
         (None, None) => return,
@@ -674,20 +684,30 @@ pub fn draw_all_logs(f: &mut Frame, app: &App) {
 
 pub fn draw_confirm_popup(f: &mut Frame, app: &App) {
     let (title, msg) = match &app.confirm_action {
-        Some(ConfirmAction::StopAll) => (" Stop All ", "Stop all running components?"),
+        Some(ConfirmAction::StopAll) => (
+            " Stop All ",
+            "Stop all running components?\n\nY / Enter — confirm    N / Esc — cancel",
+        ),
+        Some(ConfirmAction::Quit) => (
+            " Quit ",
+            "This teamplayer started the orchestrator.\n\n\
+             Y / Enter — stop all components and quit\n\
+             D — quit, keep components running\n\
+             N / Esc — cancel",
+        ),
         None => return,
     };
 
     let area = f.area();
     let popup_w = 52u16.min(area.width.saturating_sub(4));
-    let popup_h = 6u16; // 2 border + question (1-2 lines) + blank + hint
+    let popup_h = msg.lines().count() as u16 + 2; // + borders
     let x = area.x + (area.width.saturating_sub(popup_w)) / 2;
     let y = area.y + (area.height.saturating_sub(popup_h)) / 2;
     let popup_area = Rect::new(x, y, popup_w, popup_h);
 
     f.render_widget(Clear, popup_area);
 
-    let content = format!("{msg}\n\nY / Enter — confirm    N / Esc — cancel");
+    let content = msg;
     f.render_widget(
         Paragraph::new(content)
             .block(

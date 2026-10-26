@@ -1,9 +1,9 @@
 use bitbots_orchestrate::api::ConfigUpdate;
 use crossterm::event::{KeyCode, KeyModifiers};
 
-use crate::app::{App, ConfigFocus, ConfirmAction, Screen};
+use crate::app::{App, ConfigFocus, ConfirmAction, ExitMode, Screen};
 
-pub async fn handle_config_key(app: &mut App, key: KeyCode, modifiers: KeyModifiers) -> bool {
+pub async fn handle_config_key(app: &mut App, key: KeyCode, modifiers: KeyModifiers) {
     match (&app.config_focus.clone(), key) {
         // Navigation
         (_, KeyCode::Tab) => {
@@ -89,15 +89,13 @@ pub async fn handle_config_key(app: &mut App, key: KeyCode, modifiers: KeyModifi
             }
         }
 
-        // Quit; the components keep running in the orchestrator
-        (_, KeyCode::Char('q') | KeyCode::Char('Q') | KeyCode::Esc) => return true,
+        (_, KeyCode::Char('q') | KeyCode::Char('Q') | KeyCode::Esc) => app.request_quit(),
 
         _ => {}
     }
-    false
 }
 
-pub async fn handle_runtime_key(app: &mut App, key: KeyCode, _modifiers: KeyModifiers) -> bool {
+pub async fn handle_runtime_key(app: &mut App, key: KeyCode) {
     let visible = app.runtime_visible_indices();
     let sel = app.runtime_selected.min(visible.len().saturating_sub(1));
     let selected = visible
@@ -160,36 +158,33 @@ pub async fn handle_runtime_key(app: &mut App, key: KeyCode, _modifiers: KeyModi
         }
         KeyCode::Char('x') => app.confirm_action = Some(ConfirmAction::StopAll),
         KeyCode::Esc => app.screen = Screen::Config,
-        KeyCode::Char('q') | KeyCode::Char('Q') => return true,
+        KeyCode::Char('q') | KeyCode::Char('Q') => app.request_quit(),
         _ => {}
     }
-    false
 }
 
-pub fn handle_logs_key(app: &mut App, key: KeyCode) -> bool {
+pub fn handle_logs_key(app: &mut App, key: KeyCode) {
     let log_len = app.component_logs.lines.len();
     scroll_keys(app, key, log_len);
     match key {
         KeyCode::Esc | KeyCode::Char('q') | KeyCode::Char('l') => {
             app.screen = Screen::Runtime;
         }
-        KeyCode::Char('Q') => return true,
+        KeyCode::Char('Q') => app.request_quit(),
         _ => {}
     }
-    false
 }
 
-pub fn handle_all_logs_key(app: &mut App, key: KeyCode) -> bool {
+pub fn handle_all_logs_key(app: &mut App, key: KeyCode) {
     let log_len = app.all_logs.lines.len();
     scroll_keys(app, key, log_len);
     match key {
         KeyCode::Esc | KeyCode::Char('q') | KeyCode::Char('l') | KeyCode::Left => {
             app.screen = Screen::Runtime;
         }
-        KeyCode::Char('Q') => return true,
+        KeyCode::Char('Q') => app.request_quit(),
         _ => {}
     }
-    false
 }
 
 /// Shared scroll key handling for both log views.
@@ -235,8 +230,15 @@ pub async fn handle_confirm_key(app: &mut App, key: KeyCode) {
                     let result = app.client.stop_all().await;
                     app.apply_action(result);
                 }
+                Some(ConfirmAction::Quit) => app.exit = Some(ExitMode::StopOrchestrator),
                 None => {}
             }
+        }
+        KeyCode::Char('d') | KeyCode::Char('D')
+            if matches!(app.confirm_action, Some(ConfirmAction::Quit)) =>
+        {
+            app.confirm_action = None;
+            app.exit = Some(ExitMode::Detach);
         }
         KeyCode::Char('n') | KeyCode::Char('N') | KeyCode::Esc => {
             app.confirm_action = None;
@@ -249,6 +251,7 @@ pub async fn handle_confirm_key(app: &mut App, key: KeyCode) {
 mod tests {
     use super::*;
     use crate::app::tests::offline_app;
+    use crate::spawn::OwnedOrchestrator;
 
     #[tokio::test]
     async fn confirm_dialog_only_reacts_to_labeled_keys() {
@@ -269,6 +272,36 @@ mod tests {
             assert!(app.confirm_action.is_none(), "{key:?} must confirm");
             // There is no orchestrator in this test, the refusal must be visible.
             assert!(app.action_error.is_some());
+        }
+        // Detaching only exists when quitting.
+        app.confirm_action = Some(ConfirmAction::StopAll);
+        handle_confirm_key(&mut app, KeyCode::Char('d')).await;
+        assert!(app.confirm_action.is_some());
+        assert!(app.exit.is_none());
+    }
+
+    #[tokio::test]
+    async fn quit_asks_only_when_owning_the_orchestrator() {
+        let mut app = offline_app();
+        handle_runtime_key(&mut app, KeyCode::Char('q')).await;
+        assert_eq!(app.exit, Some(ExitMode::Detach));
+
+        for (key, expected) in [
+            (KeyCode::Char('d'), Some(ExitMode::Detach)),
+            (KeyCode::Char('y'), Some(ExitMode::StopOrchestrator)),
+            (KeyCode::Esc, None),
+        ] {
+            let mut app = offline_app();
+            let child = tokio::process::Command::new("sleep")
+                .arg("30")
+                .kill_on_drop(true)
+                .spawn()
+                .unwrap();
+            app.orchestrator = Some(OwnedOrchestrator::from_child(child));
+            handle_runtime_key(&mut app, KeyCode::Char('q')).await;
+            assert!(app.exit.is_none(), "must ask before quitting");
+            handle_confirm_key(&mut app, key).await;
+            assert_eq!(app.exit, expected, "{key:?}");
         }
     }
 }

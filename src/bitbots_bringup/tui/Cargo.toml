@@ -16,3 +16,4 @@ anyhow = "1"
 futures = "0.3"
 ansi-to-tui = "3"
 clap = { version = "4", features = ["derive"] }
+nix = { version = "0.29", features = ["signal", "process"] }

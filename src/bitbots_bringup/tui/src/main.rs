@@ -1,10 +1,11 @@
 mod app;
 mod input;
+mod spawn;
 mod ui;
 
 use std::{path::PathBuf, time::Duration};
 
-use anyhow::Result;
+use anyhow::{bail, Result};
 use bitbots_orchestrate::{
     api::{resolve_socket, DEFAULT_INSTANCE_NAME},
     client::Client,
@@ -19,17 +20,33 @@ use futures::StreamExt;
 use ratatui::{backend::CrosstermBackend, Terminal};
 use tokio::time;
 
-use app::{App, Screen};
+use app::{App, ExitMode, Screen};
+use spawn::OwnedOrchestrator;
 
 // ─── CLI ──────────────────────────────────────────────────────────────────────
 
 #[derive(Parser)]
 #[command(
     name = "teamplayer",
-    about = "Bit-Bots teamplayer TUI — frontend for a local bitbots_orchestrate instance",
+    about = "Bit-Bots teamplayer TUI — frontend for bitbots_orchestrate, starts one if none is \
+             running",
     long_about = None,
 )]
 struct Cli {
+    /// Run without TUI: run an orchestrator in the foreground that starts all enabled
+    /// components right away; Ctrl-C stops them together with the orchestrator
+    #[arg(long, conflicts_with = "attach")]
+    headless: bool,
+
+    /// Only connect to a running orchestrator, never start one
+    #[arg(long)]
+    attach: bool,
+
+    /// Settings for a newly started orchestrator, see `bitbots_orchestrate --help`.
+    /// Refused when attaching to a running orchestrator.
+    #[command(flatten)]
+    presets: Presets,
+
     /// Name of the orchestrate instance to connect to
     #[arg(long, default_value = DEFAULT_INSTANCE_NAME)]
     name: String,
@@ -37,6 +54,67 @@ struct Cli {
     /// Explicit socket path of the orchestrate instance, overrides --name
     #[arg(long, value_name = "PATH")]
     socket: Option<PathBuf>,
+}
+
+#[derive(clap::Args)]
+struct Presets {
+    /// Start all enabled components right away
+    #[arg(long)]
+    autostart: bool,
+
+    /// Enable simulation mode
+    #[arg(long)]
+    sim: bool,
+
+    /// Override the field name
+    #[arg(long, value_name = "NAME")]
+    fieldname: Option<String>,
+
+    /// Override the behavior DSD file
+    #[arg(long, value_name = "FILE")]
+    dsd_file: Option<String>,
+
+    /// Disable the Zenoh daemon
+    #[arg(long)]
+    no_zenoh: bool,
+
+    /// Enable a component by key; may be specified multiple times
+    #[arg(long = "enable", value_name = "KEY")]
+    enable: Vec<String>,
+
+    /// Disable a component by key; may be specified multiple times
+    #[arg(long = "disable", value_name = "KEY")]
+    disable: Vec<String>,
+}
+
+impl Presets {
+    /// Command line arguments for bitbots_orchestrate.
+    fn to_args(&self) -> Vec<String> {
+        let mut args = Vec::new();
+        for (set, flag) in [
+            (self.autostart, "--autostart"),
+            (self.sim, "--sim"),
+            (self.no_zenoh, "--no-zenoh"),
+        ] {
+            if set {
+                args.push(flag.to_string());
+            }
+        }
+        for (value, flag) in [
+            (&self.fieldname, "--fieldname"),
+            (&self.dsd_file, "--dsd-file"),
+        ] {
+            if let Some(value) = value {
+                args.extend([flag.to_string(), value.clone()]);
+            }
+        }
+        for (keys, flag) in [(&self.enable, "--enable"), (&self.disable, "--disable")] {
+            for key in keys {
+                args.extend([flag.to_string(), key.clone()]);
+            }
+        }
+        args
+    }
 }
 
 // ─── Terminal helpers ─────────────────────────────────────────────────────────
@@ -50,6 +128,13 @@ fn setup_panic_hook() {
     }));
 }
 
+fn setup_terminal() -> Result<Terminal<CrosstermBackend<std::io::Stdout>>> {
+    enable_raw_mode()?;
+    let mut stdout = std::io::stdout();
+    execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
+    Ok(Terminal::new(CrosstermBackend::new(stdout))?)
+}
+
 fn cleanup_terminal() {
     let _ = disable_raw_mode();
     let _ = execute!(std::io::stdout(), LeaveAlternateScreen, DisableMouseCapture);
@@ -61,18 +146,80 @@ fn cleanup_terminal() {
 async fn main() -> Result<()> {
     let cli = Cli::parse();
     let socket = resolve_socket(cli.socket, &cli.name)?;
-    let mut app = App::new(Client::new(socket));
+    let client = Client::new(socket.clone());
+    let preset_args = cli.presets.to_args();
+
+    if cli.headless {
+        let mut args = preset_args;
+        if !cli.presets.autostart {
+            args.push("--autostart".to_string());
+        }
+        return Err(spawn::exec_headless(&socket, &args));
+    }
+
+    let running = client.status().await.is_ok();
+    let orchestrator = if running {
+        if !preset_args.is_empty() {
+            bail!(
+                "an orchestrator is already running at {}, its settings cannot be changed from \
+                 the command line; drop {} or stop it first",
+                socket.display(),
+                preset_args.join(" ")
+            );
+        }
+        None
+    } else if cli.attach {
+        if !preset_args.is_empty() {
+            bail!("--attach does not start an orchestrator, so the presets would have no effect");
+        }
+        None
+    } else {
+        Some(OwnedOrchestrator::spawn(&socket, &preset_args)?)
+    };
+
+    let mut app = App::new(client);
+    app.orchestrator = orchestrator;
 
     setup_panic_hook();
-    enable_raw_mode()?;
-    let mut stdout = std::io::stdout();
-    execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
-    let backend = CrosstermBackend::new(stdout);
-    let mut terminal = Terminal::new(backend)?;
-
-    let result = run_tui(&mut terminal, &mut app).await;
+    let result = match setup_terminal() {
+        Ok(mut terminal) => run_tui(&mut terminal, &mut app).await,
+        Err(e) => Err(e),
+    };
     cleanup_terminal();
-    result
+    let exit = match result {
+        Ok(exit) => exit,
+        Err(e) => {
+            // Do not leave an orchestrator behind that nobody knows about.
+            if let Some(orchestrator) = app.orchestrator.take() {
+                eprintln!("Stopping the orchestrator started by teamplayer...");
+                let _ = orchestrator.stop().await;
+            }
+            return Err(e);
+        }
+    };
+
+    match (exit, app.orchestrator) {
+        (ExitMode::StopOrchestrator, Some(orchestrator)) => {
+            eprintln!("Stopping all components and the orchestrator...");
+            let log_path = orchestrator.log_path.clone();
+            let status = orchestrator.stop().await?;
+            if !status.success() {
+                bail!(
+                    "the orchestrator exited with {status}, see {}",
+                    log_path.display()
+                );
+            }
+        }
+        (_, Some(orchestrator)) => eprintln!(
+            "The orchestrator keeps running in the background (log: {}).\n\
+             Reattach with `teamplayer --name {}`, stop it with `kill -TERM <pid in {}.lock>`.",
+            orchestrator.log_path.display(),
+            cli.name,
+            socket.display()
+        ),
+        (_, None) => {}
+    }
+    Ok(())
 }
 
 // ─── TUI event loop ───────────────────────────────────────────────────────────
@@ -80,7 +227,7 @@ async fn main() -> Result<()> {
 async fn run_tui(
     terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>,
     app: &mut App,
-) -> Result<()> {
+) -> Result<ExitMode> {
     let mut event_stream = EventStream::new();
     let mut tick_interval = time::interval(Duration::from_millis(100));
     loop {
@@ -107,28 +254,27 @@ async fn run_tui(
                 if let Event::Key(key_event) = event {
                     if app.confirm_action.is_some() {
                         input::handle_confirm_key(app, key_event.code).await;
-                        continue;
+                    } else {
+                        match app.screen.clone() {
+                            Screen::Config => {
+                                input::handle_config_key(app, key_event.code, key_event.modifiers)
+                                    .await
+                            }
+                            Screen::Runtime => input::handle_runtime_key(app, key_event.code).await,
+                            Screen::Logs(_) => input::handle_logs_key(app, key_event.code),
+                            Screen::AllLogs => input::handle_all_logs_key(app, key_event.code),
+                        }
                     }
-                    let quit = match app.screen.clone() {
-                        Screen::Config => {
-                            input::handle_config_key(app, key_event.code, key_event.modifiers).await
-                        }
-                        Screen::Runtime => {
-                            input::handle_runtime_key(app, key_event.code, key_event.modifiers).await
-                        }
-                        Screen::Logs(_) => input::handle_logs_key(app, key_event.code),
-                        Screen::AllLogs => input::handle_all_logs_key(app, key_event.code),
-                    };
-                    if quit {
-                        return Ok(());
+                    if let Some(exit) = app.exit.take() {
+                        return Ok(exit);
                     }
                 }
             }
 
             _ = tokio::signal::ctrl_c() => {
-                return Ok(());
+                return Ok(ExitMode::Detach);
             }
         }
     }
-    Ok(())
+    Ok(ExitMode::Detach)
 }

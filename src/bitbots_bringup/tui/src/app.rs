@@ -5,6 +5,8 @@ use bitbots_orchestrate::{
     client::Client,
 };
 
+use crate::spawn::OwnedOrchestrator;
+
 const ALL_LOGS_CAPACITY: usize = 5000;
 const COMPONENT_LOGS_CAPACITY: usize = 5000;
 
@@ -20,6 +22,16 @@ pub enum Screen {
 
 pub enum ConfirmAction {
     StopAll,
+    /// Quit while owning the orchestrator: stop it or leave it running
+    Quit,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum ExitMode {
+    /// Leave the orchestrator and its components running
+    Detach,
+    /// Stop the orchestrator this TUI started, and with it all components
+    StopOrchestrator,
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -100,6 +112,12 @@ impl LogMirror {
 
 pub struct App {
     pub client: Client,
+    /// The orchestrator, if this TUI started it
+    pub orchestrator: Option<OwnedOrchestrator>,
+    /// Why the orchestrator started by this TUI is gone
+    pub orchestrator_failure: Option<String>,
+    /// Set when the TUI should exit
+    pub exit: Option<ExitMode>,
     /// Latest status of the orchestrator, None until it was reached once
     pub status: Option<Status>,
     /// Why the orchestrator cannot be reached right now
@@ -128,6 +146,9 @@ impl App {
     pub fn new(client: Client) -> Self {
         App {
             client,
+            orchestrator: None,
+            orchestrator_failure: None,
+            exit: None,
             status: None,
             connection_error: None,
             action_error: None,
@@ -172,8 +193,26 @@ impl App {
         self.status = Some(status);
     }
 
+    /// Quit right away, or ask first if the TUI owns the orchestrator.
+    pub fn request_quit(&mut self) {
+        if self.orchestrator.is_some() {
+            self.confirm_action = Some(ConfirmAction::Quit);
+        } else {
+            self.exit = Some(ExitMode::Detach);
+        }
+    }
+
     /// Fetch status and logs from the orchestrator.
     pub async fn refresh(&mut self) {
+        if let Some(orchestrator) = &mut self.orchestrator {
+            if let Some(status) = orchestrator.try_exited() {
+                self.orchestrator_failure = Some(format!(
+                    "the orchestrator started by teamplayer exited ({status}), see {}",
+                    orchestrator.log_path.display()
+                ));
+                self.orchestrator = None;
+            }
+        }
         match self.client.status().await {
             Ok(status) => {
                 self.set_status(status);
