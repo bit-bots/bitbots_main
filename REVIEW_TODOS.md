@@ -38,9 +38,13 @@ re-check of build-system findings against the head of PR #944
       status publisher and the static map→odom fallback. Open: switch deploy
       to `bitbots_orchestrate --autostart --profile game --disable zenoh`;
       cover the multi-robot sim launch (per-instance environment such as
-      `ROS_DOMAIN_ID`); then remove `teamplayer.launch` and with it the
-      Python `parameter_blackboard` node, whose role the orchestrator took
-      over (`blackboard` section of the stack file).
+      `ROS_DOMAIN_ID`, overrides via `--global`); then remove
+      `teamplayer.launch`.
+- [ ] **Launch exit codes.** `ros2 launch` exits with 0 when its nodes die,
+      so a component whose node fails (e.g. the blackboard refusing an
+      invalid `--global` override) shows DONE instead of FAIL in the
+      orchestrator. Consider making launch files shut down with an error, or
+      starting single-node components with `ros2 run`.
 
 ## Nits / polish
 
