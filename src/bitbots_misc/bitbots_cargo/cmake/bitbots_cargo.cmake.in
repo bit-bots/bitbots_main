@@ -27,23 +27,56 @@ function(get_idl_deps OUT_PKG_DIRS PKG)
     set(${OUT_PKG_DIRS} ${PKG_DIRS} PARENT_SCOPE)
 endfunction()
 
-function(r2r_cargo)
+# Message packages for which r2r generates bindings. All Rust packages of the workspace share
+# one cargo target directory and thereby one r2r build, so they all use this list; a package
+# specific list would make every package build regenerate and recompile r2r. The packages are
+# build_export_depend of bitbots_cargo, so they are available wherever it is.
+set(BITBOTS_R2R_IDL_PACKAGES
+  rcl
+  rcl_action
+  rcl_interfaces
+  builtin_interfaces
+  rosgraph_msgs
+  geometry_msgs
+  tf2_msgs
+  nav_msgs
+  bitbots_msgs)
+
+# Environment for cargo so that r2r generates the bindings of BITBOTS_R2R_IDL_PACKAGES, as
+# `NAME=value` entries for `cmake -E env`.
+function(_r2r_cargo_env OUT_ENV)
   # pretend that we want to compile c code to get all library paths etc...
   if(NOT TARGET dummy)
     add_library(dummy INTERFACE)
   endif()
 
-  # traverse list of wanted packages to add dependencies
-  foreach(f ${ARGN})
+  foreach(f ${BITBOTS_R2R_IDL_PACKAGES})
     find_package(${f} REQUIRED)
     set(REC_PKG_DIRS "")
     get_idl_deps(REC_PKG_DIRS ${f})
-    list(APPEND CMAKE_IDL_PACKAGES "${REC_PKG_DIRS}")
+    list(APPEND IDL_PACKAGES "${REC_PKG_DIRS}")
   endforeach()
+  list(REMOVE_DUPLICATES IDL_PACKAGES)
+  string(REPLACE ";" ":" IDL_PACKAGES_STR "${IDL_PACKAGES}")
 
-  list(REMOVE_DUPLICATES CMAKE_IDL_PACKAGES)
-  string (REPLACE ";" ":" CMAKE_IDL_PACKAGES_STR "${CMAKE_IDL_PACKAGES}")
-  set(ENV{CMAKE_IDL_PACKAGES} ${CMAKE_IDL_PACKAGES_STR})
+  get_property(includeDirs DIRECTORY "${CMAKE_SOURCE_DIR}" PROPERTY INCLUDE_DIRECTORIES)
+  list(REMOVE_DUPLICATES includeDirs)
+  string(REPLACE ";" ":" INCLUDE_DIRS_STR "${includeDirs}")
+
+  set(${OUT_ENV}
+    "CMAKE_IDL_PACKAGES=${IDL_PACKAGES_STR}"
+    "CMAKE_INCLUDE_DIRS=${INCLUDE_DIRS_STR}"
+    PARENT_SCOPE)
+endfunction()
+
+function(r2r_cargo)
+  foreach(f ${ARGN})
+    if(NOT f IN_LIST BITBOTS_R2R_IDL_PACKAGES)
+      message(FATAL_ERROR
+        "r2r_cargo: ${f} is not in BITBOTS_R2R_IDL_PACKAGES of bitbots_cargo, add it there")
+    endif()
+  endforeach()
+  _r2r_cargo_env(R2R_ENV)
 
   # On OSX colcon eats the DYLD_LIBRARY_PATH... so we need to add the rpaths
   # manually...
@@ -67,14 +100,8 @@ function(r2r_cargo)
   string (REPLACE ";" " " RUSTFLAGS_STR "${RUSTFLAGS}")
   set(ENV{RUSTFLAGS} ${RUSTFLAGS_STR})
 
-  # get include paths
-  get_property(includeDirs DIRECTORY "${CMAKE_SOURCE_DIR}" PROPERTY INCLUDE_DIRECTORIES)
-  list(REMOVE_DUPLICATES includeDirs)
-  string (REPLACE ";" ":" CMAKE_INCLUDE_DIRS_STR "${includeDirs}")
-  set(ENV{CMAKE_INCLUDE_DIRS} ${CMAKE_INCLUDE_DIRS_STR})
-
   add_custom_target(cargo_target ALL
-      COMMAND ${CMAKE_COMMAND} "-E" "env" "--unset=MAKEFLAGS" "--unset=MFLAGS" "RUSTFLAGS=$ENV{RUSTFLAGS}" "CMAKE_IDL_PACKAGES=$ENV{CMAKE_IDL_PACKAGES}" "CMAKE_INCLUDE_DIRS=$ENV{CMAKE_INCLUDE_DIRS}" "cargo" "build" "--profile" "colcon" "--quiet"
+      COMMAND ${CMAKE_COMMAND} "-E" "env" "--unset=MAKEFLAGS" "--unset=MFLAGS" "RUSTFLAGS=$ENV{RUSTFLAGS}" ${R2R_ENV} "cargo" "build" "--profile" "colcon" "--quiet"
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
       USES_TERMINAL
       VERBATIM
@@ -85,8 +112,7 @@ function(r2r_cargo)
       NAME cargo_test
       COMMAND ${CMAKE_COMMAND} "-E" "env" "--unset=MAKEFLAGS" "--unset=MFLAGS"
         "RUSTFLAGS=$ENV{RUSTFLAGS}"
-        "CMAKE_IDL_PACKAGES=$ENV{CMAKE_IDL_PACKAGES}"
-        "CMAKE_INCLUDE_DIRS=$ENV{CMAKE_INCLUDE_DIRS}"
+        ${R2R_ENV}
         cargo test --profile colcon --package ${PROJECT_NAME}
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     )
@@ -169,13 +195,19 @@ endfunction()
 
 # Build a standalone Rust binary and install it to lib/${PROJECT_NAME}/ so
 # it is launchable via `ros2 run ${PROJECT_NAME} <binary_name>`.
+# May be called several times per package, each crate gets its own test.
 #
-# Usage: cargo_binary(<binary_name> [PACKAGE <cargo_crate_name>])
-#   PACKAGE defaults to ${PROJECT_NAME}
+# Usage: cargo_binary(<binary_name> [PACKAGE <cargo_crate_name>] [R2R])
+#   PACKAGE defaults to the binary name
+#   R2R lets r2r generate the bindings of BITBOTS_R2R_IDL_PACKAGES
 function(cargo_binary BINARY_NAME)
-  cmake_parse_arguments(_ARGS "" "PACKAGE" "" ${ARGN})
+  cmake_parse_arguments(_ARGS "R2R" "PACKAGE" "" ${ARGN})
   if(NOT _ARGS_PACKAGE)
     set(_ARGS_PACKAGE ${BINARY_NAME})
+  endif()
+  set(R2R_ENV "")
+  if(_ARGS_R2R)
+    _r2r_cargo_env(R2R_ENV)
   endif()
 
   _cargo_get_target_dir(_CARGO_TARGET_DIR)
@@ -187,7 +219,7 @@ function(cargo_binary BINARY_NAME)
   endif()
 
   add_custom_target(cargo_${BINARY_NAME} ALL
-    COMMAND ${CMAKE_COMMAND} "-E" "env" "--unset=MAKEFLAGS" "--unset=MFLAGS"
+    COMMAND ${CMAKE_COMMAND} "-E" "env" "--unset=MAKEFLAGS" "--unset=MFLAGS" ${R2R_ENV}
       cargo build --profile colcon --package ${_ARGS_PACKAGE} --quiet
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     USES_TERMINAL
@@ -197,11 +229,28 @@ function(cargo_binary BINARY_NAME)
   install(PROGRAMS ${_CARGO_TARGET_DIR}/colcon/${BINARY_NAME}${_SUFFIX}
     DESTINATION lib/${PROJECT_NAME})
 
+  if(_ARGS_R2R)
+    cargo_test(${_ARGS_PACKAGE} R2R)
+  else()
+    cargo_test(${_ARGS_PACKAGE})
+  endif()
+endfunction()
+
+# Register the tests of a crate, e.g. of a library that is only used by other crates.
+#
+# Usage: cargo_test(<cargo_crate_name> [R2R])
+#   R2R as for cargo_binary
+function(cargo_test CRATE)
+  cmake_parse_arguments(_ARGS "R2R" "" "" ${ARGN})
+  set(R2R_ENV "")
+  if(_ARGS_R2R)
+    _r2r_cargo_env(R2R_ENV)
+  endif()
   if(BUILD_TESTING)
     add_test(
-      NAME cargo_test
-      COMMAND ${CMAKE_COMMAND} "-E" "env" "--unset=MAKEFLAGS" "--unset=MFLAGS"
-        cargo test --profile colcon --package ${_ARGS_PACKAGE}
+      NAME cargo_test_${CRATE}
+      COMMAND ${CMAKE_COMMAND} "-E" "env" "--unset=MAKEFLAGS" "--unset=MFLAGS" ${R2R_ENV}
+        cargo test --profile colcon --package ${CRATE}
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     )
   endif()

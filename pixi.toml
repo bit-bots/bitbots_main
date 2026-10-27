@@ -13,6 +13,8 @@ version = "0.1.0"
 [tasks]
 zenoh = "ros2 run rmw_zenoh_cpp rmw_zenohd"
 deploy = {cmd = "scripts/deploy_robots.py", description = "Deploys the current environment."}
+compose_server = { cmd = "ros2 run bitbots_bringup bitbots_compose_server", description = "Run the compose server, which starts and supervises the main software components" }
+teamplayer = { cmd = "ros2 run bitbots_bringup bitbots_compose_tui", description = "TUI to configure and control the main software components, starts the compose server if needed" }
 
 # Default stage `pre-commit` enables ruff auto-formatting, stage `manual` disables ruff auto-formatting, only shows diff
 format = {cmd = "sh -c 'pre-commit run --all-files --hook-stage \"${PRE_COMMIT_STAGE:-pre-commit}\"'", description = "Runs code formatting and linting."}
@@ -30,7 +32,7 @@ cmd = "colcon build --symlink-install --cmake-args -G 'Unix Makefiles' -DCMAKE_C
 description = "Builds all ROS 2 packages. Add --packages-select <package names> to build specific packages."
 
 [tasks.clean]
-cmd = "rm -rf 'build/{{ package }}' 'install/{{ package }}' {{ 'log' if not package }}"
+cmd = "rm -rf 'build/{{ package }}' 'install/{{ package }}' {{ 'log' if not package }} {{ 'target' if not package }}"
 args = [{ arg = "package", default = "" }]
 description = "Cleans build and install files for all ROS 2 packages or a specific one if given."
 
@@ -111,7 +113,7 @@ yaml-cpp = ">=0.8.0,<0.9"
 regex = ">=2026.4.4,<2027"
 onnxruntime = ">=1.24.2,<2"  # CPU Onnxruntime for python (motion, tts, ...)
 libonnxruntime-webgpu = ">=1.24.3,<2"  # GPU onnxruntime for cpp (self compiled)
-libclang = ">=22.1.8,<23"  # Needed for r2r rust bindings
+libclang = ">=22.1.8,<23"  # Needed for r2r rust bindings; cannot follow clang 21 because qt-main (plotjuggler) requires libclang13 >=22
 libllvm21 = ">=21.1.8,<22"  # Needed for r2r rust bindings
 
 # Official ROS 2 packages
