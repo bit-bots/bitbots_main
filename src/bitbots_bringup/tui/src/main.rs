@@ -81,6 +81,10 @@ struct Presets {
     /// Disable a component by key; may be repeated
     #[arg(long = "disable", value_name = "KEY")]
     disable: Vec<String>,
+
+    /// Override a global parameter, e.g. bot_id=2; may be repeated
+    #[arg(long = "global", value_name = "NAME=VALUE")]
+    global: Vec<String>,
 }
 
 impl Presets {
@@ -100,6 +104,7 @@ impl Presets {
             (&self.set, "--set"),
             (&self.enable, "--enable"),
             (&self.disable, "--disable"),
+            (&self.global, "--global"),
         ] {
             for value in values {
                 args.extend([flag.to_string(), value.clone()]);
@@ -315,4 +320,33 @@ async fn run_tui(
         }
     }
     Ok(ExitMode::Detach)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn presets_are_passed_on_to_the_orchestrator() {
+        let cli = Cli::parse_from([
+            "teamplayer",
+            "--profile",
+            "sim",
+            "--global",
+            "bot_id=2",
+            "--global",
+            "role=goalie",
+        ]);
+        assert_eq!(
+            cli.presets.to_args(),
+            [
+                "--profile",
+                "sim",
+                "--global",
+                "bot_id=2",
+                "--global",
+                "role=goalie"
+            ]
+        );
+    }
 }
