@@ -3,7 +3,7 @@
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 
 use anyhow::{bail, Context};
-use bitbots_stack::{BlackboardSpec, Resolved, Stack, Value, Values};
+use bitbots_stack::{Resolved, Stack, Value, Values};
 use indexmap::IndexMap;
 use tokio::{
     io::{AsyncBufReadExt, BufReader},
@@ -13,30 +13,12 @@ use tokio::{
 
 use crate::{
     api::{
-        BlackboardInfo, BlackboardSummary, ComponentInfo, GlobalParameterInfo, GlobalValue,
-        LogStream, ParameterInfo, ProcState, ProfileInfo, RosState, SetOverrides, SetParameters,
-        Status,
+        ComponentInfo, GlobalValue, LogStream, ParameterInfo, ProcState, ProfileInfo,
+        SetGlobalParameters, SetParameters, Status,
     },
-    blackboard::{self, Blackboard, ShareResolver},
     logs::LogStore,
-    ros::RosBlackboard,
+    share::{self, ShareResolver},
 };
-
-/// Log key of messages about the blackboard, which is not a component.
-pub const BLACKBOARD_LOG_KEY: &str = "blackboard";
-const BLACKBOARD_LOG_NAME: &str = "Blackboard";
-
-/// The global parameters declared by the stack and their publication.
-struct BlackboardState {
-    spec: BlackboardSpec,
-    share_dir: PathBuf,
-    overrides: IndexMap<String, GlobalValue>,
-    /// Last successful assembly
-    current: Option<Arc<Blackboard>>,
-    /// Why the last assembly failed
-    error: Option<String>,
-    ros: Option<RosBlackboard>,
-}
 
 /// Runtime state of a component.
 pub struct ComponentState {
@@ -63,12 +45,16 @@ pub enum ActionError {
     Conflict(String),
     /// The request itself is invalid
     BadRequest(String),
+    /// The orchestrator could not carry out a valid request
+    Failed(String),
 }
 
 impl std::fmt::Display for ActionError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            ActionError::Conflict(msg) | ActionError::BadRequest(msg) => f.write_str(msg),
+            ActionError::Conflict(msg)
+            | ActionError::BadRequest(msg)
+            | ActionError::Failed(msg) => f.write_str(msg),
         }
     }
 }
@@ -112,7 +98,9 @@ pub struct Supervisor {
     profile: Option<String>,
     /// Valid values of the parameters that declare `choices_from`
     choices: HashMap<String, Vec<String>>,
-    blackboard: Option<BlackboardState>,
+    /// Overrides of global parameters, written to `global_parameters_file`
+    global_parameters: IndexMap<String, GlobalValue>,
+    global_parameters_file: PathBuf,
     /// Runtime state of every component, in stack order
     pub components: Vec<ComponentState>,
     /// Set once shutdown has begun; no components are started afterwards.
@@ -123,13 +111,19 @@ pub struct Supervisor {
 }
 
 impl Supervisor {
-    /// Fails if the choices of a parameter or the blackboard package cannot be found.
-    pub fn new(stack: Stack, logs: Arc<LogStore>, share: ShareResolver) -> anyhow::Result<Self> {
+    /// `global_parameters_file` is where the overrides of global parameters are written for the
+    /// components. Fails if the choices of a parameter cannot be found.
+    pub fn new(
+        stack: Stack,
+        logs: Arc<LogStore>,
+        share: ShareResolver,
+        global_parameters_file: PathBuf,
+    ) -> anyhow::Result<Self> {
         let mut choices = HashMap::new();
         for p in stack.parameters() {
             if let Some(from) = &p.choices_from {
                 let dir = share(&from.package)?.join(&from.directory);
-                let names = blackboard::subdirectories(&dir)
+                let names = share::subdirectories(&dir)
                     .with_context(|| format!("choices of parameter '{}'", p.name))?;
                 if let Value::String(default) = &p.default {
                     if !names.contains(default) {
@@ -143,17 +137,8 @@ impl Supervisor {
                 choices.insert(p.name.clone(), names);
             }
         }
-        let blackboard = match stack.blackboard() {
-            Some(spec) => Some(BlackboardState {
-                share_dir: share(&spec.package)?,
-                spec: spec.clone(),
-                overrides: IndexMap::new(),
-                current: None,
-                error: None,
-                ros: None,
-            }),
-            None => None,
-        };
+        // A file of an earlier run of this instance must not reach the components.
+        let _ = std::fs::remove_file(&global_parameters_file);
         let (msg_tx, msg_rx) = mpsc::unbounded_channel();
         let components = stack
             .components()
@@ -164,12 +149,13 @@ impl Supervisor {
                 exit_code: None,
             })
             .collect();
-        let mut sup = Self {
+        let sup = Self {
             values: stack.default_values(),
             enabled: stack.default_enabled(),
             profile: None,
             choices,
-            blackboard,
+            global_parameters: IndexMap::new(),
+            global_parameters_file,
             stack,
             components,
             shutting_down: false,
@@ -177,145 +163,51 @@ impl Supervisor {
             msg_tx,
             msg_rx,
         };
-        sup.refresh_blackboard();
         Ok(sup)
     }
 
-    fn log_blackboard(&self, msg: &str) {
-        self.logs.push(
-            BLACKBOARD_LOG_KEY,
-            BLACKBOARD_LOG_NAME,
-            LogStream::Stderr,
-            &format!("[orchestrate] {msg}"),
-        );
-    }
-
-    /// Hand over the ROS node that publishes the blackboard; it is started by [`Self::tick`].
-    pub fn attach_ros(&mut self, ros: RosBlackboard) {
-        let Some(bb) = &mut self.blackboard else {
-            return;
-        };
-        if let Some(current) = &bb.current {
-            ros.publish(current.clone());
-        }
-        bb.ros = Some(ros);
-    }
-
-    /// Blackboard log messages for the ROS node.
-    pub fn blackboard_logger(&self) -> impl Fn(&str) + Send + 'static {
-        let logs = self.logs.clone();
-        move |msg: &str| {
-            logs.push(
-                BLACKBOARD_LOG_KEY,
-                BLACKBOARD_LOG_NAME,
-                LogStream::Stderr,
-                &format!("[orchestrate] {msg}"),
-            )
-        }
-    }
-
-    fn assemble(
-        &self,
-        overrides: &IndexMap<String, GlobalValue>,
-    ) -> Option<anyhow::Result<Blackboard>> {
-        let bb = self.blackboard.as_ref()?;
-        Some(blackboard::assemble(
-            &self.stack,
-            &bb.spec,
-            &self.values,
-            overrides,
-            &bb.share_dir,
-        ))
-    }
-
-    /// Reassemble the blackboard after its inputs changed and publish it.
-    fn refresh_blackboard(&mut self) {
-        let Some(overrides) = self.blackboard.as_ref().map(|bb| bb.overrides.clone()) else {
-            return;
-        };
-        let result = self.assemble(&overrides).expect("blackboard exists");
-        if let Err(e) = &result {
-            self.log_blackboard(&format!(
-                "cannot assemble the global parameters, keeping the previous ones: {e:#}"
-            ));
-        }
-        let bb = self.blackboard.as_mut().expect("blackboard exists");
-        match result {
-            Ok(assembled) => {
-                if bb.current.as_deref() != Some(&assembled) {
-                    let assembled = Arc::new(assembled);
-                    if let Some(ros) = &bb.ros {
-                        ros.publish(assembled.clone());
-                    }
-                    bb.current = Some(assembled);
-                }
-                bb.error = None;
-            }
-            Err(e) => bb.error = Some(format!("{e:#}")),
-        }
-    }
-
-    /// Set or remove overrides of global parameters, all or none.
-    pub fn set_overrides(&mut self, changes: SetOverrides) -> Result<(), ActionError> {
-        let Some(bb) = &self.blackboard else {
-            return Err(ActionError::BadRequest(
-                "the stack declares no blackboard".to_string(),
-            ));
-        };
-        let mut overrides = bb.overrides.clone();
+    /// Set or remove overrides of global parameters, all or none. They are passed to the
+    /// components on their next start; running components keep the values they started with.
+    pub fn set_global_parameters(
+        &mut self,
+        changes: SetGlobalParameters,
+    ) -> Result<(), ActionError> {
+        let mut global_parameters = self.global_parameters.clone();
         for (name, value) in changes {
+            let valid = !name.is_empty()
+                && name.split('.').all(|part| {
+                    !part.is_empty() && part.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
+                });
+            if !valid {
+                return Err(ActionError::BadRequest(format!(
+                    "'{name}' is no valid ROS parameter name"
+                )));
+            }
             match value {
-                Some(value) => overrides.insert(name, value),
-                None => overrides.shift_remove(&name),
+                Some(value) => global_parameters.insert(name, value),
+                None => global_parameters.shift_remove(&name),
             };
         }
-        // Validate against the files, so that a broken override is refused instead of stored.
-        self.assemble(&overrides)
-            .expect("blackboard exists")
-            .map_err(|e| ActionError::BadRequest(format!("{e:#}")))?;
-        self.blackboard
-            .as_mut()
-            .expect("blackboard exists")
-            .overrides = overrides;
-        self.refresh_blackboard();
+        if global_parameters.is_empty() {
+            // Nothing to pass on, see global_parameters_path().
+            let _ = std::fs::remove_file(&self.global_parameters_file);
+        } else {
+            write_parameter_file(&self.global_parameters_file, &global_parameters).map_err(
+                |e| ActionError::Failed(format!("cannot write the global parameters: {e:#}")),
+            )?;
+        }
+        self.global_parameters = global_parameters;
         Ok(())
     }
 
-    fn blackboard_summary(&self) -> Option<BlackboardSummary> {
-        let bb = self.blackboard.as_ref()?;
-        Some(BlackboardSummary {
-            node: bb.spec.node.clone(),
-            ros: bb
-                .ros
-                .as_ref()
-                .map(RosBlackboard::state)
-                .unwrap_or(RosState::Failed("no ROS node attached".to_string())),
-            error: bb.error.clone(),
-            overrides: bb.overrides.clone(),
-        })
-    }
-
-    pub fn blackboard_info(&self) -> Option<BlackboardInfo> {
-        let bb = self.blackboard.as_ref()?;
-        let current = bb.current.as_deref();
-        Some(BlackboardInfo {
-            summary: self.blackboard_summary()?,
-            parameters: current
-                .map(|c| {
-                    c.parameters
-                        .iter()
-                        .map(|(name, (value, source))| GlobalParameterInfo {
-                            name: name.clone(),
-                            value: value.clone(),
-                            source: source.clone(),
-                        })
-                        .collect()
-                })
-                .unwrap_or_default(),
-            maps: current
-                .map(|c| c.maps.iter().map(|m| m.topic.clone()).collect())
-                .unwrap_or_default(),
-        })
+    /// Path substituted for `${global_parameters_file}`; empty while there are no overrides, so
+    /// that components see that there is nothing to load.
+    fn global_parameters_path(&self) -> String {
+        if self.global_parameters.is_empty() {
+            String::new()
+        } else {
+            self.global_parameters_file.display().to_string()
+        }
     }
 
     /// Fails if a value is none of the parameter's choices.
@@ -378,26 +270,15 @@ impl Supervisor {
                     .map_err(|e| anyhow::anyhow!("{e}"))?;
             }
         }
-        if !globals.is_empty() {
-            let Some(current) = self.blackboard.as_ref().and_then(|bb| bb.current.clone()) else {
-                bail!("cannot override global parameters: the blackboard could not be assembled");
+        let mut changes = SetGlobalParameters::new();
+        for assignment in globals {
+            let Some((name, raw)) = assignment.split_once('=') else {
+                bail!("expected name=value, got '{assignment}'");
             };
-            let mut overrides = SetOverrides::new();
-            for assignment in globals {
-                let Some((name, raw)) = assignment.split_once('=') else {
-                    bail!("expected name=value, got '{assignment}'");
-                };
-                let Some((value, _)) = current.parameters.get(name) else {
-                    bail!("unknown global parameter '{name}'");
-                };
-                overrides.insert(
-                    name.to_string(),
-                    Some(blackboard::parse_override(name, raw, value)?),
-                );
-            }
-            self.set_overrides(overrides)
-                .map_err(|e| anyhow::anyhow!("{e}"))?;
+            changes.insert(name.to_string(), Some(parse_global_value(name, raw)?));
         }
+        self.set_global_parameters(changes)
+            .map_err(|e| anyhow::anyhow!("{e}"))?;
         Ok(())
     }
 
@@ -413,7 +294,6 @@ impl Supervisor {
         self.values = values;
         self.enabled = enabled;
         self.profile = Some(name.to_string());
-        self.refresh_blackboard();
         Ok(())
     }
 
@@ -427,7 +307,6 @@ impl Supervisor {
         }
         self.check_choices(&params)?;
         self.values.extend(params);
-        self.refresh_blackboard();
         Ok(())
     }
 
@@ -495,7 +374,7 @@ impl Supervisor {
                     exit_code: comp.exit_code,
                 })
                 .collect(),
-            blackboard: self.blackboard_summary(),
+            global_parameters: self.global_parameters.clone(),
         }
     }
 
@@ -557,7 +436,9 @@ impl Supervisor {
         }
         let missing = self.missing_requirements(comp_idx);
         if missing.is_empty() {
-            let cmds = self.stack.commands(comp_idx, &self.values);
+            let cmds = self
+                .stack
+                .commands(comp_idx, &self.values, &self.global_parameters_path());
             self.spawn_commands(comp_idx, cmds);
         } else {
             let msg = format!("waiting for {} to run", missing.join(", "));
@@ -745,35 +626,10 @@ impl Supervisor {
             if self.components[comp_idx].state == ProcState::Waiting
                 && self.missing_requirements(comp_idx).is_empty()
             {
-                let cmds = self.stack.commands(comp_idx, &self.values);
+                let cmds =
+                    self.stack
+                        .commands(comp_idx, &self.values, &self.global_parameters_path());
                 self.spawn_commands(comp_idx, cmds);
-            }
-        }
-        self.start_blackboard_node();
-    }
-
-    /// Start the ROS node of the blackboard once the selected components it requires run.
-    fn start_blackboard_node(&mut self) {
-        let Some(bb) = &self.blackboard else {
-            return;
-        };
-        let resolved = self.resolved();
-        let waiting: Vec<String> = bb
-            .spec
-            .requires
-            .iter()
-            .filter(|req| {
-                let r = self.stack.component_idx(req).expect("validated on load");
-                resolved.components[r].active && self.components[r].state != ProcState::Running
-            })
-            .cloned()
-            .collect();
-        let bb = self.blackboard.as_mut().expect("checked above");
-        if let Some(ros) = &mut bb.ros {
-            if waiting.is_empty() {
-                ros.start();
-            } else {
-                ros.set_waiting_for(waiting);
             }
         }
     }
@@ -835,6 +691,58 @@ impl Supervisor {
     }
 }
 
+/// Parse a global parameter value given as text, e.g. on the command line. The text is read as
+/// YAML, so `2` is an integer, `2.0` a double, `true` a bool and `[1, 2]` an integer array;
+/// quote a value to pass it as string.
+pub fn parse_global_value(name: &str, raw: &str) -> anyhow::Result<GlobalValue> {
+    let value: GlobalValue = serde_norway::from_str(raw)
+        .with_context(|| format!("'{raw}' is no valid value for global parameter '{name}'"))?;
+    Ok(value)
+}
+
+/// Write overrides as ROS parameter file for any node, nesting the dotted names.
+fn write_parameter_file(
+    path: &std::path::Path,
+    parameters: &IndexMap<String, GlobalValue>,
+) -> anyhow::Result<()> {
+    use serde_norway::{Mapping, Value as Y};
+    let mut root = Mapping::new();
+    for (name, value) in parameters {
+        let mut map = &mut root;
+        let mut parts: Vec<&str> = name.split('.').collect();
+        let leaf = parts.pop().expect("validated as non-empty");
+        for part in parts {
+            let entry = map
+                .entry(Y::String(part.to_string()))
+                .or_insert_with(|| Y::Mapping(Mapping::new()));
+            let Y::Mapping(next) = entry else {
+                bail!("'{name}' nests below a parameter that has a value");
+            };
+            map = next;
+        }
+        if map.contains_key(leaf) {
+            bail!("'{name}' is both a parameter and a prefix of other parameters");
+        }
+        map.insert(Y::String(leaf.to_string()), serde_norway::to_value(value)?);
+    }
+    let mut node = Mapping::new();
+    node.insert(Y::String("ros__parameters".into()), Y::Mapping(root));
+    let mut doc = Mapping::new();
+    doc.insert(Y::String("/**".into()), Y::Mapping(node));
+    let text = format!(
+        "# Overrides of global parameters, written by bitbots_orchestrate\n{}",
+        serde_norway::to_string(&doc)?
+    );
+    if let Some(dir) = path.parent() {
+        std::fs::create_dir_all(dir)?;
+    }
+    // Replace the file atomically, so that a starting component never reads half of it.
+    let tmp = path.with_extension("tmp");
+    std::fs::write(&tmp, text)?;
+    std::fs::rename(&tmp, path)?;
+    Ok(())
+}
+
 /// Signal the process groups led by the given pids.
 fn signal_pids(pids: &[u32], signal: nix::sys::signal::Signal) {
     use nix::{sys::signal::killpg, unistd::Pid};
@@ -880,6 +788,9 @@ components:
   extra:
     name: Extra
     command: [echo, "${field}"]
+  board:
+    name: Board
+    command: [board, "file=${global_parameters_file}"]
 "#;
 
     fn cmd(args: &[&str]) -> Vec<String> {
@@ -890,11 +801,23 @@ components:
         Box::new(|package| bail!("no share directory for {package} in this test"))
     }
 
+    /// Path of the global parameter file of one test.
+    fn global_file(test: &str) -> PathBuf {
+        std::env::temp_dir()
+            .join(format!("bitbots_orchestrate_sup_{}", std::process::id()))
+            .join(format!("{test}.global_parameters.yaml"))
+    }
+
     fn supervisor() -> Supervisor {
+        supervisor_for(&format!("{:?}", std::thread::current().id()))
+    }
+
+    fn supervisor_for(test: &str) -> Supervisor {
         Supervisor::new(
             Stack::parse(TEST_STACK).unwrap(),
             Arc::new(LogStore::new()),
             no_share(),
+            global_file(test),
         )
         .unwrap()
     }
@@ -996,8 +919,13 @@ components:
     #[tokio::test]
     async fn output_and_spawn_errors_reach_the_log_store() {
         let logs = Arc::new(LogStore::new());
-        let mut sup =
-            Supervisor::new(Stack::parse(TEST_STACK).unwrap(), logs.clone(), no_share()).unwrap();
+        let mut sup = Supervisor::new(
+            Stack::parse(TEST_STACK).unwrap(),
+            logs.clone(),
+            no_share(),
+            global_file("logs"),
+        )
+        .unwrap();
         let idx = idx(&sup, "base");
         sup.spawn_commands(idx, vec![cmd(&["sh", "-c", "echo out; echo err >&2"])]);
         wait_settled(&mut sup, idx).await;
@@ -1103,7 +1031,7 @@ components:
         assert!(extra.enabled && extra.active);
         assert!(!status.components[idx(&sup, "hardware")].available);
         assert_eq!(
-            sup.stack.commands(idx(&sup, "extra"), &sup.values),
+            sup.stack.commands(idx(&sup, "extra"), &sup.values, ""),
             [["echo", "custom"]]
         );
     }
@@ -1139,6 +1067,96 @@ components:
         sup.apply_profile("sim").unwrap();
         assert!(!sup.enabled[extra], "reapplying resets the selection");
         assert_eq!(sup.values["field"], Value::String("kid".into()));
+    }
+
+    #[test]
+    fn global_parameters_reach_components_as_ros_parameter_file() {
+        let mut sup = supervisor_for("globals");
+        let board = idx(&sup, "board");
+        let file = global_file("globals");
+        // Without overrides there is nothing to load.
+        assert_eq!(
+            sup.stack
+                .commands(board, &sup.values, &sup.global_parameters_path()),
+            [["board", "file="]]
+        );
+        assert!(!file.exists());
+
+        sup.apply_cli(
+            None,
+            &[],
+            &[],
+            &[],
+            &[
+                "bot_id=2".into(),
+                "field.size.x=6.5".into(),
+                "role=goalie".into(),
+            ],
+        )
+        .unwrap();
+        assert_eq!(
+            sup.stack
+                .commands(board, &sup.values, &sup.global_parameters_path()),
+            [["board".to_string(), format!("file={}", file.display())]]
+        );
+        let text = std::fs::read_to_string(&file).unwrap();
+        let doc: serde_norway::Value = serde_norway::from_str(&text).unwrap();
+        let params = &doc["/**"]["ros__parameters"];
+        assert_eq!(params["bot_id"], serde_norway::Value::from(2));
+        assert_eq!(params["field"]["size"]["x"], serde_norway::Value::from(6.5));
+        assert_eq!(params["role"], serde_norway::Value::from("goalie"));
+
+        // Removing the last override removes the file.
+        sup.set_global_parameters(SetGlobalParameters::from_iter(
+            ["bot_id", "field.size.x", "role"].map(|n| (n.to_string(), None)),
+        ))
+        .unwrap();
+        assert!(!file.exists());
+        assert_eq!(sup.global_parameters_path(), "");
+    }
+
+    #[test]
+    fn invalid_global_parameters_are_refused() {
+        let mut sup = supervisor_for("globals_invalid");
+        for name in ["", "a..b", "with space", ".x"] {
+            let change =
+                SetGlobalParameters::from([(name.to_string(), Some(GlobalValue::Integer(1)))]);
+            assert!(
+                matches!(
+                    sup.set_global_parameters(change),
+                    Err(ActionError::BadRequest(_))
+                ),
+                "{name:?}"
+            );
+        }
+        // A parameter cannot also be the prefix of another one.
+        let change = SetGlobalParameters::from([
+            ("a".to_string(), Some(GlobalValue::Integer(1))),
+            ("a.b".to_string(), Some(GlobalValue::Integer(2))),
+        ]);
+        assert!(matches!(
+            sup.set_global_parameters(change),
+            Err(ActionError::Failed(_))
+        ));
+        assert!(
+            sup.global_parameters.is_empty(),
+            "nothing is kept of a refused change"
+        );
+        assert!(sup
+            .apply_cli(None, &[], &[], &[], &["no_value".into()])
+            .is_err());
+    }
+
+    #[test]
+    fn global_values_are_typed_by_yaml() {
+        let parse = |raw| parse_global_value("p", raw).unwrap();
+        assert_eq!(parse("2"), GlobalValue::Integer(2));
+        assert_eq!(parse("2.0"), GlobalValue::Double(2.0));
+        assert_eq!(parse("true"), GlobalValue::Bool(true));
+        assert_eq!(parse("offense"), GlobalValue::String("offense".into()));
+        assert_eq!(parse("'2'"), GlobalValue::String("2".into()));
+        assert_eq!(parse("[1, 2]"), GlobalValue::IntegerArray(vec![1, 2]));
+        assert!(parse_global_value("p", "{a: 1}").is_err());
     }
 
     #[test]

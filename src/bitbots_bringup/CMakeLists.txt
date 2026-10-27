@@ -11,7 +11,7 @@ enable_bitbots_docs()
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
 
-cargo_binary(bitbots_orchestrate R2R)
+cargo_binary(bitbots_orchestrate)
 cargo_binary(teamplayer)
 cargo_test(bitbots_stack)
 

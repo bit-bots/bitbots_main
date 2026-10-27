@@ -483,7 +483,7 @@ pub mod tests {
             profile: None,
             problems: Vec::new(),
             components,
-            blackboard: None,
+            global_parameters: Default::default(),
         }
     }
 

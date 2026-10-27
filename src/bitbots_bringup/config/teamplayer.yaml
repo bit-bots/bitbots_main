@@ -18,10 +18,10 @@
 #   fallback_for  Runs exactly when the named component does not
 #   launch / run / command   The single process of the component, or
 #   processes     a list of such processes
-# blackboard   Global parameters for all nodes, published by the orchestrator itself on a ROS
-#              node with read-only parameter services and as one latched message. They are
-#              assembled from `files` (later ones take precedence), then `parameters`, then
-#              overrides given through the orchestrator API or `--global name=value`.
+#
+# ${global_parameters_file} is provided by the orchestrator instead of being declared: a ROS
+# parameter file with the overrides of global parameters given through `--global name=value` or
+# its API, or empty if there are none. Components receive it when they start.
 version: 1
 
 parameters:
@@ -56,6 +56,17 @@ components:
     name: Zenoh
     description: Zenoh router for ROS communication; disable when it runs externally
     run: { package: rmw_zenoh_cpp, executable: rmw_zenohd }
+  blackboard:
+    name: Param Blackboard
+    description: Global parameters (field, game settings, ...) for all nodes
+    locked: true
+    launch:
+      package: bitbots_parameter_blackboard
+      file: parameter_blackboard.launch.py
+      args:
+        sim: "${sim}"
+        fieldname: "${fieldname}"
+        parameters_file: "${global_parameters_file}"
   robot_description:
     name: Robot Description
     locked: true
@@ -82,12 +93,13 @@ components:
     launch: { package: livelybot_bringup, file: lowlevel.launch }
   motion:
     name: Motion
-    requires: [robot_description]
+    requires: [blackboard, robot_description]
     launch: { package: bitbots_bringup, file: motion.launch, args: { sim: "${sim}", lowlevel: "false" } }
 
   # ── Game ────────────────────────────────────────────────────────────────────
   game_controller:
     name: Game Controller
+    requires: [blackboard]
     processes:
       - launch:
           package: game_controller_hsl
@@ -101,11 +113,13 @@ components:
       - launch: { package: bitbots_player_state, file: player_state_aggregator.launch, args: { sim: "${sim}" } }
   teamcom:
     name: Team Comm
+    requires: [blackboard]
     launch: { package: bitbots_team_communication, file: team_comm.launch, args: { sim: "${sim}" } }
 
   # ── Perception and world model ──────────────────────────────────────────────
   vision:
     name: Vision
+    requires: [blackboard]
     launch: { package: bitbots_bringup, file: vision.launch, args: { sim: "${sim}" } }
   ipm:
     name: IPM
@@ -136,6 +150,7 @@ components:
     launch: { package: bitbots_path_planning, file: path_planning.launch, args: { sim: "${sim}" } }
   behavior:
     name: Behavior
+    requires: [blackboard]
     launch:
       package: bitbots_body_behavior
       file: behavior.launch
@@ -157,24 +172,3 @@ components:
     description: Rosbag recording
     enabled: false
     launch: { package: bitbots_bringup, file: rosbag_record.launch.py, args: { sim: "${sim}" } }
-
-blackboard:
-  node: parameter_blackboard
-  topic: global_parameter_blackboard
-  # The node starts once the middleware router runs, if the orchestrator starts it
-  requires: [zenoh]
-  package: bitbots_parameter_blackboard
-  files:
-    - config/fields/${fieldname}/config.yaml
-    - config/global_parameters.yaml
-    - config/game_settings.yaml
-  parameters:
-    simulation_active: ${sim}
-    use_sim_time: ${sim}
-    field.name: ${fieldname}
-  maps:
-    directory: config/fields/${fieldname}
-    frame_parameter: map_frame
-    resolution: 0.01
-    topic_prefix: field/map/
-    images: { lines: lines.png, goals: goals.png }

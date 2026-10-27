@@ -5,8 +5,7 @@
 //! through [`client::Client`].
 
 pub use bitbots_orchestrate_api::{api, client};
-pub mod blackboard;
 pub mod logs;
-pub mod ros;
 pub mod server;
+pub mod share;
 pub mod supervisor;

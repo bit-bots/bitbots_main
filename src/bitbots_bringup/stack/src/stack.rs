@@ -5,12 +5,14 @@ use std::path::Path;
 use anyhow::{bail, Context, Result};
 use indexmap::IndexMap;
 
-use crate::spec::{
-    BlackboardSpec, ChoicesFrom, ComponentSpec, ParamType, ProcessSpec, StackFile, Value,
-};
+use crate::spec::{ChoicesFrom, ComponentSpec, ParamType, ProcessSpec, StackFile, Value};
 
 /// Current value of every parameter, in declaration order.
 pub type Values = IndexMap<String, Value>;
+
+/// Placeholder for a ROS parameter file with overrides of global parameters, provided by
+/// whoever runs the stack instead of being declared as parameter.
+pub const GLOBAL_PARAMETERS_FILE: &str = "global_parameters_file";
 
 #[derive(Clone, Debug)]
 pub struct Parameter {
@@ -55,7 +57,6 @@ pub struct Stack {
     parameters: Vec<Parameter>,
     profiles: Vec<Profile>,
     components: Vec<Component>,
-    blackboard: Option<BlackboardSpec>,
 }
 
 /// State of every component for a given set of parameter values and selection.
@@ -127,7 +128,6 @@ impl Stack {
             parameters,
             profiles,
             components,
-            blackboard: file.blackboard,
         };
         let errors = stack.validate();
         if !errors.is_empty() {
@@ -215,9 +215,13 @@ impl Stack {
             for text in process_strings(&c.processes) {
                 for name in placeholders(text) {
                     match name {
-                        Ok(name) if self.parameter(name).is_none() => errors.push(format!(
-                            "{owner}: '${{{name}}}' refers to an unknown parameter"
-                        )),
+                        Ok(name)
+                            if self.parameter(name).is_none() && name != GLOBAL_PARAMETERS_FILE =>
+                        {
+                            errors.push(format!(
+                                "{owner}: '${{{name}}}' refers to an unknown parameter"
+                            ))
+                        }
                         Ok(_) => {}
                         Err(e) => errors.push(format!("{owner}: {e} in '{text}'")),
                     }
@@ -230,29 +234,6 @@ impl Stack {
                     "parameter '{}': choices_from requires type string",
                     p.name
                 ));
-            }
-        }
-        if let Some(bb) = &self.blackboard {
-            for req in &bb.requires {
-                if self.component(req).is_none() {
-                    errors.push(format!("blackboard: requires unknown component '{req}'"));
-                }
-            }
-            let mut texts: Vec<&str> = bb.files.iter().map(String::as_str).collect();
-            texts.extend(bb.parameters.values().map(String::as_str));
-            if let Some(maps) = &bb.maps {
-                texts.push(&maps.directory);
-            }
-            for text in texts {
-                for name in placeholders(text) {
-                    match name {
-                        Ok(name) if self.parameter(name).is_none() => errors.push(format!(
-                            "blackboard: '${{{name}}}' refers to an unknown parameter"
-                        )),
-                        Ok(_) => {}
-                        Err(e) => errors.push(format!("blackboard: {e} in '{text}'")),
-                    }
-                }
             }
         }
         if let Some(cycle) = self.requires_cycle() {
@@ -307,26 +288,6 @@ impl Stack {
 
     pub fn components(&self) -> &[Component] {
         &self.components
-    }
-
-    pub fn blackboard(&self) -> Option<&BlackboardSpec> {
-        self.blackboard.as_ref()
-    }
-
-    /// Substitute the `${name}` placeholders of a validated text.
-    pub fn substitute(&self, text: &str, values: &Values) -> String {
-        substitute(text, values)
-    }
-
-    /// Like [`Stack::substitute`], but a text that consists of a single placeholder keeps the
-    /// type of the parameter.
-    pub fn substitute_typed(&self, text: &str, values: &Values) -> Value {
-        if let Some(name) = text.strip_prefix("${").and_then(|t| t.strip_suffix('}')) {
-            if let Some(value) = values.get(name) {
-                return value.clone();
-            }
-        }
-        Value::String(substitute(text, values))
     }
 
     pub fn parameter(&self, name: &str) -> Option<&Parameter> {
@@ -459,9 +420,20 @@ impl Stack {
         }
     }
 
-    /// The commands to start a component with, parameters substituted.
-    pub fn commands(&self, idx: usize, values: &Values) -> Vec<Vec<String>> {
-        let subst = |text: &str| substitute(text, values);
+    /// The commands to start a component with, parameters substituted. `global_parameters_file`
+    /// is the path to substitute for [`GLOBAL_PARAMETERS_FILE`].
+    pub fn commands(
+        &self,
+        idx: usize,
+        values: &Values,
+        global_parameters_file: &str,
+    ) -> Vec<Vec<String>> {
+        let mut values = values.clone();
+        values.insert(
+            GLOBAL_PARAMETERS_FILE.to_string(),
+            Value::String(global_parameters_file.to_string()),
+        );
+        let subst = |text: &str| substitute(text, &values);
         self.components[idx]
             .processes
             .iter()
@@ -596,7 +568,7 @@ components:
   base:
     name: Base
     locked: true
-    run: { package: base_pkg, executable: base, args: ["--field", "${field}"] }
+    run: { package: base_pkg, executable: base, args: ["--field", "${field}", "--params-file", "${global_parameters_file}"] }
   hardware:
     name: Hardware
     if: { sim: false }
@@ -669,10 +641,19 @@ components:
     fn commands_substitute_parameters() {
         let stack = example();
         let values = stack.default_values();
-        let cmd = |key| stack.commands(stack.component_idx(key).unwrap(), &values);
+        let cmd = |key| stack.commands(stack.component_idx(key).unwrap(), &values, "/g.yaml");
         assert_eq!(
             cmd("base"),
-            [["ros2", "run", "base_pkg", "base", "--field", "lab"]]
+            [[
+                "ros2",
+                "run",
+                "base_pkg",
+                "base",
+                "--field",
+                "lab",
+                "--params-file",
+                "/g.yaml"
+            ]]
         );
         assert_eq!(cmd("hardware"), [["driver", "--sim=false"]]);
         assert_eq!(

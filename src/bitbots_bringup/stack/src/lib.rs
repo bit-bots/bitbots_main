@@ -10,7 +10,8 @@
 mod spec;
 mod stack;
 
-pub use spec::{
-    BlackboardSpec, ChoicesFrom, LaunchSpec, MapsSpec, ParamType, ProcessSpec, RunSpec, Value,
+pub use spec::{ChoicesFrom, LaunchSpec, ParamType, ProcessSpec, RunSpec, Value};
+pub use stack::{
+    Component, Parameter, Profile, Resolved, ResolvedComponent, Stack, Values,
+    GLOBAL_PARAMETERS_FILE,
 };
-pub use stack::{Component, Parameter, Profile, Resolved, ResolvedComponent, Stack, Values};

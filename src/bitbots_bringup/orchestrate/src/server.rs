@@ -22,11 +22,11 @@ use tokio::net::UnixListener;
 
 use crate::{
     api::{
-        lock_path, ApiError, BlackboardInfo, Logs, LogsQuery, SetEnabled, SetOverrides,
-        SetParameters, Status, API_PREFIX,
+        lock_path, ApiError, Logs, LogsQuery, SetEnabled, SetGlobalParameters, SetParameters,
+        Status, API_PREFIX,
     },
     logs::LogStore,
-    supervisor::{ActionError, Supervisor, BLACKBOARD_LOG_KEY},
+    supervisor::{ActionError, Supervisor},
 };
 
 #[derive(Clone)]
@@ -48,6 +48,7 @@ impl From<ActionError> for Failure {
         match e {
             ActionError::Conflict(msg) => Failure(StatusCode::CONFLICT, msg),
             ActionError::BadRequest(msg) => Failure(StatusCode::BAD_REQUEST, msg),
+            ActionError::Failed(msg) => Failure(StatusCode::INTERNAL_SERVER_ERROR, msg),
         }
     }
 }
@@ -97,9 +98,8 @@ pub fn router(state: ServerState) -> Router {
         .route("/components/{key}/restart", post(restart))
         .route("/start_all", post(start_all))
         .route("/stop_all", post(stop_all))
-        .route("/logs", get(logs))
-        .route("/blackboard", get(blackboard))
-        .route("/blackboard/overrides", put(set_overrides));
+        .route("/global_parameters", put(set_global_parameters))
+        .route("/logs", get(logs));
     Router::new().nest(API_PREFIX, api).with_state(state)
 }
 
@@ -155,40 +155,22 @@ async fn stop_all(State(state): State<ServerState>) -> ApiResult<Status> {
     })
 }
 
-fn no_blackboard() -> Failure {
-    Failure(
-        StatusCode::NOT_FOUND,
-        "the stack declares no blackboard".to_string(),
-    )
-}
-
-async fn blackboard(State(state): State<ServerState>) -> ApiResult<BlackboardInfo> {
-    let sup = state.supervisor.lock().unwrap();
-    sup.blackboard_info().map(Json).ok_or_else(no_blackboard)
-}
-
-async fn set_overrides(
+async fn set_global_parameters(
     State(state): State<ServerState>,
-    Json(overrides): Json<SetOverrides>,
-) -> ApiResult<BlackboardInfo> {
-    let mut sup = state.supervisor.lock().unwrap();
-    if sup.blackboard_info().is_none() {
-        return Err(no_blackboard());
-    }
-    sup.set_overrides(overrides)?;
-    Ok(Json(sup.blackboard_info().expect("checked above")))
+    Json(changes): Json<SetGlobalParameters>,
+) -> ApiResult<Status> {
+    act(&state, |sup| sup.set_global_parameters(changes))
 }
 
 async fn logs(State(state): State<ServerState>, Query(query): Query<LogsQuery>) -> ApiResult<Logs> {
     if let Some(key) = &query.component {
-        let known = key == BLACKBOARD_LOG_KEY
-            || state
-                .supervisor
-                .lock()
-                .unwrap()
-                .stack()
-                .component_idx(key)
-                .is_some();
+        let known = state
+            .supervisor
+            .lock()
+            .unwrap()
+            .stack()
+            .component_idx(key)
+            .is_some();
         if !known {
             return Err(unknown_component(key));
         }

@@ -4,7 +4,7 @@
 use std::sync::{Arc, Mutex};
 
 use bitbots_orchestrate::{
-    api::{GlobalSource, GlobalValue, LogStream, SetOverrides, SetParameters, Value},
+    api::{GlobalValue, LogStream, SetGlobalParameters, SetParameters, Value},
     client::Client,
     logs::LogStore,
     server::{self, ServerState},
@@ -55,7 +55,13 @@ async fn serve(test: &str) -> (Client, Arc<LogStore>, server::SocketGuard) {
     });
     let router = server::router(ServerState {
         supervisor: Arc::new(Mutex::new(
-            Supervisor::new(stack, logs.clone(), share).unwrap(),
+            Supervisor::new(
+                stack,
+                logs.clone(),
+                share,
+                socket.with_extension("global_parameters.yaml"),
+            )
+            .unwrap(),
         )),
         logs: logs.clone(),
     });
@@ -170,8 +176,8 @@ async fn missing_server_is_reported() {
 }
 
 #[tokio::test]
-async fn blackboard_is_assembled_from_the_field_and_settings() {
-    let (client, _logs, _guard) = serve("blackboard").await;
+async fn fields_are_offered_as_choices() {
+    let (client, _logs, _guard) = serve("fields").await;
     let status = client.status().await.unwrap();
     let field = status
         .parameters
@@ -181,97 +187,56 @@ async fn blackboard_is_assembled_from_the_field_and_settings() {
     let choices = field.choices.as_ref().expect("fields are discovered");
     assert!(choices.contains(&"labor".to_string()) && choices.contains(&"hsl_kid".to_string()));
 
-    let bb = client.blackboard().await.unwrap();
-    assert_eq!(bb.summary.error, None);
-    assert_eq!(bb.summary.node, "parameter_blackboard");
-    let get = |bb: &bitbots_orchestrate::api::BlackboardInfo, name: &str| {
-        bb.parameters
-            .iter()
-            .find(|p| p.name == name)
-            .unwrap()
-            .clone()
-    };
-    assert_eq!(
-        get(&bb, "field.name").value,
-        GlobalValue::String("labor".into())
+    let set =
+        |field: &str| SetParameters::from([("fieldname".to_string(), Value::String(field.into()))]);
+    client.set_parameters(&set("hsl_kid")).await.unwrap();
+    let e = format!(
+        "{:#}",
+        client.set_parameters(&set("nope")).await.unwrap_err()
     );
-    assert!(matches!(
-        get(&bb, "field.size.x").source,
-        GlobalSource::File(_)
-    ));
-    assert!(matches!(get(&bb, "bot_id").value, GlobalValue::Integer(_)));
-    assert!(bb.maps.contains(&"field/map/lines".to_string()));
+    assert!(e.contains("400") && e.contains("choose one of"), "{e}");
+}
 
-    // Changing the field reloads its configuration.
-    client
-        .set_parameters(&SetParameters::from([(
-            "fieldname".to_string(),
-            Value::String("hsl_kid".into()),
-        )]))
-        .await
-        .unwrap();
-    let bb = client.blackboard().await.unwrap();
-    assert_eq!(
-        get(&bb, "field.name").value,
-        GlobalValue::String("hsl_kid".into())
-    );
+#[tokio::test]
+async fn global_parameters_are_written_for_the_next_start() {
+    let (client, _logs, _guard) = serve("globals").await;
+    let file = client.socket().with_extension("global_parameters.yaml");
+    assert!(client.status().await.unwrap().global_parameters.is_empty());
+    assert!(!file.exists());
 
-    // Overrides, e.g. for one of several simulated robots, and their removal.
-    let bb = client
-        .set_overrides(&SetOverrides::from([(
+    let status = client
+        .set_global_parameters(&SetGlobalParameters::from([(
             "bot_id".to_string(),
             Some(GlobalValue::Integer(4)),
         )]))
         .await
         .unwrap();
-    assert_eq!(get(&bb, "bot_id").value, GlobalValue::Integer(4));
-    assert_eq!(get(&bb, "bot_id").source, GlobalSource::Override);
-    let bb = client
-        .set_overrides(&SetOverrides::from([("bot_id".to_string(), None)]))
-        .await
-        .unwrap();
-    assert!(matches!(get(&bb, "bot_id").source, GlobalSource::File(_)));
-}
-
-#[tokio::test]
-async fn invalid_fields_and_overrides_are_refused() {
-    let (client, _logs, _guard) = serve("blackboard_errors").await;
-    fn err<T: std::fmt::Debug>(r: anyhow::Result<T>) -> String {
-        format!("{:#}", r.expect_err("must fail"))
-    }
-
-    let e = err(client
-        .set_parameters(&SetParameters::from([(
-            "fieldname".to_string(),
-            Value::String("nope".into()),
-        )]))
-        .await);
-    assert!(e.contains("400") && e.contains("choose one of"), "{e}");
-
-    let e = err(client
-        .set_overrides(&SetOverrides::from([(
-            "bot_id".to_string(),
-            Some(GlobalValue::String("four".into())),
-        )]))
-        .await);
-    assert!(e.contains("400") && e.contains("bot_id"), "{e}");
-
-    let e = err(client
-        .set_overrides(&SetOverrides::from([(
-            "no_such_parameter".to_string(),
-            Some(GlobalValue::Integer(1)),
-        )]))
-        .await);
+    assert_eq!(status.global_parameters["bot_id"], GlobalValue::Integer(4));
+    let text = std::fs::read_to_string(&file).unwrap();
     assert!(
-        e.contains("400") && e.contains("unknown global parameter"),
+        text.contains("ros__parameters") && text.contains("bot_id: 4"),
+        "{text}"
+    );
+
+    let e = format!(
+        "{:#}",
+        client
+            .set_global_parameters(&SetGlobalParameters::from([(
+                "not valid".to_string(),
+                Some(GlobalValue::Integer(1)),
+            )]))
+            .await
+            .unwrap_err()
+    );
+    assert!(
+        e.contains("400") && e.contains("no valid ROS parameter name"),
         "{e}"
     );
-    // A refused override leaves no trace.
-    assert!(client
-        .blackboard()
+
+    let status = client
+        .set_global_parameters(&SetGlobalParameters::from([("bot_id".to_string(), None)]))
         .await
-        .unwrap()
-        .summary
-        .overrides
-        .is_empty());
+        .unwrap();
+    assert!(status.global_parameters.is_empty());
+    assert!(!file.exists());
 }

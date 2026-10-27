@@ -14,10 +14,9 @@ use tokio::{
 
 use bitbots_orchestrate::{
     api::{resolve_socket, LogStream, DEFAULT_INSTANCE_NAME},
-    blackboard::ament_share,
     logs::LogStore,
-    ros::RosBlackboard,
     server::{self, ServerState},
+    share::ament_share,
     supervisor::Supervisor,
 };
 
@@ -56,7 +55,9 @@ struct Cli {
     #[arg(long = "disable", value_name = "KEY")]
     disable: Vec<String>,
 
-    /// Override a global parameter of the blackboard, e.g. bot_id=2; may be repeated
+    /// Override a global parameter, e.g. bot_id=2; passed as ROS parameter file to the components
+    /// that take one, typically the parameter blackboard. The value is read as YAML, so quote it
+    /// to pass a string that looks like a number; may be repeated
     #[arg(long = "global", value_name = "NAME=VALUE")]
     global: Vec<String>,
 
@@ -90,8 +91,16 @@ async fn main() -> Result<()> {
         None => default_stack_path()?,
     };
     let stack = Stack::load(&stack_path)?;
+    // Claim the instance before writing any of its files.
+    let socket = resolve_socket(cli.socket, &cli.name)?;
+    let (listener, _guard) = server::bind(&socket)?;
     let logs = Arc::new(LogStore::new());
-    let mut supervisor = Supervisor::new(stack, logs.clone(), Box::new(ament_share))?;
+    let mut supervisor = Supervisor::new(
+        stack,
+        logs.clone(),
+        Box::new(ament_share),
+        socket.with_extension("global_parameters.yaml"),
+    )?;
     supervisor.apply_cli(
         cli.profile.as_deref(),
         &cli.set,
@@ -99,17 +108,6 @@ async fn main() -> Result<()> {
         &cli.disable,
         &cli.global,
     )?;
-    if let Some(spec) = supervisor.stack().blackboard() {
-        let ros = RosBlackboard::spawn(
-            spec.node.clone(),
-            spec.topic.clone(),
-            supervisor.blackboard_logger(),
-        );
-        supervisor.attach_ros(ros);
-    }
-
-    let socket = resolve_socket(cli.socket, &cli.name)?;
-    let (listener, _guard) = server::bind(&socket)?;
     eprintln!(
         "bitbots_orchestrate serving {} on {}",
         stack_path.display(),

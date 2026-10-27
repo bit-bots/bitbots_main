@@ -112,8 +112,9 @@ pub struct Status {
     pub problems: Vec<String>,
     /// All components, always in the same order
     pub components: Vec<ComponentInfo>,
-    /// State of the global parameter blackboard, if the stack declares one
-    pub blackboard: Option<BlackboardSummary>,
+    /// Overrides of global parameters, passed on to the components that reference
+    /// `${global_parameters_file}` when they start
+    pub global_parameters: IndexMap<String, GlobalValue>,
 }
 
 /// Value of a global parameter, with the types of ROS parameters.
@@ -160,56 +161,9 @@ impl std::fmt::Display for GlobalValue {
     }
 }
 
-/// Where the value of a global parameter comes from.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum GlobalSource {
-    /// A parameter file, given as path
-    File(String),
-    /// Derived from a stack parameter
-    Stack,
-    /// An override set through the API or the command line
-    Override,
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case", tag = "state", content = "detail")]
-pub enum RosState {
-    /// The ROS node waits for these components to run
-    WaitingFor(Vec<String>),
-    Starting,
-    Running,
-    /// Setting up the ROS node failed, it is retried
-    Failed(String),
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct BlackboardSummary {
-    pub node: String,
-    pub ros: RosState,
-    /// Why the global parameters could not be assembled; nothing new is published then
-    pub error: Option<String>,
-    pub overrides: IndexMap<String, GlobalValue>,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct GlobalParameterInfo {
-    pub name: String,
-    pub value: GlobalValue,
-    pub source: GlobalSource,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct BlackboardInfo {
-    pub summary: BlackboardSummary,
-    /// The published parameters, sorted by name; empty while `summary.error` is set
-    pub parameters: Vec<GlobalParameterInfo>,
-    /// Topics of the published field maps
-    pub maps: Vec<String>,
-}
-
-/// Overrides of global parameters by name; `null` removes an override.
-pub type SetOverrides = IndexMap<String, Option<GlobalValue>>;
+/// Overrides of global parameters by name; `null` removes an override. They take effect on
+/// the next start of the components that receive them.
+pub type SetGlobalParameters = IndexMap<String, Option<GlobalValue>>;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct SetEnabled {

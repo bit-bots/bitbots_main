@@ -8,7 +8,7 @@ use ratatui::{
     Frame,
 };
 
-use bitbots_orchestrate_api::api::{ParamType, ProcState, RosState, Value};
+use bitbots_orchestrate_api::api::{ParamType, ProcState, Value};
 
 use crate::app::{App, ConfigFocus, ConfirmAction, Screen};
 
@@ -86,19 +86,11 @@ fn draw_waiting(f: &mut Frame, app: &App) {
 
 /// Replaces the bottom hint line while the orchestrator is unreachable or refused an action.
 fn draw_error_line(f: &mut Frame, app: &App) {
-    let mut problems: Vec<String> = app
+    let problems: Vec<String> = app
         .status
         .as_ref()
         .map(|s| s.problems.clone())
         .unwrap_or_default();
-    if let Some(e) = app
-        .status
-        .as_ref()
-        .and_then(|s| s.blackboard.as_ref())
-        .and_then(|bb| bb.error.as_ref())
-    {
-        problems.push(format!("blackboard: {e}"));
-    }
     let problems = problems.join("; ");
     let (msg, bg) = match (&app.connection_error, &app.action_error) {
         _ if app.orchestrator_failure.is_some() => (
@@ -386,20 +378,16 @@ fn draw_runtime_header(f: &mut Frame, app: &App, area: Rect) {
         Some(profile) => format!("  [{profile}]"),
         None => String::new(),
     };
-    let blackboard_badge = match app.status.as_ref().and_then(|s| s.blackboard.as_ref()) {
-        Some(bb) if bb.error.is_some() => "  [blackboard: ERROR]".to_string(),
-        Some(bb) => match &bb.ros {
-            RosState::Running => "  [blackboard]".to_string(),
-            RosState::WaitingFor(c) if c.is_empty() => "  [blackboard: waiting]".to_string(),
-            RosState::WaitingFor(c) => format!("  [blackboard: waiting for {}]", c.join(", ")),
-            RosState::Starting => "  [blackboard: starting]".to_string(),
-            RosState::Failed(_) => "  [blackboard: FAILED]".to_string(),
-        },
-        None => String::new(),
+    let globals_badge = match app.status.as_ref().map(|s| &s.global_parameters) {
+        Some(globals) if !globals.is_empty() => {
+            let list: Vec<String> = globals.iter().map(|(n, v)| format!("{n}={v}")).collect();
+            format!("  [globals: {}]", list.join(", "))
+        }
+        _ => String::new(),
     };
     f.render_widget(
         Paragraph::new(format!(
-            " Bit-Bots Teamplayer  [{running}/{total_enabled} running]{profile_badge}{blackboard_badge}"
+            " Bit-Bots Teamplayer  [{running}/{total_enabled} running]{profile_badge}{globals_badge}"
         ))
         .block(Block::default().borders(Borders::ALL))
         .style(
