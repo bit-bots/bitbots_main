@@ -718,7 +718,7 @@ pub fn draw_confirm_popup(f: &mut Frame, app: &App) {
         ),
         Some(ConfirmAction::Quit) => (
             " Quit ",
-            "This teamplayer started the orchestrator.\n\n\
+            "Stop the orchestrator or leave it running?\n\n\
              Y / Enter — stop all components and quit\n\
              D — quit, keep components running\n\
              N / Esc — cancel",

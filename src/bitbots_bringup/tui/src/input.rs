@@ -317,10 +317,19 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn quit_asks_only_when_owning_the_orchestrator() {
+    async fn quit_asks_whenever_an_orchestrator_is_connected() {
+        // Without a reachable orchestrator there is nothing to ask about.
         let mut app = offline_app();
+        app.connection_error = Some("unreachable".into());
         handle_runtime_key(&mut app, KeyCode::Char('q')).await;
         assert_eq!(app.exit, Some(ExitMode::Detach));
+
+        // Connected to an orchestrator this TUI did not start.
+        let mut app = offline_app();
+        handle_runtime_key(&mut app, KeyCode::Char('q')).await;
+        assert!(app.exit.is_none(), "must ask before quitting");
+        handle_confirm_key(&mut app, KeyCode::Char('y')).await;
+        assert_eq!(app.exit, Some(ExitMode::StopOrchestrator));
 
         for (key, expected) in [
             (KeyCode::Char('d'), Some(ExitMode::Detach)),

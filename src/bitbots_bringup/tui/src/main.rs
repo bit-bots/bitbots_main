@@ -201,28 +201,61 @@ async fn main() -> Result<()> {
         }
     };
 
-    match (exit, app.orchestrator) {
-        (ExitMode::StopOrchestrator, Some(orchestrator)) => {
+    match exit {
+        ExitMode::StopOrchestrator => {
             eprintln!("Stopping all components and the orchestrator...");
-            let log_path = orchestrator.log_path.clone();
-            let status = orchestrator.stop().await?;
-            if !status.success() {
-                bail!(
-                    "the orchestrator exited with {status}, see {}",
-                    log_path.display()
-                );
-            }
+            stop_orchestrator(&app.client, app.orchestrator.take()).await?;
         }
-        (_, Some(orchestrator)) => {
+        ExitMode::Detach if app.status.is_some() => {
             let pid = lock_owner(&socket).map_or("?".to_string(), |pid| pid.to_string());
+            let log = match &app.orchestrator {
+                Some(orchestrator) => format!(", log: {}", orchestrator.log_path.display()),
+                None => String::new(),
+            };
             eprintln!(
-                "The orchestrator keeps running in the background (pid {pid}, log: {}).\n\
-                 Reattach with `teamplayer --name {}`, stop it with `kill -TERM {pid}`.",
-                orchestrator.log_path.display(),
+                "The orchestrator keeps running in the background (pid {pid}{log}).\n\
+                 Reattach with `teamplayer --name {}`.",
                 cli.name,
-            )
+            );
         }
-        (_, None) => {}
+        ExitMode::Detach => {}
+    }
+    Ok(())
+}
+
+/// How long to wait for an orchestrator to stop. It stops its components with a timeout of its
+/// own and kills what remains, so this only runs out if it hangs.
+const STOP_WAIT: Duration = Duration::from_secs(30);
+
+/// Stop the orchestrator through its API and wait until it is gone. One that this TUI started
+/// is sent SIGTERM if the API does not answer.
+async fn stop_orchestrator(client: &Client, owned: Option<OwnedOrchestrator>) -> Result<()> {
+    let requested = client.shutdown().await;
+    if let Some(orchestrator) = owned {
+        let log_path = orchestrator.log_path.clone();
+        let status = match requested {
+            Ok(_) => orchestrator.wait().await?,
+            Err(e) => {
+                eprintln!("The shutdown request failed ({e:#}), sending SIGTERM instead");
+                orchestrator.stop().await?
+            }
+        };
+        if !status.success() {
+            bail!(
+                "the orchestrator exited with {status}, see {}",
+                log_path.display()
+            );
+        }
+        return Ok(());
+    }
+    requested.map_err(|e| e.context("cannot ask the orchestrator to shut down"))?;
+    let deadline = time::Instant::now() + STOP_WAIT;
+    while client.is_listening().await {
+        if time::Instant::now() > deadline {
+            let pid = lock_owner(client.socket()).map_or("?".to_string(), |pid| pid.to_string());
+            bail!("the orchestrator (pid {pid}) is still running after {STOP_WAIT:?}");
+        }
+        time::sleep(Duration::from_millis(200)).await;
     }
     Ok(())
 }

@@ -120,9 +120,11 @@ async fn main() -> Result<()> {
         }
     }
     let supervisor = Arc::new(Mutex::new(supervisor));
+    let shutdown = Arc::new(tokio::sync::Notify::new());
     let router = server::router(ServerState {
         supervisor: supervisor.clone(),
         logs: logs.clone(),
+        shutdown: shutdown.clone(),
     });
     let server = tokio::spawn(async move { axum::serve(listener, router).await });
 
@@ -141,6 +143,10 @@ async fn main() -> Result<()> {
             }
             _ = tokio::signal::ctrl_c() => break,
             _ = sigterm.recv() => break,
+            _ = shutdown.notified() => {
+                eprintln!("shutdown requested through the API");
+                break;
+            }
         }
     }
 

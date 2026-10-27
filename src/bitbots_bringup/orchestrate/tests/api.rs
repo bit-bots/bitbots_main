@@ -44,6 +44,18 @@ fn temp_socket(test: &str) -> std::path::PathBuf {
 }
 
 async fn serve(test: &str) -> (Client, Arc<LogStore>, server::SocketGuard) {
+    let (client, logs, guard, _shutdown) = serve_with_shutdown(test).await;
+    (client, logs, guard)
+}
+
+async fn serve_with_shutdown(
+    test: &str,
+) -> (
+    Client,
+    Arc<LogStore>,
+    server::SocketGuard,
+    Arc<tokio::sync::Notify>,
+) {
     let socket = temp_socket(test);
     let (listener, guard) = server::bind(&socket).unwrap();
     let logs = Arc::new(LogStore::new());
@@ -53,6 +65,7 @@ async fn serve(test: &str) -> (Client, Arc<LogStore>, server::SocketGuard) {
     let share = Box::new(|package: &str| {
         workspace_package(package).ok_or_else(|| anyhow::anyhow!("{package} not in the workspace"))
     });
+    let shutdown = Arc::new(tokio::sync::Notify::new());
     let router = server::router(ServerState {
         supervisor: Arc::new(Mutex::new(
             Supervisor::new(
@@ -64,9 +77,10 @@ async fn serve(test: &str) -> (Client, Arc<LogStore>, server::SocketGuard) {
             .unwrap(),
         )),
         logs: logs.clone(),
+        shutdown: shutdown.clone(),
     });
     tokio::spawn(async move { axum::serve(listener, router).await });
-    (Client::new(socket), logs, guard)
+    (Client::new(socket), logs, guard, shutdown)
 }
 
 #[tokio::test]
@@ -243,4 +257,14 @@ async fn global_parameters_are_written_for_the_next_start() {
         .unwrap();
     assert!(status.global_parameters.is_empty());
     assert_eq!(std::fs::read_to_string(&file).unwrap(), no_overrides);
+}
+
+#[tokio::test]
+async fn shutdown_is_handed_to_the_main_loop() {
+    let (client, _logs, _guard, shutdown) = serve_with_shutdown("shutdown").await;
+    client.shutdown().await.unwrap();
+    // The request is kept even though nobody waited for it yet.
+    tokio::time::timeout(std::time::Duration::from_secs(1), shutdown.notified())
+        .await
+        .expect("shutdown was requested");
 }

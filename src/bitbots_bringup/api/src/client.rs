@@ -132,6 +132,12 @@ impl Client {
         self.request(Method::POST, "/stop_all", None::<&()>).await
     }
 
+    /// Ask the orchestrator to stop all components and itself. It answers right away; it is
+    /// gone once [`Client::is_listening`] turns false.
+    pub async fn shutdown(&self) -> Result<Status> {
+        self.request(Method::POST, "/shutdown", None::<&()>).await
+    }
+
     /// Log lines newer than `since`, optionally of one component only.
     pub async fn logs(&self, since: u64, component: Option<&str>) -> Result<Logs> {
         let mut path = format!("/logs?since={since}");

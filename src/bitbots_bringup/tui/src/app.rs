@@ -239,9 +239,10 @@ impl App {
         }
     }
 
-    /// Quit right away, or ask first if the TUI owns the orchestrator.
+    /// Ask whether to stop the orchestrator or leave it running, or quit right away if there is
+    /// no orchestrator to ask about.
     pub fn request_quit(&mut self) {
-        if self.orchestrator.is_some() {
+        if self.status.is_some() && self.connection_error.is_none() {
             self.confirm_action = Some(ConfirmAction::Quit);
         } else {
             self.exit = Some(ExitMode::Detach);

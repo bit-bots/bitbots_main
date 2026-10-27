@@ -91,6 +91,11 @@ impl OwnedOrchestrator {
         self.child.try_wait().ok().flatten()
     }
 
+    /// Wait until the orchestrator has exited, e.g. after a shutdown request through the API.
+    pub async fn wait(mut self) -> Result<std::process::ExitStatus> {
+        Ok(self.child.wait().await?)
+    }
+
     /// Ask the orchestrator to stop all components and itself, and wait until it is gone.
     pub async fn stop(mut self) -> Result<std::process::ExitStatus> {
         if let Some(pid) = self.child.id() {

@@ -25,8 +25,8 @@ preselect what is started, see ``--help``.
 ``teamplayer`` (``pixi run teamplayer``) is a TUI for the orchestrator.
 It configures and starts the components, shows their state and logs, and restarts or stops single components.
 If no orchestrator is running, it starts one in the background and accepts the same preset flags for it.
-When quitting, it asks whether to stop the orchestrator it started or to leave it running;
-an orchestrator that was already running is always left running, so the TUI can be closed and reopened at any time.
+When quitting, it asks whether to stop the orchestrator together with all components or to leave it running,
+also when it attached to an orchestrator that was already running, so the TUI can be closed and reopened at any time.
 ``--attach`` only connects to a running orchestrator.
 ``--headless`` runs an orchestrator in the foreground instead of the TUI and starts all enabled components;
 Ctrl-C then stops the components and the orchestrator.

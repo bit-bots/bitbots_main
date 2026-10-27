@@ -33,6 +33,8 @@ use crate::{
 pub struct ServerState {
     pub supervisor: Arc<Mutex<Supervisor>>,
     pub logs: Arc<LogStore>,
+    /// Notified when a client asks the orchestrator to shut down
+    pub shutdown: Arc<tokio::sync::Notify>,
 }
 
 struct Failure(StatusCode, String);
@@ -99,6 +101,7 @@ pub fn router(state: ServerState) -> Router {
         .route("/start_all", post(start_all))
         .route("/stop_all", post(stop_all))
         .route("/global_parameters", put(set_global_parameters))
+        .route("/shutdown", post(shutdown))
         .route("/logs", get(logs));
     Router::new().nest(API_PREFIX, api).with_state(state)
 }
@@ -153,6 +156,14 @@ async fn stop_all(State(state): State<ServerState>) -> ApiResult<Status> {
         sup.stop_all();
         Ok(())
     })
+}
+
+/// Stop all components and the orchestrator, like SIGTERM. Answers before the shutdown is done;
+/// clients wait until the socket stops accepting connections.
+async fn shutdown(State(state): State<ServerState>) -> ApiResult<Status> {
+    // Keeps a permit if the main loop does not wait right now, so the request is not lost.
+    state.shutdown.notify_one();
+    act(&state, |_| Ok(()))
 }
 
 async fn set_global_parameters(
