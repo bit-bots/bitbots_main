@@ -6,6 +6,11 @@ Description
 
 |description|
 
+When the robot software is started through ``bitbots_orchestrate`` (``pixi run teamplayer``),
+the orchestrator publishes the global configuration of this package itself, with the same interface as described
+below; see the ``blackboard`` section of ``config/teamplayer.yaml`` in ``bitbots_bringup``.
+The ``parameter_blackboard`` node of this package serves the launch files that do not use the orchestrator.
+
 The ``parameter_blackboard`` node loads the global configuration itself.
 It merges the configuration of the selected field (``config/fields/<field.name>/config.yaml``),
 ``config/global_parameters.yaml``, ``config/game_settings.yaml`` and, in simulation, the game settings of the

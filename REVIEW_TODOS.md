@@ -38,7 +38,9 @@ re-check of build-system findings against the head of PR #944
       status publisher and the static map→odom fallback. Open: switch deploy
       to `bitbots_orchestrate --autostart --profile game --disable zenoh`;
       cover the multi-robot sim launch (per-instance environment such as
-      `ROS_DOMAIN_ID`); then remove `teamplayer.launch`.
+      `ROS_DOMAIN_ID`); then remove `teamplayer.launch` and with it the
+      Python `parameter_blackboard` node, whose role the orchestrator took
+      over (`blackboard` section of the stack file).
 
 ## Nits / polish
 

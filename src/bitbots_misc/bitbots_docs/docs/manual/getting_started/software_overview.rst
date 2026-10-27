@@ -55,6 +55,19 @@ Each component names the launch file or executable that runs it and may declare
 - ``fallback_for``: a component it replaces while that one is disabled,
 - ``locked``: that it cannot be deselected.
 
+The ``blackboard`` section declares the global parameters (field dimensions, game settings, ...).
+The orchestrator publishes them itself on the ROS node ``parameter_blackboard``:
+through its parameter services, read-only, and as the latched ``global_parameter_blackboard`` message,
+together with the maps of the selected field.
+They are assembled from the field's configuration and the parameter files of ``bitbots_parameter_blackboard``,
+see the comments in the stack file.
+The field can be chosen in the TUI or with ``--set fieldname=<field>``, the available fields are offered as choices.
+Game settings come from ``game_settings.yaml``, which the deploy tool writes;
+they cannot be changed in the TUI.
+For setups that need different values, such as several simulated robots,
+pass overrides with ``--global <parameter>=<value>`` or ``PUT /api/v1/blackboard/overrides``.
+``GET /api/v1/blackboard`` shows all published values and where each comes from.
+
 To add a component, add an entry there and declare its package as ``exec_depend`` of ``bitbots_bringup``.
 The tests of ``bitbots_bringup`` check that the file is consistent,
 that every profile resolves without missing requirements,
