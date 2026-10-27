@@ -4,7 +4,7 @@ from typing import Optional
 import soccer_vision_3d_msgs.msg as sv3dm
 import tf2_ros as tf2
 from bitbots_global_planner import ObstacleMap, ObstacleMapConfig, PolygonObstacle, RoundObstacle
-from bitbots_utils.utils import get_parameters_from_other_node
+from bitbots_utils.utils import get_global_parameters
 from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Path
 from rclpy.duration import Duration
@@ -58,9 +58,7 @@ class VisibilityPlanner(Planner):
         self.frame: str = self.node.config.map.planning_frame
 
         # Get the field dimensions from the global parameter blackboard
-        field_parameters = get_parameters_from_other_node(
-            self.node, "/parameter_blackboard", ["field.size.x", "field.goal.width", "field.goal.depth"]
-        )
+        field_parameters = get_global_parameters(self.node, ["field.size.x", "field.goal.width", "field.goal.depth"])
         # Create static obstacles for both goals, so we don't plan paths through them
         self.goal_obstacles: list[PolygonObstacle] = self._create_goal_obstacles(
             field_length=field_parameters["field.size.x"],

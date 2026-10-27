@@ -29,6 +29,18 @@ Localization::Localization(std::shared_ptr<rclcpp::Node> node)
   rviz_initial_pose_subscriber_ = node->create_subscription<gm::msg::PoseWithCovarianceStamped>(
       "initialpose", 1, std::bind(&Localization::SetInitialPositionCallback, this, _1));
 
+  // The field maps are latched, so we receive them even if the parameter blackboard published them before we started
+  lines_map_subscriber_ = node->create_subscription<nav_msgs::msg::OccupancyGrid>(
+      config_.ros.lines_map_topic, bitbots_utils::latched_qos(), [this](const nav_msgs::msg::OccupancyGrid& msg) {
+        lines_map_msg_ = msg;
+        field_maps_updated_ = true;
+      });
+  goals_map_subscriber_ = node->create_subscription<nav_msgs::msg::OccupancyGrid>(
+      config_.ros.goals_map_topic, bitbots_utils::latched_qos(), [this](const nav_msgs::msg::OccupancyGrid& msg) {
+        goals_map_msg_ = msg;
+        field_maps_updated_ = true;
+      });
+
   // Init publishers
   pose_particles_publisher_ =
       node->create_publisher<visualization_msgs::msg::MarkerArray>(config_.ros.particle_publishing_topic, 1);
@@ -36,17 +48,14 @@ Localization::Localization(std::shared_ptr<rclcpp::Node> node)
       node->create_publisher<gm::msg::PoseWithCovarianceStamped>("pose_with_covariance", 1);
   line_ratings_publisher_ = node->create_publisher<visualization_msgs::msg::Marker>("line_ratings", 1);
   goal_ratings_publisher_ = node->create_publisher<visualization_msgs::msg::Marker>("goal_ratings", 1);
-  field_publisher_ = node->create_publisher<nav_msgs::msg::OccupancyGrid>(
-      "field/map", rclcpp::QoS(rclcpp::KeepLast(1)).transient_local());
 
   // Set the measurement timestamps to 0
   line_pointcloud_relative_.header.stamp = rclcpp::Time(0);
   goal_posts_relative_.header.stamp = rclcpp::Time(0);
 
   // Get the static global configuration from the blackboard
-  auto global_params = bitbots_utils::get_parameters_from_other_node(
-      node_, "/parameter_blackboard", {"field.size.x", "field.size.y", "field.size.padding", "field.name"}, 1s);
-  field_name_ = global_params["field.name"].as_string();
+  auto global_params =
+      bitbots_utils::get_global_parameters(node_, {"field.size.x", "field.size.y", "field.size.padding"});
   field_dimensions_.x = global_params["field.size.x"].as_double();
   field_dimensions_.y = global_params["field.size.y"].as_double();
   field_dimensions_.padding = global_params["field.size.padding"].as_double();
@@ -72,8 +81,8 @@ Localization::Localization(std::shared_ptr<rclcpp::Node> node)
 }
 
 void Localization::updateParams(bool force_reload) {
-  // Check if we don't need to update the parameters
-  if (!force_reload and !param_listener_.is_old(config_)) {
+  // Check if we don't need to update the parameters or maps
+  if (!force_reload and !field_maps_updated_ and !param_listener_.is_old(config_)) {
     return;
   }
 
@@ -83,15 +92,12 @@ void Localization::updateParams(bool force_reload) {
   param_listener_.refresh_dynamic_parameters();
   config_ = param_listener_.get_params();
 
-  // Check if measurement type is used and load the correct map for that
-  if (config_.particle_filter.scoring.lines.factor) {
-    lines_.reset(new Map(field_name_, "lines.png", config_.particle_filter.scoring.lines.out_of_field_score));
-    // Publish the line map once
-    field_publisher_->publish(lines_->get_map_msg(config_.ros.map_frame));
-  }
-  if (config_.particle_filter.scoring.goal.factor) {
-    goals_.reset(new Map(field_name_, "goals.png", config_.particle_filter.scoring.goal.out_of_field_score));
-  }
+  // Create the maps for the used measurement classes
+  field_maps_updated_ = false;
+  lines_ = createMap(lines_map_msg_, config_.particle_filter.scoring.lines.factor,
+                     config_.particle_filter.scoring.lines.out_of_field_score, config_.ros.lines_map_topic);
+  goals_ = createMap(goals_map_msg_, config_.particle_filter.scoring.goal.factor,
+                     config_.particle_filter.scoring.goal.out_of_field_score, config_.ros.goals_map_topic);
 
   // Init observation model
   robot_pose_observation_model_.reset(new RobotPoseObservationModel(lines_, goals_, config_, field_dimensions_));
@@ -144,11 +150,49 @@ void Localization::updateParams(bool force_reload) {
   }
 }
 
-void Localization::run_filter_one_step() {
-  timer_callback_count_++;
+std::shared_ptr<Map> Localization::createMap(const std::optional<nav_msgs::msg::OccupancyGrid>& map_msg, double factor,
+                                             double out_of_field_score, const std::string& topic) {
+  // The map is not needed if the measurement class is not used
+  if (!factor || !map_msg) {
+    return nullptr;
+  }
+  try {
+    return std::make_shared<Map>(*map_msg, out_of_field_score);
+  } catch (const std::invalid_argument& e) {
+    RCLCPP_ERROR(node_->get_logger(), "Invalid field map received on '%s': %s", topic.c_str(), e.what());
+    return nullptr;
+  }
+}
 
-  // Check for new parameters and recreate necessary components if needed
+bool Localization::requiredMapsAvailable() {
+  bool available = true;
+  if (config_.particle_filter.scoring.lines.factor && !lines_) {
+    RCLCPP_WARN_THROTTLE(node_->get_logger(), *node_->get_clock(), 5000,
+                         "No valid lines map received on '%s' yet, is the parameter blackboard running and does the "
+                         "field provide a lines map? Skipping the filter step.",
+                         config_.ros.lines_map_topic.c_str());
+    available = false;
+  }
+  if (config_.particle_filter.scoring.goal.factor && !goals_) {
+    RCLCPP_WARN_THROTTLE(node_->get_logger(), *node_->get_clock(), 5000,
+                         "No valid goals map received on '%s' yet, is the parameter blackboard running and does the "
+                         "field provide a goals map? Skipping the filter step.",
+                         config_.ros.goals_map_topic.c_str());
+    available = false;
+  }
+  return available;
+}
+
+void Localization::run_filter_one_step() {
+  // Check for new parameters or maps and recreate necessary components if needed
   updateParams();
+
+  // We can not rate the particles without the maps of the used measurement classes
+  if (!requiredMapsAvailable()) {
+    return;
+  }
+
+  timer_callback_count_++;
 
   // Set the measurements in the observation model
   if (observe_) {

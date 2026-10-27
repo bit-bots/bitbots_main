@@ -19,13 +19,6 @@ namespace bl = bitbots_localization;
 
 namespace bitbots_localization {
 
-/**
- * Validates that all intensities of the given grayscale map are within the expected [0, 100] range.
- * Throws a std::invalid_argument with a helpful message if the map exceeds the range,
- * which e.g. happens for maps from the field map generator that use the full [0, 255] range.
- */
-void validate_map_value_range(const cv::Mat& map, const std::string& map_path);
-
 struct FieldDimensions {
   double x = 0;        // in m, x is the length of the field from goal to goal
   double y = 0;        // in m, y is the width of the field
@@ -39,13 +32,11 @@ struct FieldDimensions {
 class Map {
  public:
   /**
-   * @param name of the environment.
-   * @param type of the map. (E.g. lines)
+   * @param map occupancy grid of the map in the map frame (e.g. as published by the parameter blackboard).
    * @param out_of_map_value value used for padding the out of field area.
+   * @throws std::invalid_argument if the grid is malformed, rotated or contains values outside of [0, 100]
    */
-  explicit Map(const std::string& name, const std::string& type, const double out_of_map_value);
-
-  cv::Mat map;
+  explicit Map(const nav_msgs::msg::OccupancyGrid& map, const double out_of_map_value);
 
   std::vector<double> provideRating(const RobotState& state,
                                     const std::vector<std::pair<double, double>>& observations);
@@ -55,9 +46,14 @@ class Map {
   CartesianCoordinates getObservationCoordinatesInMapFrame(PolarCoordinates observation, double stateX, double stateY,
                                                            double stateT);
 
-  nav_msgs::msg::OccupancyGrid get_map_msg(std::string frame_id, int threshold = -1);
-
  private:
+  // Occupancy values of the grid cells in percent, rows correspond to the y-axis and columns to the x-axis
+  cv::Mat occupancy_;
+  // Size of a grid cell in m
+  double resolution_;
+  // Position of the first grid cell in the map frame in m
+  double origin_x_;
+  double origin_y_;
   double out_of_map_value_;
 };
 };  // namespace bitbots_localization

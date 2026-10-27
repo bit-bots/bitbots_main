@@ -1,6 +1,7 @@
 import os
+import time
 from threading import Thread
-from typing import Any, Callable
+from typing import Any, Callable, TypeVar
 
 import rclpy
 import yaml
@@ -10,10 +11,22 @@ from rcl_interfaces.msg import Parameter as ParameterMsg
 from rcl_interfaces.srv import GetParameters, SetParameters
 from rclpy.node import Node
 from rclpy.parameter import PARAMETER_SEPARATOR_STRING, Parameter, parameter_value_to_python
+from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
 from rclpy.task import Future
+from rclpy.wait_for_message import wait_for_message
+
+from bitbots_msgs.msg import ParameterBlackboard
 
 # Create a new @nobeartype decorator disabling type-checking.
 nobeartype = beartype(conf=BeartypeConf(strategy=BeartypeStrategy.O0))
+
+# Topic on which the parameter_blackboard node publishes its complete state
+GLOBAL_PARAMETER_BLACKBOARD_TOPIC = "global_parameter_blackboard"
+
+# QoS for latched topics like the global parameter blackboard or the field maps, so late subscribers get the last message
+LATCHED_QOS = QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL, reliability=ReliabilityPolicy.RELIABLE)
+
+MsgT = TypeVar("MsgT")
 
 
 class RobotNotConfiguredError(Exception):
@@ -22,6 +35,10 @@ class RobotNotConfiguredError(Exception):
     def __init__(self, message):
         self.message = message
         super().__init__(message)
+
+
+class MissingGlobalParameterError(RobotNotConfiguredError):
+    """Exception raised when requested parameters are not set on the global parameter blackboard."""
 
 
 def read_urdf(robot_name: str) -> str:
@@ -139,6 +156,75 @@ def get_parameters_from_other_node_sync(
     for i, param in enumerate(parameter_names):
         results[param] = parameter_value_to_python(response.values[i])
     return results
+
+
+def wait_for_latched_message(
+    node: Node,
+    msg_type: type[MsgT],
+    topic: str,
+    timeout_sec: float | None = None,
+    warn_interval_sec: float = 5.0,
+) -> MsgT:
+    """
+    Waits for a message on a latched (transient local) topic and periodically warns while waiting.
+
+    The node is not spun, so this can be used during initialization before the node is added to an executor.
+    Do not call it while an executor is spinning the node, because the executor might take the message first.
+
+    :param node: Node used to create the temporary subscription
+    :param msg_type: Message type of the topic
+    :param topic: Name of the topic, relative names are resolved in the namespace of the node
+    :param timeout_sec: Maximum time to wait, None waits until the message arrives or ROS shuts down
+    :param warn_interval_sec: Interval in which a warning is logged while waiting
+    :return: The received message
+    :raises TimeoutError: If the timeout expires before a message is received
+    :raises RuntimeError: If ROS shuts down while waiting
+    """
+    start_time = time.monotonic()
+    while rclpy.ok():
+        wait_time = warn_interval_sec
+        if timeout_sec is not None:
+            wait_time = min(wait_time, max(timeout_sec - (time.monotonic() - start_time), 0.0))
+        success, msg = wait_for_message(msg_type, node, topic, qos_profile=LATCHED_QOS, time_to_wait=wait_time)
+        if success:
+            return msg
+
+        waited = time.monotonic() - start_time
+        if timeout_sec is not None and waited >= timeout_sec:
+            raise TimeoutError(f"No message received on the latched topic '{topic}' within {waited:.1f}s")
+        node.get_logger().warning(f"Still waiting for a message on the latched topic '{topic}' ({waited:.0f}s)")
+    raise RuntimeError(f"ROS was shut down while waiting for a message on the latched topic '{topic}'")
+
+
+def global_parameter_blackboard_to_dict(msg: ParameterBlackboard) -> dict[str, Any]:
+    """
+    Converts the state of the global parameter blackboard into a flat dict, which maps parameter names to values.
+    """
+    return {param.name: parameter_value_to_python(param.value) for param in msg.parameters}
+
+
+def get_global_parameters(node: Node, parameter_names: list[str], timeout_sec: float | None = None) -> dict[str, Any]:
+    """
+    Gets parameters from the global parameter blackboard by waiting for its latched state topic.
+
+    See :func:`wait_for_latched_message` for the restrictions regarding spinning nodes.
+
+    :param node: Node used to create the temporary subscription
+    :param parameter_names: Names of the requested parameters (e.g. 'field.size.x')
+    :param timeout_sec: Maximum time to wait for the blackboard, None waits until it is available
+    :return: Dict with the requested parameter names as keys and their values
+    :raises MissingGlobalParameterError: If any of the requested parameters is not set on the blackboard
+    """
+    state = global_parameter_blackboard_to_dict(
+        wait_for_latched_message(node, ParameterBlackboard, GLOBAL_PARAMETER_BLACKBOARD_TOPIC, timeout_sec)
+    )
+    missing = [name for name in parameter_names if name not in state]
+    if missing:
+        raise MissingGlobalParameterError(
+            f"The parameters {missing} are not set on the global parameter blackboard. "
+            "Check the configuration loaded by the parameter_blackboard node."
+        )
+    return {name: state[name] for name in parameter_names}
 
 
 def set_parameters_of_other_node(
