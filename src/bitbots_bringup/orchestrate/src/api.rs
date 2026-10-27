@@ -201,3 +201,11 @@ pub fn lock_path(socket: &Path) -> Result<PathBuf> {
     lock_name.push(".lock");
     Ok(socket.with_file_name(lock_name))
 }
+
+/// Pid of the orchestrate instance holding the lock of `socket`, as recorded in the lock file.
+///
+/// Only meaningful while an instance is listening; the file outlives its instance.
+pub fn lock_owner(socket: &Path) -> Option<u32> {
+    let text = std::fs::read_to_string(lock_path(socket).ok()?).ok()?;
+    text.trim().parse().ok()
+}

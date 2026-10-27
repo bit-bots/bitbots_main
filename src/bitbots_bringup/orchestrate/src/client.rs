@@ -29,6 +29,12 @@ impl Client {
         &self.socket
     }
 
+    /// Whether something accepts connections on the socket, regardless of whether it answers
+    /// like a matching orchestrator.
+    pub async fn is_listening(&self) -> bool {
+        UnixStream::connect(&self.socket).await.is_ok()
+    }
+
     async fn request<T: DeserializeOwned>(
         &self,
         method: Method,

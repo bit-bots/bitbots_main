@@ -7,7 +7,7 @@ use std::{path::PathBuf, time::Duration};
 
 use anyhow::{bail, Result};
 use bitbots_orchestrate::{
-    api::{resolve_socket, DEFAULT_INSTANCE_NAME},
+    api::{lock_owner, resolve_socket, DEFAULT_INSTANCE_NAME},
     client::Client,
 };
 use clap::Parser;
@@ -149,8 +149,19 @@ async fn main() -> Result<()> {
         return Err(spawn::exec_headless(&socket, &args));
     }
 
-    let running = client.status().await.is_ok();
+    // Only start an orchestrator if nothing listens on the socket; one that listens but does
+    // not answer as expected must not be mistaken for a missing one.
+    let running = client.is_listening().await;
     let orchestrator = if running {
+        if let Err(e) = client.status().await {
+            let owner = lock_owner(&socket).map_or("unknown".to_string(), |pid| pid.to_string());
+            bail!(
+                "an orchestrator (pid {owner}) listens on {} but does not answer as expected, \
+                 probably one of an older build: {e:#}\nStop it with `kill -TERM {owner}` and \
+                 start teamplayer again",
+                socket.display()
+            );
+        }
         if !preset_args.is_empty() {
             bail!(
                 "an orchestrator is already running at {}, its settings cannot be changed from \
@@ -202,13 +213,15 @@ async fn main() -> Result<()> {
                 );
             }
         }
-        (_, Some(orchestrator)) => eprintln!(
-            "The orchestrator keeps running in the background (log: {}).\n\
-             Reattach with `teamplayer --name {}`, stop it with `kill -TERM <pid in {}.lock>`.",
-            orchestrator.log_path.display(),
-            cli.name,
-            socket.display()
-        ),
+        (_, Some(orchestrator)) => {
+            let pid = lock_owner(&socket).map_or("?".to_string(), |pid| pid.to_string());
+            eprintln!(
+                "The orchestrator keeps running in the background (pid {pid}, log: {}).\n\
+                 Reattach with `teamplayer --name {}`, stop it with `kill -TERM {pid}`.",
+                orchestrator.log_path.display(),
+                cli.name,
+            )
+        }
         (_, None) => {}
     }
     Ok(())
