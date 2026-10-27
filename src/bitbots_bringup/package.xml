@@ -46,6 +46,7 @@
     <exec_depend>rmw_zenoh_cpp</exec_depend>
     <exec_depend>soccer_ipm</exec_depend>
     <exec_depend>system_monitor</exec_depend>
+    <exec_depend>tf2_ros</exec_depend>
     <exec_depend>topic_tools</exec_depend>
     <exec_depend>udp_bridge</exec_depend>
 

@@ -13,5 +13,6 @@ install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
 
 cargo_binary(bitbots_orchestrate)
 cargo_binary(teamplayer)
+cargo_test(bitbots_stack)
 
 ament_package()

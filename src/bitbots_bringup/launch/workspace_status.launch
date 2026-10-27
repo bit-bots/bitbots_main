@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- Publishes the state of the deployed workspace, which the deploy tool records on the robot -->
+    <node pkg="bitbots_utils" exec="publish_workspace_status.py" output="screen">
+        <param name="workspace_status_path" value="$(find-pkg-share bitbots_utils)/config/workspace_status.json"/>
+        <param name="publish_topic" value="/workspace_status"/>
+    </node>
+</launch>

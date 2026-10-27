@@ -1,0 +1,163 @@
+# Declarative description of the teamplayer software stack.
+#
+# This file declares *what* runs and how the parts relate; *how* each part runs is defined by
+# the referenced launch files and executables. It is read by bitbots_orchestrate (and thereby
+# the teamplayer TUI), but it does not depend on them.
+#
+# parameters   Typed values passed to the components through ${name} placeholders.
+# profiles     Named presets of parameter values and component selections.
+# components   Units that are started and stopped together. Fields:
+#   name          Display name
+#   description   Optional explanation
+#   enabled       Selected by default (default: true); profiles and users can change it
+#   locked        Always runs while available, cannot be deselected
+#   if            Parameter values that all have to match for the component to be available
+#   requires      Components that have to run before this one is started
+#   fallback_for  Runs exactly when the named component does not
+#   launch / run / command   The single process of the component, or
+#   processes     a list of such processes
+version: 1
+
+parameters:
+  sim:
+    type: bool
+    default: false
+    description: Run against the simulator instead of the robot hardware
+  fieldname:
+    type: string
+    default: labor
+    description: Field settings to load
+  dsd_file:
+    type: string
+    default: main.dsd
+    description: Behavior DSD file
+
+profiles:
+  robot:
+    description: Real robot, default selection
+  game:
+    description: Real robot during a game, with rosbag recording
+    enable: [record]
+  sim:
+    description: Simulated robot
+    parameters: { sim: true, fieldname: hsl_kid }
+    disable: [audio, teamcom]
+
+components:
+  # ── Infrastructure ──────────────────────────────────────────────────────────
+  zenoh:
+    name: Zenoh
+    description: Zenoh router for ROS communication; disable when it runs externally
+    run: { package: rmw_zenoh_cpp, executable: rmw_zenohd }
+  blackboard:
+    name: Param Blackboard
+    locked: true
+    launch:
+      package: bitbots_parameter_blackboard
+      file: parameter_blackboard.launch.py
+      args: { sim: "${sim}", fieldname: "${fieldname}" }
+  robot_description:
+    name: Robot Description
+    locked: true
+    launch: { package: bitbots_robot_description, file: load_robot_description.launch, args: { sim: "${sim}" } }
+  diagnostics:
+    name: Diagnostics
+    locked: true
+    launch: { package: bitbots_diagnostic, file: aggregator.launch, args: { sim: "${sim}" } }
+  simulator:
+    name: Simulator
+    locked: true
+    if: { sim: true }
+    launch: { package: bitbots_mujoco_sim, file: simulator.launch }
+  workspace_status:
+    name: Workspace Status
+    if: { sim: false }
+    launch: { package: bitbots_bringup, file: workspace_status.launch }
+
+  # ── Motion ──────────────────────────────────────────────────────────────────
+  lowlevel:
+    name: Lowlevel
+    description: Hardware interface of the robot
+    if: { sim: false }
+    launch: { package: livelybot_bringup, file: lowlevel.launch }
+  motion:
+    name: Motion
+    requires: [blackboard, robot_description]
+    launch: { package: bitbots_bringup, file: motion.launch, args: { sim: "${sim}", lowlevel: "false" } }
+
+  # ── Game ────────────────────────────────────────────────────────────────────
+  game_controller:
+    name: Game Controller
+    requires: [blackboard]
+    processes:
+      - launch:
+          package: game_controller_hsl
+          file: game_controller.launch
+          args:
+            sim: "${sim}"
+            use_parameter_blackboard: "true"
+            parameter_blackboard_name: parameter_blackboard
+            team_id_param_name: team_id
+            bot_id_param_name: bot_id
+      - launch: { package: bitbots_player_state, file: player_state_aggregator.launch, args: { sim: "${sim}" } }
+  teamcom:
+    name: Team Comm
+    requires: [blackboard]
+    launch: { package: bitbots_team_communication, file: team_comm.launch, args: { sim: "${sim}" } }
+
+  # ── Perception and world model ──────────────────────────────────────────────
+  vision:
+    name: Vision
+    requires: [blackboard]
+    launch: { package: bitbots_bringup, file: vision.launch, args: { sim: "${sim}" } }
+  ipm:
+    name: IPM
+    launch: { package: bitbots_ipm, file: ipm.launch, args: { sim: "${sim}" } }
+  localization:
+    name: Localization
+    launch: { package: bitbots_localization, file: localization.launch, args: { sim: "${sim}" } }
+  fake_localization:
+    name: Fake Localization
+    description: Static map frame while the localization is disabled
+    fallback_for: localization
+    launch: { package: bitbots_bringup, file: fake_localization.launch, args: { sim: "${sim}" } }
+  world_model:
+    name: World Model
+    processes:
+      - launch: { package: bitbots_ball_filter, file: ball_filter.launch, args: { sim: "${sim}" } }
+      - launch: { package: bitbots_robot_filter, file: robot_filter.launch, args: { sim: "${sim}" } }
+  whistle_detector:
+    name: Whistle Det.
+    launch: { package: bitbots_whistle_detector, file: whistle_detector.launch, args: { sim: "${sim}" } }
+  audio:
+    name: Audio
+    launch: { package: bitbots_bringup, file: audio.launch }
+
+  # ── Decision making ─────────────────────────────────────────────────────────
+  path_planning:
+    name: Path Planning
+    launch: { package: bitbots_path_planning, file: path_planning.launch, args: { sim: "${sim}" } }
+  behavior:
+    name: Behavior
+    requires: [blackboard]
+    launch:
+      package: bitbots_body_behavior
+      file: behavior.launch
+      args: { sim: "${sim}", dsd_file: "${dsd_file}" }
+
+  # ── Optional ────────────────────────────────────────────────────────────────
+  tts:
+    name: TTS
+    enabled: false
+    launch: { package: bitbots_tts, file: tts.launch }
+  monitoring:
+    name: Monitoring
+    description: System monitor and UDP bridge for remote debugging
+    enabled: false
+    if: { sim: false }
+    launch: { package: bitbots_bringup, file: monitoring.launch }
+  record:
+    name: Recording
+    description: Rosbag recording
+    enabled: false
+    launch: { package: bitbots_bringup, file: rosbag_record.launch.py, args: { sim: "${sim}" } }

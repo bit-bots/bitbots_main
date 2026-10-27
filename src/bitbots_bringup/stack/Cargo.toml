@@ -1,0 +1,10 @@
+[package]
+name = "bitbots_stack"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1"
+indexmap = { version = "2", features = ["serde"] }
+serde = { version = "1", features = ["derive"] }
+serde_norway = "0.9"
