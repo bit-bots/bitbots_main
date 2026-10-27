@@ -1,7 +1,10 @@
-use std::collections::VecDeque;
+use std::collections::{HashMap, VecDeque};
 
 use bitbots_orchestrate::{
-    api::{ComponentInfo, LogStream, Logs, Status},
+    api::{
+        ComponentInfo, LogStream, Logs, ParamType, ParameterInfo, ProcState, SetParameters, Status,
+        Value,
+    },
     client::Client,
 };
 
@@ -36,10 +39,10 @@ pub enum ExitMode {
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum ConfigFocus {
-    Zenoh,
-    Sim,
-    Fieldname,
-    DsdFile,
+    Profile,
+    /// Index into the parameters of the status
+    Param(usize),
+    /// Index into [`App::toggleable_indices`]
     Component(usize),
     Start,
 }
@@ -126,8 +129,8 @@ pub struct App {
     pub action_error: Option<String>,
     pub screen: Screen,
     pub config_focus: ConfigFocus,
-    pub config_fieldname_input: String,
-    pub config_dsd_input: String,
+    /// Edit buffers of the string parameters, sent to the orchestrator on launch
+    pub param_inputs: HashMap<String, String>,
     pub runtime_selected: usize,
     pub tick_count: u64,
     pub log_scroll: usize,
@@ -153,9 +156,8 @@ impl App {
             connection_error: None,
             action_error: None,
             screen: Screen::Config,
-            config_focus: ConfigFocus::Zenoh,
-            config_fieldname_input: String::new(),
-            config_dsd_input: String::new(),
+            config_focus: ConfigFocus::Profile,
+            param_inputs: HashMap::new(),
             runtime_selected: 0,
             tick_count: 0,
             log_scroll: 0,
@@ -176,21 +178,65 @@ impl App {
             .unwrap_or_default()
     }
 
-    pub fn sim(&self) -> bool {
-        self.status.as_ref().is_some_and(|s| s.config.sim)
+    pub fn parameters(&self) -> &[ParameterInfo] {
+        self.status
+            .as_ref()
+            .map(|s| s.parameters.as_slice())
+            .unwrap_or_default()
     }
 
     fn set_status(&mut self, status: Status) {
-        if self.status.is_none() {
-            // First contact: take over the orchestrator's config and jump straight to the
-            // runtime view if it is already running something.
-            self.config_fieldname_input = status.config.fieldname.clone();
-            self.config_dsd_input = status.config.dsd_file.clone();
-            if status.components.iter().any(|c| c.state.is_alive()) {
-                self.screen = Screen::Runtime;
-            }
+        let first = self.status.is_none();
+        if first && status.components.iter().any(|c| c.state.is_started()) {
+            // Jump straight to the runtime view if the orchestrator already runs something.
+            self.screen = Screen::Runtime;
         }
         self.status = Some(status);
+        if first {
+            self.sync_inputs();
+        }
+    }
+
+    /// Reset the edit buffers to the orchestrator's parameter values.
+    pub fn sync_inputs(&mut self) {
+        self.param_inputs = self
+            .parameters()
+            .iter()
+            .filter_map(|p| match &p.value {
+                Value::String(v) => Some((p.name.clone(), v.clone())),
+                Value::Bool(_) => None,
+            })
+            .collect();
+    }
+
+    /// The edited values of all string parameters.
+    pub fn edited_parameters(&self) -> SetParameters {
+        self.parameters()
+            .iter()
+            .filter(|p| p.param_type == ParamType::String)
+            .filter_map(|p| {
+                let input = self.param_inputs.get(&p.name)?;
+                Some((p.name.clone(), Value::String(input.clone())))
+            })
+            .collect()
+    }
+
+    /// Description of the focused config item, if it has one.
+    pub fn focused_description(&self) -> Option<String> {
+        match self.config_focus {
+            ConfigFocus::Profile => {
+                let status = self.status.as_ref()?;
+                let current = status.profile.as_ref()?;
+                let profile = status.profiles.iter().find(|p| &p.name == current)?;
+                profile.description.clone()
+            }
+            ConfigFocus::Param(i) => self.parameters().get(i).map(|p| p.description.clone()),
+            ConfigFocus::Component(fi) => {
+                let idx = *self.toggleable_indices().get(fi)?;
+                self.components()[idx].description.clone()
+            }
+            ConfigFocus::Start => None,
+        }
     }
 
     /// Quit right away, or ask first if the TUI owns the orchestrator.
@@ -258,50 +304,40 @@ impl App {
     }
 
     pub fn toggleable_indices(&self) -> Vec<usize> {
-        let sim = self.sim();
         self.components()
             .iter()
             .enumerate()
-            .filter(|(_, c)| !c.infrastructure && !c.sim_component && !(c.hardware_only && sim))
+            .filter(|(_, c)| c.toggleable())
             .map(|(i, _)| i)
             .collect()
     }
 
+    /// Components that are selected to run or have run.
     pub fn runtime_visible_indices(&self) -> Vec<usize> {
-        let sim = self.sim();
         self.components()
             .iter()
             .enumerate()
-            .filter(|(_, c)| {
-                if c.sim_component {
-                    return sim;
-                }
-                if c.hardware_only && sim {
-                    return false;
-                }
-                c.enabled
-            })
+            .filter(|(_, c)| c.active || c.state != ProcState::Idle)
             .map(|(i, _)| i)
             .collect()
     }
 
-    pub fn zenoh(&self) -> Option<&ComponentInfo> {
-        self.components().iter().find(|c| c.key == "zenoh")
+    /// Items of the top row: the profile, then all parameters.
+    fn row_items(&self) -> Vec<ConfigFocus> {
+        [ConfigFocus::Profile]
+            .into_iter()
+            .chain((0..self.parameters().len()).map(ConfigFocus::Param))
+            .collect()
     }
 
-    /// All focusable config items in reading order: flags row, left column, right column, Start.
+    /// All focusable config items in reading order: top row, left column, right column, Start.
     pub fn config_focus_order(&self) -> Vec<ConfigFocus> {
         let n = self.toggleable_indices().len();
-        [
-            ConfigFocus::Zenoh,
-            ConfigFocus::Sim,
-            ConfigFocus::Fieldname,
-            ConfigFocus::DsdFile,
-        ]
-        .into_iter()
-        .chain((0..n).map(ConfigFocus::Component))
-        .chain([ConfigFocus::Start])
-        .collect()
+        self.row_items()
+            .into_iter()
+            .chain((0..n).map(ConfigFocus::Component))
+            .chain([ConfigFocus::Start])
+            .collect()
     }
 
     /// Tab: cycle forward through every item in reading order.
@@ -324,15 +360,12 @@ impl App {
         self.config_focus = order[(pos + order.len() - 1) % order.len()].clone();
     }
 
-    /// Down: flags row → first component; then down the left column, continuing at the top
-    /// of the right column; bottom of the right column → Start; Start wraps to flags.
+    /// Down: top row → first component; then down the left column, continuing at the top
+    /// of the right column; bottom of the right column → Start; Start wraps to the top row.
     pub fn config_focus_next(&mut self) {
         let n = self.toggleable_indices().len();
         self.config_focus = match self.config_focus.clone() {
-            ConfigFocus::Zenoh
-            | ConfigFocus::Sim
-            | ConfigFocus::Fieldname
-            | ConfigFocus::DsdFile => {
+            ConfigFocus::Profile | ConfigFocus::Param(_) => {
                 if n > 0 {
                     ConfigFocus::Component(0)
                 } else {
@@ -346,25 +379,22 @@ impl App {
                     ConfigFocus::Start
                 }
             }
-            ConfigFocus::Start => ConfigFocus::Zenoh,
+            ConfigFocus::Start => ConfigFocus::Profile,
         };
     }
 
-    /// Up: exact inverse of Down, except that the flags row wraps to Start.
+    /// Up: exact inverse of Down, except that the top row wraps to Start.
     pub fn config_focus_prev(&mut self) {
         let n = self.toggleable_indices().len();
         self.config_focus = match self.config_focus.clone() {
-            ConfigFocus::Zenoh
-            | ConfigFocus::Sim
-            | ConfigFocus::Fieldname
-            | ConfigFocus::DsdFile => ConfigFocus::Start,
-            ConfigFocus::Component(0) => ConfigFocus::Zenoh,
+            ConfigFocus::Profile | ConfigFocus::Param(_) => ConfigFocus::Start,
+            ConfigFocus::Component(0) => ConfigFocus::Profile,
             ConfigFocus::Component(i) => ConfigFocus::Component(i - 1),
             ConfigFocus::Start => {
                 if n > 0 {
                     ConfigFocus::Component(n - 1)
                 } else {
-                    ConfigFocus::Zenoh
+                    ConfigFocus::Profile
                 }
             }
         };
@@ -373,14 +403,15 @@ impl App {
     pub fn config_focus_right(&mut self) {
         let n = self.toggleable_indices().len();
         let left_count = n.div_ceil(2);
+        let row = self.row_items();
         match self.config_focus.clone() {
-            ConfigFocus::Zenoh => self.config_focus = ConfigFocus::Sim,
-            ConfigFocus::Sim => self.config_focus = ConfigFocus::Fieldname,
-            ConfigFocus::Fieldname => self.config_focus = ConfigFocus::DsdFile,
-            ConfigFocus::Component(i) if i < left_count => {
-                let right = i + left_count;
-                if right < n {
-                    self.config_focus = ConfigFocus::Component(right);
+            ConfigFocus::Component(i) if i + left_count < n => {
+                self.config_focus = ConfigFocus::Component(i + left_count);
+            }
+            focus @ (ConfigFocus::Profile | ConfigFocus::Param(_)) => {
+                let pos = row.iter().position(|f| *f == focus).unwrap_or(0);
+                if let Some(next) = row.get(pos + 1) {
+                    self.config_focus = next.clone();
                 }
             }
             _ => {}
@@ -389,12 +420,16 @@ impl App {
 
     pub fn config_focus_left(&mut self) {
         let left_count = self.toggleable_indices().len().div_ceil(2);
+        let row = self.row_items();
         match self.config_focus.clone() {
-            ConfigFocus::Sim => self.config_focus = ConfigFocus::Zenoh,
-            ConfigFocus::Fieldname => self.config_focus = ConfigFocus::Sim,
-            ConfigFocus::DsdFile => self.config_focus = ConfigFocus::Fieldname,
             ConfigFocus::Component(i) if i >= left_count => {
                 self.config_focus = ConfigFocus::Component(i - left_count);
+            }
+            focus @ (ConfigFocus::Profile | ConfigFocus::Param(_)) => {
+                let pos = row.iter().position(|f| *f == focus).unwrap_or(0);
+                if pos > 0 {
+                    self.config_focus = row[pos - 1].clone();
+                }
             }
             _ => {}
         }
@@ -404,52 +439,85 @@ impl App {
 #[cfg(test)]
 pub mod tests {
     use super::*;
-    use bitbots_orchestrate::api::{Config, LogLine, ProcState};
+    use bitbots_orchestrate::api::{LogLine, ProfileInfo};
 
-    fn component(key: &str, infrastructure: bool) -> ComponentInfo {
+    fn component(key: &str, locked: bool) -> ComponentInfo {
         ComponentInfo {
             key: key.to_string(),
             name: key.to_string(),
+            description: Some(format!("about {key}")),
             enabled: true,
+            locked,
+            fallback_for: None,
+            requires: Vec::new(),
+            available: true,
+            active: true,
             state: ProcState::Idle,
             pids: Vec::new(),
             exit_code: None,
-            infrastructure,
-            hardware_only: false,
-            sim_component: false,
+        }
+    }
+
+    fn status(components: Vec<ComponentInfo>) -> Status {
+        Status {
+            parameters: vec![
+                ParameterInfo {
+                    name: "sim".into(),
+                    param_type: ParamType::Bool,
+                    description: "Simulation".into(),
+                    value: Value::Bool(false),
+                },
+                ParameterInfo {
+                    name: "field".into(),
+                    param_type: ParamType::String,
+                    description: "Field".into(),
+                    value: Value::String("lab".into()),
+                },
+            ],
+            profiles: vec![ProfileInfo {
+                name: "sim".into(),
+                description: None,
+            }],
+            profile: None,
+            problems: Vec::new(),
+            components,
         }
     }
 
     /// An app that never reaches an orchestrator but has a known status.
     pub fn offline_app() -> App {
         let mut app = App::new(Client::new("/nonexistent/teamplayer-test.sock".into()));
-        let mut components = vec![component("zenoh", true)];
+        let mut components = vec![component("base", true)];
         components.extend((0..5).map(|i| component(&format!("c{i}"), false)));
-        app.set_status(Status {
-            config: Config {
-                sim: false,
-                fieldname: "field".into(),
-                dsd_file: "main.dsd".into(),
-            },
-            components,
-        });
+        app.set_status(status(components));
         app
     }
 
     #[test]
     fn first_status_initializes_inputs_and_screen() {
         let app = offline_app();
-        assert_eq!(app.config_fieldname_input, "field");
+        assert_eq!(app.param_inputs["field"], "lab");
+        assert!(!app.param_inputs.contains_key("sim"));
         assert!(app.screen == Screen::Config);
+        assert_eq!(
+            app.edited_parameters(),
+            SetParameters::from([("field".to_string(), Value::String("lab".into()))])
+        );
 
         let mut app = App::new(Client::new("/nonexistent".into()));
         let mut running = component("vision", false);
         running.state = ProcState::Running;
-        app.set_status(Status {
-            config: offline_app().status.unwrap().config,
-            components: vec![running],
-        });
+        app.set_status(status(vec![running]));
         assert!(app.screen == Screen::Runtime);
+    }
+
+    #[test]
+    fn locked_components_are_not_toggleable() {
+        let app = offline_app();
+        assert_eq!(app.toggleable_indices(), [1, 2, 3, 4, 5]);
+        app.components()[1..]
+            .iter()
+            .for_each(|c| assert!(c.toggleable()));
     }
 
     #[test]
@@ -458,7 +526,7 @@ pub mod tests {
         let n = app.toggleable_indices().len();
         assert!(n >= 2, "test needs both config columns populated");
 
-        app.config_focus = ConfigFocus::Zenoh;
+        app.config_focus = ConfigFocus::Profile;
         let mut visited = Vec::new();
         loop {
             app.config_focus_next();
@@ -475,13 +543,21 @@ pub mod tests {
             assert_eq!(app.config_focus, ConfigFocus::Component(i));
         }
         app.config_focus_prev();
-        assert_eq!(app.config_focus, ConfigFocus::Zenoh);
+        assert_eq!(app.config_focus, ConfigFocus::Profile);
     }
 
     #[test]
     fn tab_cycles_through_all_items() {
         let mut app = offline_app();
         let order = app.config_focus_order();
+        assert_eq!(
+            order[..3],
+            [
+                ConfigFocus::Profile,
+                ConfigFocus::Param(0),
+                ConfigFocus::Param(1)
+            ]
+        );
         app.config_focus = order[0].clone();
         for expected in order.iter().skip(1).chain(order.first()) {
             app.config_focus_tab();
@@ -492,14 +568,36 @@ pub mod tests {
     }
 
     #[test]
-    fn left_right_move_between_columns() {
+    fn left_right_move_along_the_row_and_between_columns() {
         let mut app = offline_app();
+        app.config_focus = ConfigFocus::Profile;
+        app.config_focus_right();
+        app.config_focus_right();
+        assert_eq!(app.config_focus, ConfigFocus::Param(1));
+        app.config_focus_right();
+        assert_eq!(
+            app.config_focus,
+            ConfigFocus::Param(1),
+            "stays at the row end"
+        );
+        app.config_focus_left();
+        assert_eq!(app.config_focus, ConfigFocus::Param(0));
+
         let left_count = app.toggleable_indices().len().div_ceil(2);
         app.config_focus = ConfigFocus::Component(0);
         app.config_focus_right();
         assert_eq!(app.config_focus, ConfigFocus::Component(left_count));
         app.config_focus_left();
         assert_eq!(app.config_focus, ConfigFocus::Component(0));
+    }
+
+    #[test]
+    fn focused_description_comes_from_the_status() {
+        let mut app = offline_app();
+        app.config_focus = ConfigFocus::Param(1);
+        assert_eq!(app.focused_description().as_deref(), Some("Field"));
+        app.config_focus = ConfigFocus::Component(0);
+        assert_eq!(app.focused_description().as_deref(), Some("about c0"));
     }
 
     fn line(seq: u64, text: &str) -> LogLine {

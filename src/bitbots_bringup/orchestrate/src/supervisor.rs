@@ -3,6 +3,7 @@
 use std::sync::Arc;
 
 use anyhow::bail;
+use bitbots_stack::{Resolved, Stack, Values};
 use tokio::{
     io::{AsyncBufReadExt, BufReader},
     process::Command,
@@ -10,13 +11,12 @@ use tokio::{
 };
 
 use crate::{
-    api::{ComponentInfo, Config, ConfigUpdate, LogStream, ProcState, Status},
-    components::{component_idx, COMPONENT_DEFS, FIELDNAME_DEFAULT_HW, FIELDNAME_DEFAULT_SIM},
+    api::{ComponentInfo, LogStream, ParameterInfo, ProcState, ProfileInfo, SetParameters, Status},
     logs::LogStore,
 };
 
+/// Runtime state of a component.
 pub struct ComponentState {
-    pub enabled: bool,
     pub state: ProcState,
     /// Process group ids of the processes of the current run that have not exited yet.
     pub pids: Vec<u32>,
@@ -53,14 +53,14 @@ impl std::fmt::Display for ActionError {
 /// Writes the output of one component to the [`LogStore`].
 #[derive(Clone)]
 struct ComponentLog {
-    key: &'static str,
-    name: &'static str,
+    key: Arc<str>,
+    name: Arc<str>,
     logs: Arc<LogStore>,
 }
 
 impl ComponentLog {
     fn push(&self, stream: LogStream, text: &str) {
-        self.logs.push(self.key, self.name, stream, text);
+        self.logs.push(&self.key, &self.name, stream, text);
     }
 
     /// Messages from the orchestrator itself, as opposed to output of the child processes.
@@ -81,7 +81,13 @@ impl ComponentLog {
 }
 
 pub struct Supervisor {
-    pub config: Config,
+    stack: Stack,
+    values: Values,
+    /// Selection of every component, in stack order
+    enabled: Vec<bool>,
+    /// The profile applied last
+    profile: Option<String>,
+    /// Runtime state of every component, in stack order
     pub components: Vec<ComponentState>,
     /// Set once shutdown has begun; no components are started afterwards.
     shutting_down: bool,
@@ -91,19 +97,22 @@ pub struct Supervisor {
 }
 
 impl Supervisor {
-    pub fn new(logs: Arc<LogStore>) -> Self {
+    pub fn new(stack: Stack, logs: Arc<LogStore>) -> Self {
         let (msg_tx, msg_rx) = mpsc::unbounded_channel();
-        let components = COMPONENT_DEFS
+        let components = stack
+            .components()
             .iter()
-            .map(|def| ComponentState {
-                enabled: !def.sim_component && def.default_enabled,
+            .map(|_| ComponentState {
                 state: ProcState::Idle,
                 pids: Vec::new(),
                 exit_code: None,
             })
             .collect();
         Self {
-            config: Config::default(),
+            values: stack.default_values(),
+            enabled: stack.default_enabled(),
+            profile: None,
+            stack,
             components,
             shutting_down: false,
             logs,
@@ -112,105 +121,140 @@ impl Supervisor {
         }
     }
 
-    pub fn apply_cli_presets(
+    pub fn stack(&self) -> &Stack {
+        &self.stack
+    }
+
+    /// Apply the command line selection: a profile, then single parameters (`name=value`),
+    /// then component switches.
+    pub fn apply_cli(
         &mut self,
-        sim: bool,
-        no_zenoh: bool,
-        fieldname: Option<&str>,
-        dsd_file: &str,
+        profile: Option<&str>,
+        set: &[String],
         enable: &[String],
         disable: &[String],
     ) -> anyhow::Result<()> {
-        let update = ConfigUpdate {
-            sim: Some(sim),
-            fieldname: fieldname.map(str::to_string),
-            dsd_file: Some(dsd_file.to_string()),
-        };
-        if let Err(e) = self.update_config(update) {
-            bail!("{e}");
+        if let Some(profile) = profile {
+            self.apply_profile(profile)
+                .map_err(|e| anyhow::anyhow!("{e}"))?;
         }
-        if no_zenoh {
-            self.set_enabled(Self::zenoh_idx(), false);
+        let mut params = SetParameters::new();
+        for assignment in set {
+            let Some((name, raw)) = assignment.split_once('=') else {
+                bail!("expected name=value, got '{assignment}'");
+            };
+            params.insert(name.to_string(), self.stack.parse_value(name, raw)?);
         }
+        self.set_parameters(params)
+            .map_err(|e| anyhow::anyhow!("{e}"))?;
         for (keys, enabled) in [(enable, true), (disable, false)] {
             for key in keys {
-                let Some(idx) = component_idx(key) else {
-                    let available: Vec<&str> = COMPONENT_DEFS.iter().map(|d| d.key).collect();
+                let Some(idx) = self.stack.component_idx(key) else {
+                    let available: Vec<&str> = self
+                        .stack
+                        .components()
+                        .iter()
+                        .map(|c| c.key.as_str())
+                        .collect();
                     bail!(
                         "unknown component key '{key}', available keys: {}",
                         available.join(", ")
                     );
                 };
-                self.set_enabled(idx, enabled);
+                self.set_enabled(idx, enabled)
+                    .map_err(|e| anyhow::anyhow!("{e}"))?;
             }
         }
         Ok(())
     }
 
-    fn zenoh_idx() -> usize {
-        component_idx("zenoh").expect("the component registry contains zenoh")
-    }
-
-    /// Takes effect on the next start of the affected components.
-    pub fn update_config(&mut self, update: ConfigUpdate) -> Result<(), ActionError> {
-        for (field, value) in [
-            ("fieldname", &update.fieldname),
-            ("dsd_file", &update.dsd_file),
-        ] {
-            if value.as_deref().is_some_and(|v| v.trim().is_empty()) {
-                return Err(ActionError::BadRequest(format!(
-                    "{field} must not be empty"
-                )));
-            }
-        }
-        if let Some(sim) = update.sim {
-            if sim != self.config.sim {
-                self.config.sim = sim;
-                for (comp, def) in self.components.iter_mut().zip(COMPONENT_DEFS) {
-                    if def.sim_component {
-                        comp.enabled = sim;
-                    } else if def.hardware_only {
-                        comp.enabled = !sim && def.default_enabled;
-                    }
-                }
-                self.config.fieldname = if sim {
-                    FIELDNAME_DEFAULT_SIM
-                } else {
-                    FIELDNAME_DEFAULT_HW
-                }
-                .to_string();
-            }
-        }
-        if let Some(fieldname) = update.fieldname {
-            self.config.fieldname = fieldname;
-        }
-        if let Some(dsd_file) = update.dsd_file {
-            self.config.dsd_file = dsd_file;
-        }
+    /// Reset parameters and selection to the defaults plus the profile, so profiles do not
+    /// accumulate. Takes effect on the next start of the affected components.
+    pub fn apply_profile(&mut self, name: &str) -> Result<(), ActionError> {
+        let mut values = self.stack.default_values();
+        let mut enabled = self.stack.default_enabled();
+        self.stack
+            .apply_profile(name, &mut values, &mut enabled)
+            .map_err(|e| ActionError::BadRequest(e.to_string()))?;
+        self.values = values;
+        self.enabled = enabled;
+        self.profile = Some(name.to_string());
         Ok(())
     }
 
-    pub fn set_enabled(&mut self, comp_idx: usize, enabled: bool) {
-        self.components[comp_idx].enabled = enabled;
+    /// Set all given parameters, or none if one of them is invalid. Takes effect on the next
+    /// start of the affected components.
+    pub fn set_parameters(&mut self, params: SetParameters) -> Result<(), ActionError> {
+        for (name, value) in &params {
+            self.stack
+                .check_value(name, value)
+                .map_err(|e| ActionError::BadRequest(e.to_string()))?;
+        }
+        self.values.extend(params);
+        Ok(())
+    }
+
+    pub fn set_enabled(&mut self, comp_idx: usize, enabled: bool) -> Result<(), ActionError> {
+        let c = &self.stack.components()[comp_idx];
+        if !c.toggleable() {
+            return Err(ActionError::Conflict(format!(
+                "{} is locked or a fallback and cannot be switched",
+                c.key
+            )));
+        }
+        self.enabled[comp_idx] = enabled;
+        Ok(())
+    }
+
+    fn resolved(&self) -> Resolved {
+        self.stack.resolve(&self.values, &self.enabled)
     }
 
     pub fn status(&self) -> Status {
+        let resolved = self.resolved();
         Status {
-            config: self.config.clone(),
-            components: self
-                .components
+            parameters: self
+                .stack
+                .parameters()
                 .iter()
-                .zip(COMPONENT_DEFS)
-                .map(|(comp, def)| ComponentInfo {
-                    key: def.key.to_string(),
-                    name: def.name.to_string(),
-                    enabled: comp.enabled,
+                .map(|p| ParameterInfo {
+                    name: p.name.clone(),
+                    param_type: p.param_type,
+                    description: p.description.clone(),
+                    value: self.values[&p.name].clone(),
+                })
+                .collect(),
+            profiles: self
+                .stack
+                .profiles()
+                .iter()
+                .map(|p| ProfileInfo {
+                    name: p.name.clone(),
+                    description: p.description.clone(),
+                })
+                .collect(),
+            profile: self.profile.clone(),
+            problems: resolved.problems,
+            components: self
+                .stack
+                .components()
+                .iter()
+                .zip(&self.components)
+                .zip(&resolved.components)
+                .zip(&self.enabled)
+                .map(|(((def, comp), res), &enabled)| ComponentInfo {
+                    key: def.key.clone(),
+                    name: def.name.clone(),
+                    description: def.description.clone(),
+                    enabled,
+                    locked: def.locked,
+                    fallback_for: def.fallback_for.clone(),
+                    requires: def.requires.clone(),
+                    available: res.available,
+                    active: res.active,
                     state: comp.state,
                     pids: comp.pids.clone(),
                     exit_code: comp.exit_code,
-                    infrastructure: def.infrastructure,
-                    hardware_only: def.hardware_only,
-                    sim_component: def.sim_component,
                 })
                 .collect(),
         }
@@ -221,28 +265,66 @@ impl Supervisor {
     }
 
     fn component_log(&self, comp_idx: usize) -> ComponentLog {
+        let def = &self.stack.components()[comp_idx];
         ComponentLog {
-            key: COMPONENT_DEFS[comp_idx].key,
-            name: COMPONENT_DEFS[comp_idx].name,
+            key: def.key.as_str().into(),
+            name: def.name.as_str().into(),
             logs: self.logs.clone(),
         }
     }
 
+    /// Requirements of a component that are not running yet.
+    fn missing_requirements(&self, comp_idx: usize) -> Vec<&str> {
+        self.stack.components()[comp_idx]
+            .requires
+            .iter()
+            .filter(|req| {
+                let r = self.stack.component_idx(req).expect("validated on load");
+                self.components[r].state != ProcState::Running
+            })
+            .map(String::as_str)
+            .collect()
+    }
+
+    /// Start a component, or let it wait until its requirements run.
     pub fn start_component(&mut self, comp_idx: usize) -> Result<(), ActionError> {
-        let def = &COMPONENT_DEFS[comp_idx];
+        let def = &self.stack.components()[comp_idx];
         if self.shutting_down {
             return Err(ActionError::Conflict(
                 "orchestrate is shutting down".to_string(),
             ));
         }
-        if self.components[comp_idx].state.is_alive() {
+        if self.components[comp_idx].state.is_started() {
             return Err(ActionError::Conflict(format!(
                 "{} is already running",
                 def.key
             )));
         }
-        let cmds = (def.cmds)(&self.config);
-        self.spawn_commands(comp_idx, cmds);
+        let resolved = self.resolved();
+        if !resolved.components[comp_idx].available {
+            return Err(ActionError::Conflict(format!(
+                "{} is not available with the current parameters",
+                def.key
+            )));
+        }
+        for req in &def.requires {
+            let r = self.stack.component_idx(req).expect("validated on load");
+            if !resolved.components[r].active {
+                return Err(ActionError::Conflict(format!(
+                    "{} requires {req}, which is not selected or not available",
+                    def.key
+                )));
+            }
+        }
+        let missing = self.missing_requirements(comp_idx);
+        if missing.is_empty() {
+            let cmds = self.stack.commands(comp_idx, &self.values);
+            self.spawn_commands(comp_idx, cmds);
+        } else {
+            let msg = format!("waiting for {} to run", missing.join(", "));
+            self.component_log(comp_idx).push_orchestrate(&msg);
+            self.components[comp_idx].state = ProcState::Waiting;
+        }
         Ok(())
     }
 
@@ -255,7 +337,7 @@ impl Supervisor {
         assert!(
             self.components[comp_idx].pids.is_empty(),
             "start of {} while processes of the previous run are still alive",
-            COMPONENT_DEFS[comp_idx].key
+            self.stack.components()[comp_idx].key
         );
         let log = self.component_log(comp_idx);
         let msg_tx = self.msg_tx.clone();
@@ -340,6 +422,7 @@ impl Supervisor {
                 // Already sent SIGTERM — cancel the pending restart
                 comp.state = ProcState::Stopping;
             }
+            ProcState::Waiting => comp.state = ProcState::Idle,
             _ => {}
         }
     }
@@ -356,7 +439,7 @@ impl Supervisor {
             }
             ProcState::Stopping | ProcState::Restarting => Err(ActionError::Conflict(format!(
                 "{} is still stopping",
-                COMPONENT_DEFS[comp_idx].key
+                self.stack.components()[comp_idx].key
             ))),
             _ => self.start_component(comp_idx),
         }
@@ -368,14 +451,15 @@ impl Supervisor {
         }
     }
 
-    /// Start all enabled components that are not running.
+    /// Start all active components that are not running. Refused while the selection has
+    /// problems, e.g. a missing requirement.
     pub fn start_all_enabled(&mut self) -> Result<(), ActionError> {
-        let to_start: Vec<usize> = self
-            .components
-            .iter()
-            .enumerate()
-            .filter(|(_, c)| c.enabled && !c.state.is_alive())
-            .map(|(i, _)| i)
+        let resolved = self.resolved();
+        if !resolved.problems.is_empty() {
+            return Err(ActionError::Conflict(resolved.problems.join("; ")));
+        }
+        let to_start: Vec<usize> = (0..self.components.len())
+            .filter(|&i| resolved.components[i].active && !self.components[i].state.is_started())
             .collect();
         for i in to_start {
             self.start_component(i)?;
@@ -391,11 +475,11 @@ impl Supervisor {
 
     /// Send SIGKILL to all processes that are still alive.
     pub fn kill_remaining(&mut self) {
-        for (comp, def) in self.components.iter().zip(COMPONENT_DEFS) {
+        for (comp, def) in self.components.iter().zip(self.stack.components()) {
             if !comp.pids.is_empty() {
                 self.logs.push(
-                    def.key,
-                    def.name,
+                    &def.key,
+                    &def.name,
                     LogStream::Stderr,
                     &format!(
                         "[orchestrate] processes {:?} did not exit after SIGTERM, sending SIGKILL",
@@ -416,6 +500,14 @@ impl Supervisor {
             if let Err(e) = self.start_component(comp_idx) {
                 self.component_log(comp_idx)
                     .push_orchestrate(&format!("restart failed: {e}"));
+            }
+        }
+        for comp_idx in 0..self.components.len() {
+            if self.components[comp_idx].state == ProcState::Waiting
+                && self.missing_requirements(comp_idx).is_empty()
+            {
+                let cmds = self.stack.commands(comp_idx, &self.values);
+                self.spawn_commands(comp_idx, cmds);
             }
         }
     }
@@ -488,18 +580,52 @@ fn signal_pids(pids: &[u32], signal: nix::sys::signal::Signal) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::api::Value;
     use std::time::Duration;
+
+    /// Commands are replaced in the process tests, so they only need to be valid here.
+    const TEST_STACK: &str = r#"
+version: 1
+parameters:
+  sim: { type: bool, default: false, description: Simulation }
+  field: { type: string, default: lab, description: Field }
+profiles:
+  sim:
+    parameters: { sim: true, field: kid }
+    disable: [extra]
+components:
+  base:
+    name: Base
+    command: [sleep, "30"]
+  hardware:
+    name: Hardware
+    if: { sim: false }
+    command: [sleep, "30"]
+  pair:
+    name: Pair
+    requires: [base]
+    processes:
+      - command: [sleep, "30"]
+      - command: [sleep, "30"]
+  locked:
+    name: Locked
+    locked: true
+    command: [sleep, "30"]
+  extra:
+    name: Extra
+    command: [echo, "${field}"]
+"#;
 
     fn cmd(args: &[&str]) -> Vec<String> {
         args.iter().map(|s| s.to_string()).collect()
     }
 
     fn supervisor() -> Supervisor {
-        Supervisor::new(Arc::new(LogStore::new()))
+        Supervisor::new(Stack::parse(TEST_STACK).unwrap(), Arc::new(LogStore::new()))
     }
 
-    fn world_model_idx() -> usize {
-        component_idx("world_model").unwrap()
+    fn idx(sup: &Supervisor, key: &str) -> usize {
+        sup.stack.component_idx(key).unwrap()
     }
 
     /// Drain messages until the component settles in a non-transitional state.
@@ -521,7 +647,7 @@ mod tests {
     #[tokio::test]
     async fn restart_waits_for_all_processes_of_a_component() {
         let mut sup = supervisor();
-        let idx = world_model_idx();
+        let idx = idx(&sup, "pair");
         sup.spawn_commands(idx, vec![cmd(&["sleep", "30"]), cmd(&["sleep", "30"])]);
         assert_eq!(sup.components[idx].pids.len(), 2);
 
@@ -545,7 +671,7 @@ mod tests {
     #[tokio::test]
     async fn partial_spawn_failure_stops_started_processes() {
         let mut sup = supervisor();
-        let idx = world_model_idx();
+        let idx = idx(&sup, "pair");
         sup.spawn_commands(
             idx,
             vec![
@@ -563,7 +689,7 @@ mod tests {
     #[tokio::test]
     async fn spawn_failure_of_only_process_crashes_immediately() {
         let mut sup = supervisor();
-        let idx = world_model_idx();
+        let idx = idx(&sup, "base");
         sup.spawn_commands(idx, vec![cmd(&["/nonexistent/orchestrate-test-binary"])]);
         assert_eq!(sup.components[idx].state, ProcState::Crashed);
         assert!(sup.components[idx].pids.is_empty());
@@ -572,7 +698,7 @@ mod tests {
     #[tokio::test]
     async fn crash_of_one_process_stops_its_siblings() {
         let mut sup = supervisor();
-        let idx = world_model_idx();
+        let idx = idx(&sup, "pair");
         sup.spawn_commands(
             idx,
             vec![cmd(&["sh", "-c", "exit 3"]), cmd(&["sleep", "30"])],
@@ -586,7 +712,7 @@ mod tests {
     #[tokio::test]
     async fn clean_exit_is_reported_as_stopped() {
         let mut sup = supervisor();
-        let idx = world_model_idx();
+        let idx = idx(&sup, "base");
         sup.spawn_commands(idx, vec![cmd(&["true"])]);
         wait_settled(&mut sup, idx).await;
         assert_eq!(sup.components[idx].state, ProcState::Stopped);
@@ -595,13 +721,13 @@ mod tests {
     #[tokio::test]
     async fn output_and_spawn_errors_reach_the_log_store() {
         let logs = Arc::new(LogStore::new());
-        let mut sup = Supervisor::new(logs.clone());
-        let idx = world_model_idx();
+        let mut sup = Supervisor::new(Stack::parse(TEST_STACK).unwrap(), logs.clone());
+        let idx = idx(&sup, "base");
         sup.spawn_commands(idx, vec![cmd(&["sh", "-c", "echo out; echo err >&2"])]);
         wait_settled(&mut sup, idx).await;
         sup.spawn_commands(idx, vec![cmd(&["/nonexistent/orchestrate-test-binary"])]);
 
-        let lines = logs.since(0, Some("world_model"), usize::MAX).lines;
+        let lines = logs.since(0, Some("base"), usize::MAX).lines;
         let has = |stream, text: &str| {
             lines
                 .iter()
@@ -613,71 +739,136 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn components_wait_for_their_requirements() {
+        let mut sup = supervisor();
+        let (base, pair) = (idx(&sup, "base"), idx(&sup, "pair"));
+        sup.start_component(pair).unwrap();
+        assert_eq!(sup.components[pair].state, ProcState::Waiting);
+        sup.tick();
+        assert_eq!(sup.components[pair].state, ProcState::Waiting);
+
+        sup.start_component(base).unwrap();
+        sup.tick();
+        assert_eq!(sup.components[pair].state, ProcState::Running);
+
+        sup.begin_shutdown();
+        wait_settled(&mut sup, pair).await;
+        wait_settled(&mut sup, base).await;
+    }
+
+    #[tokio::test]
+    async fn waiting_can_be_cancelled() {
+        let mut sup = supervisor();
+        let pair = idx(&sup, "pair");
+        sup.start_component(pair).unwrap();
+        sup.stop_component(pair);
+        assert_eq!(sup.components[pair].state, ProcState::Idle);
+    }
+
+    #[tokio::test]
+    async fn starts_respect_selection_and_availability() {
+        let mut sup = supervisor();
+        let (base, pair, hardware) = (idx(&sup, "base"), idx(&sup, "pair"), idx(&sup, "hardware"));
+        sup.set_enabled(base, false).unwrap();
+        // A start of everything with a missing requirement is refused as a whole.
+        let err = sup.start_all_enabled().unwrap_err();
+        assert_eq!(
+            err,
+            ActionError::Conflict("pair requires base, which is disabled".into())
+        );
+        assert!(matches!(
+            sup.start_component(pair),
+            Err(ActionError::Conflict(_))
+        ));
+
+        sup.apply_profile("sim").unwrap();
+        assert!(matches!(
+            sup.start_component(hardware),
+            Err(ActionError::Conflict(_))
+        ));
+    }
+
+    #[tokio::test]
     async fn no_starts_after_shutdown_began() {
         let mut sup = supervisor();
         sup.begin_shutdown();
         assert!(matches!(
-            sup.start_component(world_model_idx()),
+            sup.start_component(idx(&sup, "base")),
             Err(ActionError::Conflict(_))
         ));
     }
 
     #[test]
-    fn cli_zenoh_flags_share_one_state() {
+    fn locked_components_cannot_be_switched() {
         let mut sup = supervisor();
-        let zenoh = Supervisor::zenoh_idx();
-        sup.apply_cli_presets(false, true, None, "main.dsd", &["zenoh".into()], &[])
-            .unwrap();
-        assert!(sup.components[zenoh].enabled);
-        sup.apply_cli_presets(false, false, None, "main.dsd", &[], &["zenoh".into()])
-            .unwrap();
-        assert!(!sup.components[zenoh].enabled);
+        let locked = idx(&sup, "locked");
+        assert!(matches!(
+            sup.set_enabled(locked, false),
+            Err(ActionError::Conflict(_))
+        ));
     }
 
     #[test]
-    fn cli_rejects_unknown_component_keys() {
+    fn cli_applies_profile_then_parameters_then_switches() {
         let mut sup = supervisor();
-        assert!(sup
-            .apply_cli_presets(false, false, None, "main.dsd", &["nope".into()], &[])
-            .is_err());
-        assert!(sup
-            .apply_cli_presets(false, false, None, "main.dsd", &[], &["nope".into()])
-            .is_err());
-    }
-
-    #[test]
-    fn sim_switch_toggles_components_and_fieldname() {
-        let mut sup = supervisor();
-        let simulator = component_idx("simulator").unwrap();
-        let lowlevel = component_idx("lowlevel").unwrap();
-        sup.update_config(ConfigUpdate {
-            sim: Some(true),
-            ..Default::default()
-        })
+        sup.apply_cli(
+            Some("sim"),
+            &["field=custom".into()],
+            &["extra".into()],
+            &[],
+        )
         .unwrap();
-        assert!(sup.components[simulator].enabled);
-        assert!(!sup.components[lowlevel].enabled);
-        assert_eq!(sup.config.fieldname, FIELDNAME_DEFAULT_SIM);
-
-        // An explicit fieldname in the same update wins over the mode default.
-        sup.update_config(ConfigUpdate {
-            sim: Some(false),
-            fieldname: Some("custom".into()),
-            ..Default::default()
-        })
-        .unwrap();
-        assert!(!sup.components[simulator].enabled);
-        assert_eq!(sup.config.fieldname, "custom");
+        let status = sup.status();
+        assert_eq!(status.profile.as_deref(), Some("sim"));
+        assert_eq!(status.parameters[0].value, Value::Bool(true));
+        assert_eq!(status.parameters[1].value, Value::String("custom".into()));
+        let extra = &status.components[idx(&sup, "extra")];
+        assert!(extra.enabled && extra.active);
+        assert!(!status.components[idx(&sup, "hardware")].available);
+        assert_eq!(
+            sup.stack.commands(idx(&sup, "extra"), &sup.values),
+            [["echo", "custom"]]
+        );
     }
 
     #[test]
-    fn empty_config_values_are_rejected() {
+    fn cli_rejects_unknown_names_and_bad_values() {
         let mut sup = supervisor();
-        let err = sup.update_config(ConfigUpdate {
-            fieldname: Some(" ".into()),
-            ..Default::default()
-        });
-        assert!(matches!(err, Err(ActionError::BadRequest(_))));
-        assert_eq!(sup.config.fieldname, FIELDNAME_DEFAULT_HW);
+        assert!(sup.apply_cli(Some("nope"), &[], &[], &[]).is_err());
+        assert!(sup.apply_cli(None, &["sim=yes".into()], &[], &[]).is_err());
+        assert!(sup.apply_cli(None, &["nope=1".into()], &[], &[]).is_err());
+        assert!(sup.apply_cli(None, &["sim".into()], &[], &[]).is_err());
+        assert!(sup.apply_cli(None, &[], &["nope".into()], &[]).is_err());
+    }
+
+    #[test]
+    fn profiles_start_from_the_defaults() {
+        let mut sup = supervisor();
+        let extra = idx(&sup, "extra");
+        sup.set_parameters(SetParameters::from([(
+            "field".to_string(),
+            Value::String("changed".into()),
+        )]))
+        .unwrap();
+        sup.apply_profile("sim").unwrap();
+        assert!(!sup.enabled[extra]);
+        sup.set_enabled(extra, true).unwrap();
+        sup.apply_profile("sim").unwrap();
+        assert!(!sup.enabled[extra], "reapplying resets the selection");
+        assert_eq!(sup.values["field"], Value::String("kid".into()));
+    }
+
+    #[test]
+    fn parameter_updates_are_all_or_nothing() {
+        let mut sup = supervisor();
+        let update = SetParameters::from([
+            ("field".to_string(), Value::String("other".into())),
+            ("sim".to_string(), Value::String("not a bool".into())),
+        ]);
+        assert!(matches!(
+            sup.set_parameters(update),
+            Err(ActionError::BadRequest(_))
+        ));
+        assert_eq!(sup.values["field"], Value::String("lab".into()));
     }
 }

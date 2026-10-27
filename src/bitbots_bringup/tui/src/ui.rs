@@ -8,7 +8,7 @@ use ratatui::{
     Frame,
 };
 
-use bitbots_orchestrate::api::ProcState;
+use bitbots_orchestrate::api::{ParamType, ProcState, Value};
 
 use crate::app::{App, ConfigFocus, ConfirmAction, Screen};
 
@@ -29,6 +29,7 @@ const BANNER: &str = r#"
 pub fn proc_state_style(state: &ProcState) -> Style {
     match state {
         ProcState::Idle => Style::default().fg(Color::DarkGray),
+        ProcState::Waiting => Style::default().fg(Color::Magenta),
         ProcState::Running => Style::default().fg(Color::Green),
         ProcState::Stopping => Style::default().fg(Color::Yellow),
         ProcState::Restarting => Style::default().fg(Color::Cyan),
@@ -85,15 +86,22 @@ fn draw_waiting(f: &mut Frame, app: &App) {
 
 /// Replaces the bottom hint line while the orchestrator is unreachable or refused an action.
 fn draw_error_line(f: &mut Frame, app: &App) {
-    let msg = match (&app.connection_error, &app.action_error) {
-        _ if app.orchestrator_failure.is_some() => {
+    let problems = app
+        .status
+        .as_ref()
+        .map(|s| s.problems.join("; "))
+        .unwrap_or_default();
+    let (msg, bg) = match (&app.connection_error, &app.action_error) {
+        _ if app.orchestrator_failure.is_some() => (
             format!(
                 " {}",
                 app.orchestrator_failure.as_deref().unwrap_or_default()
-            )
-        }
-        (Some(e), _) => format!(" orchestrator unreachable: {e}"),
-        (None, Some(e)) => format!(" {e}"),
+            ),
+            Color::Red,
+        ),
+        (Some(e), _) => (format!(" orchestrator unreachable: {e}"), Color::Red),
+        (None, Some(e)) => (format!(" {e}"), Color::Red),
+        (None, None) if !problems.is_empty() => (format!(" {problems}"), Color::Yellow),
         (None, None) => return,
     };
     let area = f.area();
@@ -103,7 +111,7 @@ fn draw_error_line(f: &mut Frame, app: &App) {
     let line = Rect::new(area.x, area.y + area.height - 1, area.width, 1);
     f.render_widget(Clear, line);
     f.render_widget(
-        Paragraph::new(msg).style(Style::default().fg(Color::White).bg(Color::Red)),
+        Paragraph::new(msg).style(Style::default().fg(Color::Black).bg(bg)),
         line,
     );
 }
@@ -136,24 +144,28 @@ pub fn draw_config(f: &mut Frame, app: &App) {
     draw_config_components(f, app, chunks[2]);
     draw_start_button(f, app, chunks[3]);
 
+    let hint = match app.focused_description() {
+        Some(description) => format!(" {description}"),
+        None => " Tab/↑↓/←→: navigate  Space/Enter: toggle/activate  q: quit".to_string(),
+    };
     f.render_widget(
-        Paragraph::new(
-            " Tab/↑↓/←→: navigate  Space/Enter: toggle/activate  q: quit (components keep running)",
-        )
-        .style(Style::default().fg(Color::DarkGray)),
+        Paragraph::new(hint).style(Style::default().fg(Color::DarkGray)),
         chunks[4],
     );
 }
 
 fn draw_config_flags(f: &mut Frame, app: &App, area: Rect) {
+    let params = app.parameters();
+    let constraints: Vec<Constraint> = [Constraint::Length(20)]
+        .into_iter()
+        .chain(params.iter().map(|p| match p.param_type {
+            ParamType::Bool => Constraint::Length(p.name.chars().count() as u16 + 8),
+            ParamType::String => Constraint::Min(16),
+        }))
+        .collect();
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
-        .constraints([
-            Constraint::Length(18),
-            Constraint::Length(18),
-            Constraint::Min(20),
-            Constraint::Min(20),
-        ])
+        .constraints(constraints)
         .split(area);
 
     let focus_border = |focused: bool| {
@@ -173,60 +185,49 @@ fn draw_config_flags(f: &mut Frame, app: &App, area: Rect) {
         }
     };
 
-    let zenoh_focused = app.config_focus == ConfigFocus::Zenoh;
-    let sim_focused = app.config_focus == ConfigFocus::Sim;
-    let field_focused = app.config_focus == ConfigFocus::Fieldname;
-    let dsd_focused = app.config_focus == ConfigFocus::DsdFile;
-
+    let profile_focused = app.config_focus == ConfigFocus::Profile;
+    let profile = app
+        .status
+        .as_ref()
+        .and_then(|s| s.profile.as_deref())
+        .unwrap_or("defaults");
     f.render_widget(
-        Paragraph::new(if app.zenoh().is_some_and(|c| c.enabled) {
-            "[✓] Zenoh"
-        } else {
-            "[ ] Zenoh"
-        })
-        .block(
-            Block::default()
-                .borders(Borders::ALL)
-                .border_style(focus_border(zenoh_focused)),
-        )
-        .style(focus_text(zenoh_focused)),
+        Paragraph::new(profile)
+            .block(
+                Block::default()
+                    .borders(Borders::ALL)
+                    .title("Profile")
+                    .border_style(focus_border(profile_focused)),
+            )
+            .style(focus_text(profile_focused)),
         chunks[0],
     );
 
-    f.render_widget(
-        Paragraph::new(if app.sim() {
-            "[✓] Simulator"
-        } else {
-            "[ ] Simulator"
-        })
-        .block(
-            Block::default()
-                .borders(Borders::ALL)
-                .border_style(focus_border(sim_focused)),
-        )
-        .style(focus_text(sim_focused)),
-        chunks[1],
-    );
-
-    f.render_widget(
-        Paragraph::new(app.config_fieldname_input.as_str()).block(
-            Block::default()
-                .borders(Borders::ALL)
-                .title("Fieldname")
-                .border_style(focus_border(field_focused)),
-        ),
-        chunks[2],
-    );
-
-    f.render_widget(
-        Paragraph::new(app.config_dsd_input.as_str()).block(
-            Block::default()
-                .borders(Borders::ALL)
-                .title("DSD File")
-                .border_style(focus_border(dsd_focused)),
-        ),
-        chunks[3],
-    );
+    for (i, param) in params.iter().enumerate() {
+        let focused = app.config_focus == ConfigFocus::Param(i);
+        let widget = match &param.value {
+            Value::Bool(b) => {
+                let check = if *b { "✓" } else { " " };
+                Paragraph::new(format!("[{check}] {}", param.name))
+                    .block(
+                        Block::default()
+                            .borders(Borders::ALL)
+                            .border_style(focus_border(focused)),
+                    )
+                    .style(focus_text(focused))
+            }
+            Value::String(_) => {
+                let input = app.param_inputs.get(&param.name).map(String::as_str);
+                Paragraph::new(input.unwrap_or_default().to_string()).block(
+                    Block::default()
+                        .borders(Borders::ALL)
+                        .title(param.name.as_str())
+                        .border_style(focus_border(focused)),
+                )
+            }
+        };
+        f.render_widget(widget, chunks[i + 1]);
+    }
 }
 
 fn draw_config_components(f: &mut Frame, app: &App, area: Rect) {
@@ -362,10 +363,13 @@ fn draw_runtime_header(f: &mut Frame, app: &App, area: Rect) {
         .filter(|c| c.state == ProcState::Running)
         .count();
     let total_enabled = app.components().iter().filter(|c| c.enabled).count();
-    let sim_badge = if app.sim() { "  [SIM]" } else { "" };
+    let profile_badge = match app.status.as_ref().and_then(|s| s.profile.as_deref()) {
+        Some(profile) => format!("  [{profile}]"),
+        None => String::new(),
+    };
     f.render_widget(
         Paragraph::new(format!(
-            " Bit-Bots Teamplayer  [{running}/{total_enabled} running]{sim_badge}"
+            " Bit-Bots Teamplayer  [{running}/{total_enabled} running]{profile_badge}"
         ))
         .block(Block::default().borders(Borders::ALL))
         .style(
@@ -407,14 +411,20 @@ fn draw_runtime_list(f: &mut Frame, app: &App, area: Rect) {
         };
         let spinner = match comp.state {
             ProcState::Running => format!("{} ", spinner_char(app.tick_count)),
-            ProcState::Stopping => "… ".to_string(),
+            ProcState::Stopping | ProcState::Waiting => "… ".to_string(),
             ProcState::Restarting => "↺ ".to_string(),
             _ => "  ".to_string(),
         };
 
         let line = Line::from(vec![
             Span::styled(
-                if comp.infrastructure { "·" } else { " " },
+                if comp.locked {
+                    "·"
+                } else if comp.fallback_for.is_some() {
+                    "↪"
+                } else {
+                    " "
+                },
                 Style::default().fg(Color::DarkGray),
             ),
             Span::styled(spinner, Style::default().fg(Color::Green)),

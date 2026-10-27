@@ -1,4 +1,4 @@
-use bitbots_orchestrate::api::ConfigUpdate;
+use bitbots_orchestrate::api::{ParamType, SetParameters, Value};
 use crossterm::event::{KeyCode, KeyModifiers};
 
 use crate::app::{App, ConfigFocus, ConfirmAction, ExitMode, Screen};
@@ -19,46 +19,54 @@ pub async fn handle_config_key(app: &mut App, key: KeyCode, modifiers: KeyModifi
         (_, KeyCode::Right) => app.config_focus_right(),
         (_, KeyCode::Left) => app.config_focus_left(),
 
-        // Zenoh toggle
-        (ConfigFocus::Zenoh, KeyCode::Char(' ') | KeyCode::Enter) => {
-            if let Some(enabled) = app.zenoh().map(|c| c.enabled) {
-                let result = app.client.set_enabled("zenoh", !enabled).await;
+        // Profile: cycle through the profiles of the stack and apply the next one
+        (ConfigFocus::Profile, KeyCode::Char(' ') | KeyCode::Enter) => {
+            let Some(status) = &app.status else {
+                return;
+            };
+            let names: Vec<&str> = status.profiles.iter().map(|p| p.name.as_str()).collect();
+            let next = match status
+                .profile
+                .as_deref()
+                .and_then(|cur| names.iter().position(|n| *n == cur))
+            {
+                Some(pos) => names[(pos + 1) % names.len()],
+                None => match names.first() {
+                    Some(first) => first,
+                    None => return,
+                },
+            };
+            let next = next.to_string();
+            let result = app.client.apply_profile(&next).await;
+            app.apply_action(result);
+            app.sync_inputs();
+        }
+
+        // Bool parameters toggle right away
+        (ConfigFocus::Param(i), KeyCode::Char(' ') | KeyCode::Enter)
+            if app
+                .parameters()
+                .get(*i)
+                .is_some_and(|p| p.param_type == ParamType::Bool) =>
+        {
+            let param = &app.parameters()[*i];
+            if let Value::Bool(b) = param.value {
+                let update = SetParameters::from([(param.name.clone(), Value::Bool(!b))]);
+                let result = app.client.set_parameters(&update).await;
                 app.apply_action(result);
             }
         }
 
-        // Sim toggle; the orchestrator also switches the fieldname to the mode's default
-        (ConfigFocus::Sim, KeyCode::Char(' ') | KeyCode::Enter) => {
-            let update = ConfigUpdate {
-                sim: Some(!app.sim()),
-                ..Default::default()
-            };
-            let result = app.client.update_config(&update).await;
-            app.apply_action(result);
-            if let Some(status) = &app.status {
-                app.config_fieldname_input = status.config.fieldname.clone();
-            }
-            app.config_focus = ConfigFocus::Zenoh;
-        }
-
-        // Fieldname text input, sent to the orchestrator on launch
-        (ConfigFocus::Fieldname, KeyCode::Char(c)) => {
-            if !modifiers.contains(KeyModifiers::CONTROL) {
-                app.config_fieldname_input.push(c);
+        // String parameters are edited locally and sent on launch
+        (ConfigFocus::Param(i), KeyCode::Char(c)) if !modifiers.contains(KeyModifiers::CONTROL) => {
+            if let Some(name) = string_param(app, *i) {
+                app.param_inputs.entry(name).or_default().push(c);
             }
         }
-        (ConfigFocus::Fieldname, KeyCode::Backspace) => {
-            app.config_fieldname_input.pop();
-        }
-
-        // DSD file text input, sent to the orchestrator on launch
-        (ConfigFocus::DsdFile, KeyCode::Char(c)) => {
-            if !modifiers.contains(KeyModifiers::CONTROL) {
-                app.config_dsd_input.push(c);
+        (ConfigFocus::Param(i), KeyCode::Backspace) => {
+            if let Some(name) = string_param(app, *i) {
+                app.param_inputs.entry(name).or_default().pop();
             }
-        }
-        (ConfigFocus::DsdFile, KeyCode::Backspace) => {
-            app.config_dsd_input.pop();
         }
 
         // Component checkbox toggle
@@ -74,18 +82,16 @@ pub async fn handle_config_key(app: &mut App, key: KeyCode, modifiers: KeyModifi
 
         // Start / Continue button
         (ConfigFocus::Start, KeyCode::Enter | KeyCode::Char(' ')) => {
-            let update = ConfigUpdate {
-                sim: None,
-                fieldname: Some(app.config_fieldname_input.clone()),
-                dsd_file: Some(app.config_dsd_input.clone()),
-            };
-            let result = app.client.update_config(&update).await;
+            let result = app.client.set_parameters(&app.edited_parameters()).await;
             let ok = result.is_ok();
             app.apply_action(result);
             if ok {
                 let result = app.client.start_all().await;
+                let ok = result.is_ok();
                 app.apply_action(result);
-                app.screen = Screen::Runtime;
+                if ok {
+                    app.screen = Screen::Runtime;
+                }
             }
         }
 
@@ -93,6 +99,14 @@ pub async fn handle_config_key(app: &mut App, key: KeyCode, modifiers: KeyModifi
 
         _ => {}
     }
+}
+
+/// Name of the parameter at `idx` if it is a string parameter.
+fn string_param(app: &App, idx: usize) -> Option<String> {
+    app.parameters()
+        .get(idx)
+        .filter(|p| p.param_type == ParamType::String)
+        .map(|p| p.name.clone())
 }
 
 pub async fn handle_runtime_key(app: &mut App, key: KeyCode) {
@@ -112,7 +126,7 @@ pub async fn handle_runtime_key(app: &mut App, key: KeyCode) {
 
         KeyCode::Char('s') => {
             if let Some((_, comp)) = selected {
-                let result = if comp.state.is_alive() {
+                let result = if comp.state.is_started() {
                     app.client.stop(&comp.key).await
                 } else {
                     app.client.start(&comp.key).await

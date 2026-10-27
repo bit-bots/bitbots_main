@@ -21,8 +21,7 @@ use axum::{
 use tokio::net::UnixListener;
 
 use crate::{
-    api::{lock_path, ApiError, ConfigUpdate, Logs, LogsQuery, SetEnabled, Status, API_PREFIX},
-    components::component_idx,
+    api::{lock_path, ApiError, Logs, LogsQuery, SetEnabled, SetParameters, Status, API_PREFIX},
     logs::LogStore,
     supervisor::{ActionError, Supervisor},
 };
@@ -52,13 +51,11 @@ impl From<ActionError> for Failure {
 
 type ApiResult<T> = Result<Json<T>, Failure>;
 
-fn lookup(key: &str) -> Result<usize, Failure> {
-    component_idx(key).ok_or_else(|| {
-        Failure(
-            StatusCode::NOT_FOUND,
-            format!("unknown component key '{key}'"),
-        )
-    })
+fn unknown_component(key: &str) -> Failure {
+    Failure(
+        StatusCode::NOT_FOUND,
+        format!("unknown component key '{key}'"),
+    )
 }
 
 /// Run `action` on the supervisor and answer with the resulting status.
@@ -71,10 +68,26 @@ fn act(
     Ok(Json(sup.status()))
 }
 
+/// Run `action` on the component `key` and answer with the resulting status.
+fn act_on(
+    state: &ServerState,
+    key: &str,
+    action: impl FnOnce(&mut Supervisor, usize) -> Result<(), ActionError>,
+) -> ApiResult<Status> {
+    let mut sup = state.supervisor.lock().unwrap();
+    let idx = sup
+        .stack()
+        .component_idx(key)
+        .ok_or_else(|| unknown_component(key))?;
+    action(&mut sup, idx)?;
+    Ok(Json(sup.status()))
+}
+
 pub fn router(state: ServerState) -> Router {
     let api = Router::new()
         .route("/status", get(status))
-        .route("/config", put(update_config))
+        .route("/parameters", put(set_parameters))
+        .route("/profiles/{name}", post(apply_profile))
         .route("/components/{key}/enabled", put(set_enabled))
         .route("/components/{key}/start", post(start))
         .route("/components/{key}/stop", post(stop))
@@ -89,11 +102,18 @@ async fn status(State(state): State<ServerState>) -> ApiResult<Status> {
     act(&state, |_| Ok(()))
 }
 
-async fn update_config(
+async fn set_parameters(
     State(state): State<ServerState>,
-    Json(update): Json<ConfigUpdate>,
+    Json(params): Json<SetParameters>,
 ) -> ApiResult<Status> {
-    act(&state, |sup| sup.update_config(update))
+    act(&state, |sup| sup.set_parameters(params))
+}
+
+async fn apply_profile(
+    State(state): State<ServerState>,
+    Path(name): Path<String>,
+) -> ApiResult<Status> {
+    act(&state, |sup| sup.apply_profile(&name))
 }
 
 async fn set_enabled(
@@ -101,29 +121,22 @@ async fn set_enabled(
     Path(key): Path<String>,
     Json(body): Json<SetEnabled>,
 ) -> ApiResult<Status> {
-    let idx = lookup(&key)?;
-    act(&state, |sup| {
-        sup.set_enabled(idx, body.enabled);
-        Ok(())
-    })
+    act_on(&state, &key, |sup, idx| sup.set_enabled(idx, body.enabled))
 }
 
 async fn start(State(state): State<ServerState>, Path(key): Path<String>) -> ApiResult<Status> {
-    let idx = lookup(&key)?;
-    act(&state, |sup| sup.start_component(idx))
+    act_on(&state, &key, |sup, idx| sup.start_component(idx))
 }
 
 async fn stop(State(state): State<ServerState>, Path(key): Path<String>) -> ApiResult<Status> {
-    let idx = lookup(&key)?;
-    act(&state, |sup| {
+    act_on(&state, &key, |sup, idx| {
         sup.stop_component(idx);
         Ok(())
     })
 }
 
 async fn restart(State(state): State<ServerState>, Path(key): Path<String>) -> ApiResult<Status> {
-    let idx = lookup(&key)?;
-    act(&state, |sup| sup.restart_component(idx))
+    act_on(&state, &key, |sup, idx| sup.restart_component(idx))
 }
 
 async fn start_all(State(state): State<ServerState>) -> ApiResult<Status> {
@@ -139,7 +152,16 @@ async fn stop_all(State(state): State<ServerState>) -> ApiResult<Status> {
 
 async fn logs(State(state): State<ServerState>, Query(query): Query<LogsQuery>) -> ApiResult<Logs> {
     if let Some(key) = &query.component {
-        lookup(key)?;
+        if state
+            .supervisor
+            .lock()
+            .unwrap()
+            .stack()
+            .component_idx(key)
+            .is_none()
+        {
+            return Err(unknown_component(key));
+        }
     }
     Ok(Json(state.logs.since(
         query.since,

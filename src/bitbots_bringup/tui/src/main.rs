@@ -62,27 +62,23 @@ struct Presets {
     #[arg(long)]
     autostart: bool,
 
-    /// Enable simulation mode
-    #[arg(long)]
-    sim: bool,
+    /// Stack file declaring the components
+    #[arg(long, value_name = "PATH")]
+    stack: Option<PathBuf>,
 
-    /// Override the field name
+    /// Apply a profile of the stack file, e.g. sim
     #[arg(long, value_name = "NAME")]
-    fieldname: Option<String>,
+    profile: Option<String>,
 
-    /// Override the behavior DSD file
-    #[arg(long, value_name = "FILE")]
-    dsd_file: Option<String>,
+    /// Set a parameter of the stack file; may be repeated
+    #[arg(long = "set", value_name = "NAME=VALUE")]
+    set: Vec<String>,
 
-    /// Disable the Zenoh daemon
-    #[arg(long)]
-    no_zenoh: bool,
-
-    /// Enable a component by key; may be specified multiple times
+    /// Enable a component by key; may be repeated
     #[arg(long = "enable", value_name = "KEY")]
     enable: Vec<String>,
 
-    /// Disable a component by key; may be specified multiple times
+    /// Disable a component by key; may be repeated
     #[arg(long = "disable", value_name = "KEY")]
     disable: Vec<String>,
 }
@@ -91,26 +87,22 @@ impl Presets {
     /// Command line arguments for bitbots_orchestrate.
     fn to_args(&self) -> Vec<String> {
         let mut args = Vec::new();
-        for (set, flag) in [
-            (self.autostart, "--autostart"),
-            (self.sim, "--sim"),
-            (self.no_zenoh, "--no-zenoh"),
-        ] {
-            if set {
-                args.push(flag.to_string());
-            }
+        if self.autostart {
+            args.push("--autostart".to_string());
         }
-        for (value, flag) in [
-            (&self.fieldname, "--fieldname"),
-            (&self.dsd_file, "--dsd-file"),
+        if let Some(stack) = &self.stack {
+            args.extend(["--stack".to_string(), stack.display().to_string()]);
+        }
+        if let Some(profile) = &self.profile {
+            args.extend(["--profile".to_string(), profile.clone()]);
+        }
+        for (values, flag) in [
+            (&self.set, "--set"),
+            (&self.enable, "--enable"),
+            (&self.disable, "--disable"),
         ] {
-            if let Some(value) = value {
+            for value in values {
                 args.extend([flag.to_string(), value.clone()]);
-            }
-        }
-        for (keys, flag) in [(&self.enable, "--enable"), (&self.disable, "--disable")] {
-            for key in keys {
-                args.extend([flag.to_string(), key.clone()]);
             }
         }
         args

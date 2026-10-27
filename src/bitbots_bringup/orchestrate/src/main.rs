@@ -4,7 +4,8 @@ use std::{
     time::Duration,
 };
 
-use anyhow::Result;
+use anyhow::{bail, Result};
+use bitbots_stack::Stack;
 use clap::Parser;
 use tokio::{
     signal::unix::{signal, SignalKind},
@@ -13,7 +14,6 @@ use tokio::{
 
 use bitbots_orchestrate::{
     api::{resolve_socket, LogStream, DEFAULT_INSTANCE_NAME},
-    components::DSD_FILE_DEFAULT,
     logs::LogStore,
     server::{self, ServerState},
     supervisor::Supervisor,
@@ -34,27 +34,23 @@ struct Cli {
     #[arg(long)]
     autostart: bool,
 
-    /// Enable simulation mode (also enables the simulator, disables hardware-only components)
-    #[arg(long)]
-    sim: bool,
+    /// Stack file declaring the components [default: config/teamplayer.yaml of bitbots_bringup]
+    #[arg(long, value_name = "PATH")]
+    stack: Option<PathBuf>,
 
-    /// Override the field name [default: labor, or hsl_kid in sim]
+    /// Apply a profile of the stack file, e.g. sim
     #[arg(long, value_name = "NAME")]
-    fieldname: Option<String>,
+    profile: Option<String>,
 
-    /// Override the behavior DSD file
-    #[arg(long, value_name = "FILE", default_value = DSD_FILE_DEFAULT)]
-    dsd_file: String,
+    /// Set a parameter of the stack file, applied after the profile; may be repeated
+    #[arg(long = "set", value_name = "NAME=VALUE")]
+    set: Vec<String>,
 
-    /// Disable the Zenoh daemon (useful when zenoh is already running externally)
-    #[arg(long)]
-    no_zenoh: bool,
-
-    /// Enable a component by key; may be specified multiple times
+    /// Enable a component by key, applied after the profile; may be repeated
     #[arg(long = "enable", value_name = "KEY")]
     enable: Vec<String>,
 
-    /// Disable a component by key; may be specified multiple times
+    /// Disable a component by key, applied after the profile; may be repeated
     #[arg(long = "disable", value_name = "KEY")]
     disable: Vec<String>,
 
@@ -67,24 +63,41 @@ struct Cli {
     socket: Option<PathBuf>,
 }
 
+/// The teamplayer stack file in the share directory of bitbots_bringup.
+fn default_stack_path() -> Result<PathBuf> {
+    let prefixes = std::env::var_os("AMENT_PREFIX_PATH").unwrap_or_default();
+    for prefix in std::env::split_paths(&prefixes) {
+        let candidate = prefix.join("share/bitbots_bringup/config/teamplayer.yaml");
+        if candidate.is_file() {
+            return Ok(candidate);
+        }
+    }
+    bail!(
+        "config/teamplayer.yaml of bitbots_bringup not found in AMENT_PREFIX_PATH; is the \
+         workspace built and sourced? Pass --stack to use another file"
+    );
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
     let cli = Cli::parse();
 
+    let stack_path = match cli.stack {
+        Some(path) => path,
+        None => default_stack_path()?,
+    };
+    let stack = Stack::load(&stack_path)?;
     let logs = Arc::new(LogStore::new());
-    let mut supervisor = Supervisor::new(logs.clone());
-    supervisor.apply_cli_presets(
-        cli.sim,
-        cli.no_zenoh,
-        cli.fieldname.as_deref(),
-        &cli.dsd_file,
-        &cli.enable,
-        &cli.disable,
-    )?;
+    let mut supervisor = Supervisor::new(stack, logs.clone());
+    supervisor.apply_cli(cli.profile.as_deref(), &cli.set, &cli.enable, &cli.disable)?;
 
     let socket = resolve_socket(cli.socket, &cli.name)?;
     let (listener, _guard) = server::bind(&socket)?;
-    eprintln!("bitbots_orchestrate listening on {}", socket.display());
+    eprintln!(
+        "bitbots_orchestrate serving {} on {}",
+        stack_path.display(),
+        socket.display()
+    );
 
     if cli.autostart {
         if let Err(e) = supervisor.start_all_enabled() {

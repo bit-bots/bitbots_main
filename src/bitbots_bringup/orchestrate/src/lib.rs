@@ -6,7 +6,6 @@
 
 pub mod api;
 pub mod client;
-pub mod components;
 pub mod logs;
 pub mod server;
 pub mod supervisor;

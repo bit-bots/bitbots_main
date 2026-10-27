@@ -13,7 +13,7 @@ use hyper_util::rt::TokioIo;
 use serde::{de::DeserializeOwned, Serialize};
 use tokio::net::UnixStream;
 
-use crate::api::{ApiError, ConfigUpdate, Logs, SetEnabled, Status, API_PREFIX};
+use crate::api::{ApiError, Logs, SetEnabled, SetParameters, Status, API_PREFIX};
 
 #[derive(Clone)]
 pub struct Client {
@@ -77,8 +77,14 @@ impl Client {
         self.request(Method::GET, "/status", None::<&()>).await
     }
 
-    pub async fn update_config(&self, update: &ConfigUpdate) -> Result<Status> {
-        self.request(Method::PUT, "/config", Some(update)).await
+    /// Set all given parameters, or none if one is invalid.
+    pub async fn set_parameters(&self, params: &SetParameters) -> Result<Status> {
+        self.request(Method::PUT, "/parameters", Some(params)).await
+    }
+
+    pub async fn apply_profile(&self, name: &str) -> Result<Status> {
+        let path = format!("/profiles/{name}");
+        self.request(Method::POST, &path, None::<&()>).await
     }
 
     pub async fn set_enabled(&self, key: &str, enabled: bool) -> Result<Status> {

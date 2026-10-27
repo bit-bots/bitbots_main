@@ -3,7 +3,10 @@
 use std::path::{Path, PathBuf};
 
 use anyhow::{bail, Context, Result};
+use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
+
+pub use bitbots_stack::{ParamType, Value};
 
 pub const API_PREFIX: &str = "/api/v1";
 pub const DEFAULT_INSTANCE_NAME: &str = "default";
@@ -12,6 +15,8 @@ pub const DEFAULT_INSTANCE_NAME: &str = "default";
 #[serde(rename_all = "snake_case")]
 pub enum ProcState {
     Idle,
+    /// Start requested, waiting for required components to run
+    Waiting,
     Running,
     /// SIGTERM sent, waiting for exit
     Stopping,
@@ -25,6 +30,7 @@ impl ProcState {
     pub fn label(&self) -> &'static str {
         match self {
             ProcState::Idle => "IDLE",
+            ProcState::Waiting => "WAIT",
             ProcState::Running => "RUN ",
             ProcState::Stopping => "STOP",
             ProcState::Restarting => "RSTR",
@@ -40,49 +46,68 @@ impl ProcState {
             ProcState::Running | ProcState::Stopping | ProcState::Restarting
         )
     }
+
+    /// Whether the component is alive or about to start.
+    pub fn is_started(&self) -> bool {
+        self.is_alive() || *self == ProcState::Waiting
+    }
 }
 
-/// Parameters passed to the components when they are started.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct Config {
-    pub sim: bool,
-    pub fieldname: String,
-    pub dsd_file: String,
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct ParameterInfo {
+    pub name: String,
+    #[serde(rename = "type")]
+    pub param_type: ParamType,
+    pub description: String,
+    pub value: Value,
 }
 
-/// Partial update of the [`Config`]; fields that are `None` stay unchanged.
-///
-/// Switching `sim` also switches the simulator and hardware-only components and resets the
-/// fieldname to the default of the new mode, unless a fieldname is given in the same update.
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct ConfigUpdate {
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub sim: Option<bool>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub fieldname: Option<String>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub dsd_file: Option<String>,
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct ProfileInfo {
+    pub name: String,
+    pub description: Option<String>,
 }
+
+/// New values for some parameters, by name. They take effect on the next start of a component.
+pub type SetParameters = IndexMap<String, Value>;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ComponentInfo {
     pub key: String,
     pub name: String,
+    pub description: Option<String>,
+    /// Selected by the user, profile or default; ignored for locked components and fallbacks
     pub enabled: bool,
+    /// Always runs while available
+    pub locked: bool,
+    /// Runs exactly when this component does not
+    pub fallback_for: Option<String>,
+    pub requires: Vec<String>,
+    /// The parameter conditions of the component are met
+    pub available: bool,
+    /// Available and selected, i.e. started by start_all
+    pub active: bool,
     pub state: ProcState,
     pub pids: Vec<u32>,
     pub exit_code: Option<i32>,
-    /// Always started, not toggleable in the frontend
-    pub infrastructure: bool,
-    /// Only valid on real hardware
-    pub hardware_only: bool,
-    /// Only used in simulation (e.g. the simulator itself)
-    pub sim_component: bool,
+}
+
+impl ComponentInfo {
+    /// Whether users may switch the component on and off.
+    pub fn toggleable(&self) -> bool {
+        self.available && !self.locked && self.fallback_for.is_none()
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Status {
-    pub config: Config,
+    /// In declaration order
+    pub parameters: Vec<ParameterInfo>,
+    pub profiles: Vec<ProfileInfo>,
+    /// The profile applied last, if any
+    pub profile: Option<String>,
+    /// Inconsistencies that prevent start_all, e.g. a missing requirement
+    pub problems: Vec<String>,
     /// All components, always in the same order
     pub components: Vec<ComponentInfo>,
 }

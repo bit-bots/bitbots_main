@@ -1,14 +1,16 @@
-//! Talks to a real server on a temporary socket through the client.
+//! Talks to a real server on a temporary socket through the client, using the shipped
+//! teamplayer stack file. No component is started.
 
 use std::sync::{Arc, Mutex};
 
 use bitbots_orchestrate::{
-    api::{ConfigUpdate, LogStream},
+    api::{LogStream, SetParameters, Value},
     client::Client,
     logs::LogStore,
     server::{self, ServerState},
     supervisor::Supervisor,
 };
+use bitbots_stack::Stack;
 
 fn temp_socket(test: &str) -> std::path::PathBuf {
     std::env::temp_dir()
@@ -20,8 +22,11 @@ async fn serve(test: &str) -> (Client, Arc<LogStore>, server::SocketGuard) {
     let socket = temp_socket(test);
     let (listener, guard) = server::bind(&socket).unwrap();
     let logs = Arc::new(LogStore::new());
+    let stack_file =
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../config/teamplayer.yaml");
+    let stack = Stack::load(&stack_file).unwrap();
     let router = server::router(ServerState {
-        supervisor: Arc::new(Mutex::new(Supervisor::new(logs.clone()))),
+        supervisor: Arc::new(Mutex::new(Supervisor::new(stack, logs.clone()))),
         logs: logs.clone(),
     });
     tokio::spawn(async move { axum::serve(listener, router).await });
@@ -29,48 +34,73 @@ async fn serve(test: &str) -> (Client, Arc<LogStore>, server::SocketGuard) {
 }
 
 #[tokio::test]
-async fn config_and_enabled_round_trip() {
+async fn parameters_profiles_and_selection_round_trip() {
     let (client, _logs, _guard) = serve("config").await;
+    let find = |status: &bitbots_orchestrate::api::Status, key: &str| {
+        status
+            .components
+            .iter()
+            .find(|c| c.key == key)
+            .unwrap()
+            .clone()
+    };
 
     let status = client.status().await.unwrap();
-    let tts = status.components.iter().find(|c| c.key == "tts").unwrap();
-    assert!(!tts.enabled);
+    assert!(!find(&status, "tts").enabled);
+    assert!(status.problems.is_empty(), "{:?}", status.problems);
 
     let status = client.set_enabled("tts", true).await.unwrap();
-    assert!(status
-        .components
-        .iter()
-        .any(|c| c.key == "tts" && c.enabled));
+    assert!(find(&status, "tts").active);
 
     let status = client
-        .update_config(&ConfigUpdate {
-            dsd_file: Some("other.dsd".into()),
-            ..Default::default()
-        })
+        .set_parameters(&SetParameters::from([(
+            "dsd_file".to_string(),
+            Value::String("other.dsd".into()),
+        )]))
         .await
         .unwrap();
-    assert_eq!(status.config.dsd_file, "other.dsd");
+    let dsd = status
+        .parameters
+        .iter()
+        .find(|p| p.name == "dsd_file")
+        .unwrap();
+    assert_eq!(dsd.value, Value::String("other.dsd".into()));
+
+    let status = client.apply_profile("sim").await.unwrap();
+    assert_eq!(status.profile.as_deref(), Some("sim"));
+    assert!(find(&status, "simulator").active);
+    assert!(!find(&status, "lowlevel").available);
+
+    // The fallback takes over while the localization is off.
+    assert!(!find(&status, "fake_localization").active);
+    let status = client.set_enabled("localization", false).await.unwrap();
+    assert!(find(&status, "fake_localization").active);
 }
 
 #[tokio::test]
 async fn errors_carry_status_and_message() {
     let (client, _logs, _guard) = serve("errors").await;
+    let err = |r: anyhow::Result<_>| format!("{:#}", r.expect_err("must fail"));
 
-    let err = client.start("nope").await.unwrap_err().to_string();
+    let e = err(client.start("nope").await);
     assert!(
-        err.contains("404") && err.contains("unknown component key"),
-        "{err}"
+        e.contains("404") && e.contains("unknown component key"),
+        "{e}"
     );
 
-    let err = client
-        .update_config(&ConfigUpdate {
-            fieldname: Some(String::new()),
-            ..Default::default()
-        })
-        .await
-        .unwrap_err()
-        .to_string();
-    assert!(err.contains("400") && err.contains("fieldname"), "{err}");
+    let e = err(client
+        .set_parameters(&SetParameters::from([(
+            "sim".to_string(),
+            Value::String("yes".into()),
+        )]))
+        .await);
+    assert!(e.contains("400") && e.contains("sim"), "{e}");
+
+    let e = err(client.apply_profile("nope").await);
+    assert!(e.contains("400") && e.contains("unknown profile"), "{e}");
+
+    let e = err(client.set_enabled("blackboard", false).await);
+    assert!(e.contains("409") && e.contains("locked"), "{e}");
 }
 
 #[tokio::test]
