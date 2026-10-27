@@ -1,7 +1,7 @@
 import numpy as np
 from bitbots_blackboard.capsules.game_status_capsule import GameStatusCapsule
 from bitbots_localization.srv import ResetFilter, SetPaused
-from bitbots_utils.utils import get_parameters_from_other_node
+from bitbots_utils.utils import get_global_parameters
 from builtin_interfaces.msg import Time as TimeMsg
 from geometry_msgs.msg import PoseWithCovarianceStamped, Quaternion
 from jaxtyping import Float
@@ -20,9 +20,7 @@ class LocalizationBlackboard:
         self.initialized = False
 
         # Get the length of the field
-        self.field_length = get_parameters_from_other_node(self.node, "parameter_blackboard", ["field.size.x"])[
-            "field.size.x"
-        ]
+        self.field_length = get_global_parameters(self.node, ["field.size.x"])["field.size.x"]
 
         # Service clients
         self.reset_filter_proxy = node.create_client(ResetFilter, "reset_localization")

@@ -2,7 +2,7 @@ import math
 
 import numpy as np
 import tf2_ros as tf2
-from bitbots_utils.utils import get_parameters_from_other_node
+from bitbots_utils.utils import get_global_parameters
 from geometry_msgs.msg import (
     Pose,
     PoseStamped,
@@ -35,9 +35,8 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
 
         # Init Parameters
         # Get global parameters
-        parameters = get_parameters_from_other_node(
+        parameters = get_global_parameters(
             self._node,
-            "/parameter_blackboard",
             [
                 "field.goal.width",
                 "field.markings.penalty_area.size.x",

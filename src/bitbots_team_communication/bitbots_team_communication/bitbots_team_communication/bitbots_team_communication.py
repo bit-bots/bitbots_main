@@ -10,7 +10,7 @@ import rclpy
 import transforms3d
 from ament_index_python.packages import get_package_share_directory
 from bitbots_tf_buffer import Buffer
-from bitbots_utils.utils import get_parameter_dict, get_parameters_from_other_node
+from bitbots_utils.utils import get_global_parameters, get_parameter_dict
 from builtin_interfaces.msg import Time as TimeMsg
 from game_controller_hsl_interfaces.msg import GameState
 from geometry_msgs.msg import PoseWithCovarianceStamped, Quaternion, Twist, TwistWithCovarianceStamped
@@ -39,9 +39,7 @@ class TeamCommunication:
         self.logger = self.node.get_logger()
 
         self.logger.info("Initializing bitbots_team_communication...")
-        params_blackboard = get_parameters_from_other_node(
-            self.node, "parameter_blackboard", ["bot_id", "team_id", "team_color"]
-        )
+        params_blackboard = get_global_parameters(self.node, ["bot_id", "team_id", "team_color"])
         self.player_id = params_blackboard["bot_id"]
         self.team_id = params_blackboard["team_id"]
         self.team_color_id = params_blackboard["team_color"]

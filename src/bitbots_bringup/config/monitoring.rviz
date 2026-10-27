@@ -61,13 +61,13 @@ Visualization Manager:
         Filter size: 10
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /nuc3/field/map
+        Value: /nuc3/field/map/lines
       Update Topic:
         Depth: 5
         Durability Policy: System Default
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /nuc3/nuc3/field/map_updates
+        Value: /nuc3/nuc3/field/map/lines_updates
       Use Timestamp: false
       Value: true
     - Alpha: 1
