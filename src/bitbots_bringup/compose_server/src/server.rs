@@ -1,4 +1,4 @@
-//! HTTP API of the orchestrator. All routes live below [`API_PREFIX`]; actions answer with
+//! HTTP API of the compose server. All routes live below [`API_PREFIX`]; actions answer with
 //! the resulting [`Status`].
 
 use std::{
@@ -33,7 +33,7 @@ use crate::{
 pub struct ServerState {
     pub supervisor: Arc<Mutex<Supervisor>>,
     pub logs: Arc<LogStore>,
-    /// Notified when a client asks the orchestrator to shut down
+    /// Notified when a client asks the compose server to shut down
     pub shutdown: Arc<tokio::sync::Notify>,
 }
 
@@ -158,7 +158,7 @@ async fn stop_all(State(state): State<ServerState>) -> ApiResult<Status> {
     })
 }
 
-/// Stop all components and the orchestrator, like SIGTERM. Answers before the shutdown is done;
+/// Stop all components and the compose server, like SIGTERM. Answers before the shutdown is done;
 /// clients wait until the socket stops accepting connections.
 async fn shutdown(State(state): State<ServerState>) -> ApiResult<Status> {
     // Keeps a permit if the main loop does not wait right now, so the request is not lost.
@@ -230,7 +230,7 @@ pub fn bind(socket: &std::path::Path) -> anyhow::Result<(UnixListener, SocketGua
         Err(TryLockError::WouldBlock) => {
             let owner = std::fs::read_to_string(&lock_path).unwrap_or_default();
             bail!(
-                "another bitbots_orchestrate instance (pid {}) already serves {}",
+                "another bitbots_compose_server instance (pid {}) already serves {}",
                 owner.trim(),
                 socket.display()
             );

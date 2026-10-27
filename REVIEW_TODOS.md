@@ -30,20 +30,20 @@ re-check of build-system findings against the head of PR #944
       (e.g. `monitoring`). Either migrate the deploy path to the TUI or scope
       it explicitly as an operator/dev tool.
       Decision: migrate. Done: process management split into
-      `bitbots_orchestrate` (backend with HTTP-over-Unix-socket API) and the
+      `bitbots_compose_server` (backend with HTTP-over-Unix-socket API) and the
       `teamplayer` TUI frontend, both in `src/bitbots_bringup`. The stack is
       declared in `bitbots_bringup/config/teamplayer.yaml` (parameters,
       profiles, components with `if`/`requires`/`fallback_for`/`locked`),
       which now also covers the player state aggregator, the workspace
       status publisher and the static map→odom fallback. Open: switch deploy
-      to `bitbots_orchestrate --autostart --profile game --disable zenoh`;
+      to `bitbots_compose_server --autostart --profile game --disable zenoh`;
       cover the multi-robot sim launch (per-instance environment such as
       `ROS_DOMAIN_ID`, overrides via `--global`); then remove
       `teamplayer.launch`.
 - [ ] **Launch exit codes.** `ros2 launch` exits with 0 when its nodes die,
       so a component whose node fails (e.g. the blackboard refusing an
       invalid `--global` override) shows DONE instead of FAIL in the
-      orchestrator. Consider making launch files shut down with an error, or
+      compose server. Consider making launch files shut down with an error, or
       starting single-node components with `ros2 run`.
 
 ## Nits / polish

@@ -1,4 +1,4 @@
-//! Serde model of the stack file, as written by humans.
+//! Serde model of the compose file, as written by humans.
 
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};

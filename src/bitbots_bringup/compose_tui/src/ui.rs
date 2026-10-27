@@ -8,7 +8,7 @@ use ratatui::{
     Frame,
 };
 
-use bitbots_orchestrate_api::api::{ParamType, ProcState, Value};
+use bitbots_compose_api::api::{ParamType, ProcState, Value};
 
 use crate::app::{App, ConfigFocus, ConfirmAction, Screen};
 
@@ -62,17 +62,17 @@ pub fn draw(f: &mut Frame, app: &App) {
     draw_error_line(f, app);
 }
 
-/// Shown until the orchestrator has been reached once.
+/// Shown until the compose server has been reached once.
 fn draw_waiting(f: &mut Frame, app: &App) {
     let area = f.area();
     let reason = app
-        .orchestrator_failure
+        .compose_server_failure
         .as_deref()
         .or(app.connection_error.as_deref())
         .unwrap_or("connecting…");
     let text = format!(
-        "{BANNER}\n\nWaiting for bitbots_orchestrate at {}\n\n{reason}\n\n\
-         Start it with `pixi run orchestrate`, or run teamplayer without --attach\n\nq: quit",
+        "{BANNER}\n\nWaiting for bitbots_compose_server at {}\n\n{reason}\n\n\
+         Start it with `pixi run compose_server`, or run the TUI without --attach\n\nq: quit",
         app.client.socket().display()
     );
     f.render_widget(
@@ -84,7 +84,7 @@ fn draw_waiting(f: &mut Frame, app: &App) {
     );
 }
 
-/// Replaces the bottom hint line while the orchestrator is unreachable or refused an action.
+/// Replaces the bottom hint line while the compose server is unreachable or refused an action.
 fn draw_error_line(f: &mut Frame, app: &App) {
     let problems: Vec<String> = app
         .status
@@ -93,14 +93,14 @@ fn draw_error_line(f: &mut Frame, app: &App) {
         .unwrap_or_default();
     let problems = problems.join("; ");
     let (msg, bg) = match (&app.connection_error, &app.action_error) {
-        _ if app.orchestrator_failure.is_some() => (
+        _ if app.compose_server_failure.is_some() => (
             format!(
                 " {}",
-                app.orchestrator_failure.as_deref().unwrap_or_default()
+                app.compose_server_failure.as_deref().unwrap_or_default()
             ),
             Color::Red,
         ),
-        (Some(e), _) => (format!(" orchestrator unreachable: {e}"), Color::Red),
+        (Some(e), _) => (format!(" compose server unreachable: {e}"), Color::Red),
         (None, Some(e)) => (format!(" {e}"), Color::Red),
         (None, None) if !problems.is_empty() => (format!(" {problems}"), Color::Yellow),
         (None, None) => return,
@@ -718,7 +718,7 @@ pub fn draw_confirm_popup(f: &mut Frame, app: &App) {
         ),
         Some(ConfirmAction::Quit) => (
             " Quit ",
-            "Stop the orchestrator or leave it running?\n\n\
+            "Stop the compose server or leave it running?\n\n\
              Y / Enter — stop all components and quit\n\
              D — quit, keep components running\n\
              N / Esc — cancel",

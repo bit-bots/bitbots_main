@@ -1,4 +1,4 @@
-//! Client for the HTTP API of a local orchestrate instance.
+//! Client for the HTTP API of a local compose server instance.
 
 use std::path::{Path, PathBuf};
 
@@ -32,7 +32,7 @@ impl Client {
     }
 
     /// Whether something accepts connections on the socket, regardless of whether it answers
-    /// like a matching orchestrator.
+    /// like a matching compose server.
     pub async fn is_listening(&self) -> bool {
         UnixStream::connect(&self.socket).await.is_ok()
     }
@@ -45,13 +45,13 @@ impl Client {
     ) -> Result<T> {
         let stream = UnixStream::connect(&self.socket).await.with_context(|| {
             format!(
-                "cannot connect to bitbots_orchestrate at {}",
+                "cannot connect to bitbots_compose_server at {}",
                 self.socket.display()
             )
         })?;
         let (mut sender, conn) = hyper::client::conn::http1::handshake(TokioIo::new(stream))
             .await
-            .context("HTTP handshake with bitbots_orchestrate failed")?;
+            .context("HTTP handshake with bitbots_compose_server failed")?;
         // Connection errors surface through send_request below.
         tokio::spawn(conn);
 
@@ -132,7 +132,7 @@ impl Client {
         self.request(Method::POST, "/stop_all", None::<&()>).await
     }
 
-    /// Ask the orchestrator to stop all components and itself. It answers right away; it is
+    /// Ask the compose server to stop all components and itself. It answers right away; it is
     /// gone once [`Client::is_listening`] turns false.
     pub async fn shutdown(&self) -> Result<Status> {
         self.request(Method::POST, "/shutdown", None::<&()>).await

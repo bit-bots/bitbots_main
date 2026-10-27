@@ -1,4 +1,4 @@
-//! Starting an orchestrator for the TUI when none is running.
+//! Starting a compose server for the TUI when none is running.
 
 use std::{
     fs::File,
@@ -9,26 +9,26 @@ use std::{
 use anyhow::{bail, Context, Result};
 use tokio::process::{Child, Command};
 
-/// `bitbots_orchestrate`, installed next to this executable.
-fn orchestrator_exe() -> Result<PathBuf> {
+/// `bitbots_compose_server`, installed next to this executable.
+fn compose_server_exe() -> Result<PathBuf> {
     let exe = std::env::current_exe()
-        .context("cannot locate the teamplayer executable")?
-        .with_file_name("bitbots_orchestrate");
+        .context("cannot locate the TUI executable")?
+        .with_file_name("bitbots_compose_server");
     if !exe.exists() {
         bail!(
-            "bitbots_orchestrate not found next to teamplayer at {}",
+            "bitbots_compose_server not found next to the TUI at {}",
             exe.display()
         );
     }
     Ok(exe)
 }
 
-/// Replace this process with an orchestrator in the foreground, serving `socket`.
+/// Replace this process with a compose server in the foreground, serving `socket`.
 ///
 /// It stays in the terminal's process group, so Ctrl-C stops it together with all components.
 /// Only returns if the exec failed.
 pub fn exec_headless(socket: &Path, args: &[String]) -> anyhow::Error {
-    let exe = match orchestrator_exe() {
+    let exe = match compose_server_exe() {
         Ok(exe) => exe,
         Err(e) => return e,
     };
@@ -40,13 +40,13 @@ pub fn exec_headless(socket: &Path, args: &[String]) -> anyhow::Error {
     anyhow::Error::new(err).context(format!("cannot run {}", exe.display()))
 }
 
-/// An orchestrator process started by this TUI.
-pub struct OwnedOrchestrator {
+/// A compose server process started by this TUI.
+pub struct OwnedComposeServer {
     child: Child,
     pub log_path: PathBuf,
 }
 
-impl OwnedOrchestrator {
+impl OwnedComposeServer {
     #[cfg(test)]
     pub fn from_child(child: Child) -> Self {
         Self {
@@ -55,12 +55,12 @@ impl OwnedOrchestrator {
         }
     }
 
-    /// Start `bitbots_orchestrate` in the background, serving `socket`.
+    /// Start `bitbots_compose_server` in the background, serving `socket`.
     ///
     /// It runs in its own session so it survives the TUI and its terminal; its output goes to a
     /// log file next to the socket.
     pub fn spawn(socket: &Path, args: &[String]) -> Result<Self> {
-        let exe = orchestrator_exe()?;
+        let exe = compose_server_exe()?;
         if let Some(dir) = socket.parent() {
             std::fs::create_dir_all(dir)
                 .with_context(|| format!("cannot create {}", dir.display()))?;
@@ -86,22 +86,22 @@ impl OwnedOrchestrator {
         Ok(Self { child, log_path })
     }
 
-    /// Exit status, if the orchestrator has already exited.
+    /// Exit status, if the compose server has already exited.
     pub fn try_exited(&mut self) -> Option<std::process::ExitStatus> {
         self.child.try_wait().ok().flatten()
     }
 
-    /// Wait until the orchestrator has exited, e.g. after a shutdown request through the API.
+    /// Wait until the compose server has exited, e.g. after a shutdown request through the API.
     pub async fn wait(mut self) -> Result<std::process::ExitStatus> {
         Ok(self.child.wait().await?)
     }
 
-    /// Ask the orchestrator to stop all components and itself, and wait until it is gone.
+    /// Ask the compose server to stop all components and itself, and wait until it is gone.
     pub async fn stop(mut self) -> Result<std::process::ExitStatus> {
         if let Some(pid) = self.child.id() {
             use nix::{sys::signal::kill, sys::signal::Signal, unistd::Pid};
             kill(Pid::from_raw(pid as i32), Signal::SIGTERM)
-                .context("cannot signal the orchestrator")?;
+                .context("cannot signal the compose server")?;
         }
         Ok(self.child.wait().await?)
     }

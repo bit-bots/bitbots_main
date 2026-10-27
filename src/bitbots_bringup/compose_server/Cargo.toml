@@ -1,5 +1,5 @@
 [package]
-name = "bitbots_orchestrate"
+name = "bitbots_compose_server"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,13 +7,13 @@ edition = "2021"
 path = "src/lib.rs"
 
 [[bin]]
-name = "bitbots_orchestrate"
+name = "bitbots_compose_server"
 path = "src/main.rs"
 
 [dependencies]
 anyhow = "1"
-bitbots_orchestrate_api = { path = "../api" }
-bitbots_stack = { path = "../stack" }
+bitbots_compose_api = { path = "../compose_api" }
+bitbots_compose_file = { path = "../compose_file" }
 axum = "0.8"
 clap = { version = "4", features = ["derive"] }
 indexmap = { version = "2", features = ["serde"] }

@@ -1,11 +1,11 @@
 [package]
-name = "bitbots_orchestrate_api"
+name = "bitbots_compose_api"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
 anyhow = "1"
-bitbots_stack = { path = "../stack" }
+bitbots_compose_file = { path = "../compose_file" }
 http-body-util = "0.1"
 hyper = { version = "1", features = ["client", "http1"] }
 hyper-util = { version = "0.1", features = ["tokio"] }

@@ -624,6 +624,64 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5e764a1d40d510daf35e07be9eb06e75770908c27d411ee6c92109c9840eaaf7"
 
 [[package]]
+name = "bitbots_compose_api"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "bitbots_compose_file",
+ "http-body-util",
+ "hyper",
+ "hyper-util",
+ "indexmap",
+ "nix",
+ "serde",
+ "serde_json",
+ "tokio",
+]
+
+[[package]]
+name = "bitbots_compose_file"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "indexmap",
+ "serde",
+ "serde_norway",
+]
+
+[[package]]
+name = "bitbots_compose_server"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "axum",
+ "bitbots_compose_api",
+ "bitbots_compose_file",
+ "clap",
+ "indexmap",
+ "nix",
+ "serde",
+ "serde_json",
+ "serde_norway",
+ "tokio",
+]
+
+[[package]]
+name = "bitbots_compose_tui"
+version = "0.1.0"
+dependencies = [
+ "ansi-to-tui",
+ "anyhow",
+ "bitbots_compose_api",
+ "clap",
+ "crossterm",
+ "futures",
+ "nix",
+ "ratatui",
+ "tokio",
+]
+
+[[package]]
 name = "bitbots_extrinsic_calibration"
 version = "0.1.0"
 dependencies = [
@@ -643,49 +701,6 @@ dependencies = [
  "ordered-float",
  "pyo3",
  "rand 0.9.5",
-]
-
-[[package]]
-name = "bitbots_orchestrate"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "axum",
- "bitbots_orchestrate_api",
- "bitbots_stack",
- "clap",
- "indexmap",
- "nix",
- "serde",
- "serde_json",
- "serde_norway",
- "tokio",
-]
-
-[[package]]
-name = "bitbots_orchestrate_api"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "bitbots_stack",
- "http-body-util",
- "hyper",
- "hyper-util",
- "indexmap",
- "nix",
- "serde",
- "serde_json",
- "tokio",
-]
-
-[[package]]
-name = "bitbots_stack"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "indexmap",
- "serde",
- "serde_norway",
 ]
 
 [[package]]
@@ -4546,21 +4561,6 @@ name = "target-lexicon"
 version = "0.13.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "adb6935a6f5c20170eeceb1a3835a49e12e19d792f6dd344ccc76a985ca5a6ca"
-
-[[package]]
-name = "teamplayer"
-version = "0.1.0"
-dependencies = [
- "ansi-to-tui",
- "anyhow",
- "bitbots_orchestrate_api",
- "clap",
- "crossterm",
- "futures",
- "nix",
- "ratatui",
- "tokio",
-]
 
 [[package]]
 name = "tempfile"

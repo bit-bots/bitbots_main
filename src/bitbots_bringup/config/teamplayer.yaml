@@ -1,7 +1,7 @@
 # Declarative description of the teamplayer software stack.
 #
 # This file declares *what* runs and how the parts relate; *how* each part runs is defined by
-# the referenced launch files and executables. It is read by bitbots_orchestrate (and thereby
+# the referenced launch files and executables. It is read by bitbots_compose_server (and thereby
 # the teamplayer TUI), but it does not depend on them.
 #
 # parameters   Typed values passed to the components through ${name} placeholders.
@@ -19,7 +19,7 @@
 #   launch / run / command   The single process of the component, or
 #   processes     a list of such processes
 #
-# ${global_parameters_file} is provided by the orchestrator instead of being declared: a ROS
+# ${global_parameters_file} is provided by the compose server instead of being declared: a ROS
 # parameter file with the overrides of global parameters given through `--global name=value` or
 # its API; without overrides it holds no parameters. Components receive it when they start.
 version: 1

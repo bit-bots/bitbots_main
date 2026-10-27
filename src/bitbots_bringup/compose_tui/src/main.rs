@@ -6,7 +6,7 @@ mod ui;
 use std::{path::PathBuf, time::Duration};
 
 use anyhow::{bail, Result};
-use bitbots_orchestrate_api::{
+use bitbots_compose_api::{
     api::{lock_owner, resolve_socket, DEFAULT_INSTANCE_NAME},
     client::Client,
 };
@@ -21,37 +21,37 @@ use ratatui::{backend::CrosstermBackend, Terminal};
 use tokio::time;
 
 use app::{App, ExitMode, Screen};
-use spawn::OwnedOrchestrator;
+use spawn::OwnedComposeServer;
 
 // ─── CLI ──────────────────────────────────────────────────────────────────────
 
 #[derive(Parser)]
 #[command(
-    name = "teamplayer",
-    about = "Bit-Bots teamplayer TUI — frontend for bitbots_orchestrate, starts one if none is \
+    name = "bitbots_compose_tui",
+    about = "Bit-Bots teamplayer TUI — frontend for bitbots_compose_server, starts one if none is \
              running",
     long_about = None,
 )]
 struct Cli {
-    /// Run without TUI: run an orchestrator in the foreground that starts all enabled
-    /// components right away; Ctrl-C stops them together with the orchestrator
+    /// Run without TUI: run a compose server in the foreground that starts all enabled
+    /// components right away; Ctrl-C stops them together with the compose server
     #[arg(long, conflicts_with = "attach")]
     headless: bool,
 
-    /// Only connect to a running orchestrator, never start one
+    /// Only connect to a running compose server, never start one
     #[arg(long)]
     attach: bool,
 
-    /// Settings for a newly started orchestrator, see `bitbots_orchestrate --help`.
-    /// Refused when attaching to a running orchestrator.
+    /// Settings for a newly started compose server, see `bitbots_compose_server --help`.
+    /// Refused when attaching to a running compose server.
     #[command(flatten)]
     presets: Presets,
 
-    /// Name of the orchestrate instance to connect to
+    /// Name of the compose server instance to connect to
     #[arg(long, default_value = DEFAULT_INSTANCE_NAME)]
     name: String,
 
-    /// Explicit socket path of the orchestrate instance, overrides --name
+    /// Explicit socket path of the compose server instance, overrides --name
     #[arg(long, value_name = "PATH")]
     socket: Option<PathBuf>,
 }
@@ -62,15 +62,15 @@ struct Presets {
     #[arg(long)]
     autostart: bool,
 
-    /// Stack file declaring the components
+    /// Compose file declaring the components
     #[arg(long, value_name = "PATH")]
-    stack: Option<PathBuf>,
+    file: Option<PathBuf>,
 
-    /// Apply a profile of the stack file, e.g. sim
+    /// Apply a profile of the compose file, e.g. sim
     #[arg(long, value_name = "NAME")]
     profile: Option<String>,
 
-    /// Set a parameter of the stack file; may be repeated
+    /// Set a parameter of the compose file; may be repeated
     #[arg(long = "set", value_name = "NAME=VALUE")]
     set: Vec<String>,
 
@@ -88,14 +88,14 @@ struct Presets {
 }
 
 impl Presets {
-    /// Command line arguments for bitbots_orchestrate.
+    /// Command line arguments for bitbots_compose_server.
     fn to_args(&self) -> Vec<String> {
         let mut args = Vec::new();
         if self.autostart {
             args.push("--autostart".to_string());
         }
-        if let Some(stack) = &self.stack {
-            args.extend(["--stack".to_string(), stack.display().to_string()]);
+        if let Some(file) = &self.file {
+            args.extend(["--file".to_string(), file.display().to_string()]);
         }
         if let Some(profile) = &self.profile {
             args.extend(["--profile".to_string(), profile.clone()]);
@@ -154,22 +154,22 @@ async fn main() -> Result<()> {
         return Err(spawn::exec_headless(&socket, &args));
     }
 
-    // Only start an orchestrator if nothing listens on the socket; one that listens but does
+    // Only start a compose server if nothing listens on the socket; one that listens but does
     // not answer as expected must not be mistaken for a missing one.
     let running = client.is_listening().await;
-    let orchestrator = if running {
+    let compose_server = if running {
         if let Err(e) = client.status().await {
             let owner = lock_owner(&socket).map_or("unknown".to_string(), |pid| pid.to_string());
             bail!(
-                "an orchestrator (pid {owner}) listens on {} but does not answer as expected, \
+                "a compose server (pid {owner}) listens on {} but does not answer as expected, \
                  probably one of an older build: {e:#}\nStop it with `kill -TERM {owner}` and \
-                 start teamplayer again",
+                 start the TUI again",
                 socket.display()
             );
         }
         if !preset_args.is_empty() {
             bail!(
-                "an orchestrator is already running at {}, its settings cannot be changed from \
+                "a compose server is already running at {}, its settings cannot be changed from \
                  the command line; drop {} or stop it first",
                 socket.display(),
                 preset_args.join(" ")
@@ -178,15 +178,15 @@ async fn main() -> Result<()> {
         None
     } else if cli.attach {
         if !preset_args.is_empty() {
-            bail!("--attach does not start an orchestrator, so the presets would have no effect");
+            bail!("--attach does not start a compose server, so the presets would have no effect");
         }
         None
     } else {
-        Some(OwnedOrchestrator::spawn(&socket, &preset_args)?)
+        Some(OwnedComposeServer::spawn(&socket, &preset_args)?)
     };
 
     let mut app = App::new(client);
-    app.orchestrator = orchestrator;
+    app.compose_server = compose_server;
 
     setup_panic_hook();
     let result = match setup_terminal() {
@@ -197,29 +197,29 @@ async fn main() -> Result<()> {
     let exit = match result {
         Ok(exit) => exit,
         Err(e) => {
-            // Do not leave an orchestrator behind that nobody knows about.
-            if let Some(orchestrator) = app.orchestrator.take() {
-                eprintln!("Stopping the orchestrator started by teamplayer...");
-                let _ = orchestrator.stop().await;
+            // Do not leave a compose server behind that nobody knows about.
+            if let Some(compose_server) = app.compose_server.take() {
+                eprintln!("Stopping the compose server started by the TUI...");
+                let _ = compose_server.stop().await;
             }
             return Err(e);
         }
     };
 
     match exit {
-        ExitMode::StopOrchestrator => {
-            eprintln!("Stopping all components and the orchestrator...");
-            stop_orchestrator(&app.client, app.orchestrator.take()).await?;
+        ExitMode::StopComposeServer => {
+            eprintln!("Stopping all components and the compose server...");
+            stop_compose_server(&app.client, app.compose_server.take()).await?;
         }
         ExitMode::Detach if app.status.is_some() => {
             let pid = lock_owner(&socket).map_or("?".to_string(), |pid| pid.to_string());
-            let log = match &app.orchestrator {
-                Some(orchestrator) => format!(", log: {}", orchestrator.log_path.display()),
+            let log = match &app.compose_server {
+                Some(compose_server) => format!(", log: {}", compose_server.log_path.display()),
                 None => String::new(),
             };
             eprintln!(
-                "The orchestrator keeps running in the background (pid {pid}{log}).\n\
-                 Reattach with `teamplayer --name {}`.",
+                "The compose server keeps running in the background (pid {pid}{log}).\n\
+                 Reattach with `pixi run teamplayer --name {}`.",
                 cli.name,
             );
         }
@@ -228,37 +228,37 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-/// How long to wait for an orchestrator to stop. It stops its components with a timeout of its
+/// How long to wait for a compose server to stop. It stops its components with a timeout of its
 /// own and kills what remains, so this only runs out if it hangs.
 const STOP_WAIT: Duration = Duration::from_secs(30);
 
-/// Stop the orchestrator through its API and wait until it is gone. One that this TUI started
+/// Stop the compose server through its API and wait until it is gone. One that this TUI started
 /// is sent SIGTERM if the API does not answer.
-async fn stop_orchestrator(client: &Client, owned: Option<OwnedOrchestrator>) -> Result<()> {
+async fn stop_compose_server(client: &Client, owned: Option<OwnedComposeServer>) -> Result<()> {
     let requested = client.shutdown().await;
-    if let Some(orchestrator) = owned {
-        let log_path = orchestrator.log_path.clone();
+    if let Some(compose_server) = owned {
+        let log_path = compose_server.log_path.clone();
         let status = match requested {
-            Ok(_) => orchestrator.wait().await?,
+            Ok(_) => compose_server.wait().await?,
             Err(e) => {
                 eprintln!("The shutdown request failed ({e:#}), sending SIGTERM instead");
-                orchestrator.stop().await?
+                compose_server.stop().await?
             }
         };
         if !status.success() {
             bail!(
-                "the orchestrator exited with {status}, see {}",
+                "the compose server exited with {status}, see {}",
                 log_path.display()
             );
         }
         return Ok(());
     }
-    requested.map_err(|e| e.context("cannot ask the orchestrator to shut down"))?;
+    requested.map_err(|e| e.context("cannot ask the compose server to shut down"))?;
     let deadline = time::Instant::now() + STOP_WAIT;
     while client.is_listening().await {
         if time::Instant::now() > deadline {
             let pid = lock_owner(client.socket()).map_or("?".to_string(), |pid| pid.to_string());
-            bail!("the orchestrator (pid {pid}) is still running after {STOP_WAIT:?}");
+            bail!("the compose server (pid {pid}) is still running after {STOP_WAIT:?}");
         }
         time::sleep(Duration::from_millis(200)).await;
     }
@@ -327,9 +327,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn presets_are_passed_on_to_the_orchestrator() {
+    fn presets_are_passed_on_to_the_compose_server() {
         let cli = Cli::parse_from([
-            "teamplayer",
+            "bitbots_compose_tui",
             "--profile",
             "sim",
             "--global",

@@ -6,7 +6,7 @@ use anyhow::{bail, Context, Result};
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 
-pub use bitbots_stack::{ParamType, Value};
+pub use bitbots_compose_file::{ParamType, Value};
 
 pub const API_PREFIX: &str = "/api/v1";
 pub const DEFAULT_INSTANCE_NAME: &str = "default";
@@ -179,7 +179,7 @@ pub enum LogStream {
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct LogLine {
-    /// Strictly increasing over all components of one orchestrate instance
+    /// Strictly increasing over all components of one compose server instance
     pub seq: u64,
     pub component: String,
     pub component_name: String,
@@ -205,7 +205,7 @@ pub struct Logs {
     pub truncated: bool,
     /// Sequence number of the newest line of this instance (0 if there is none)
     pub latest_seq: u64,
-    /// Changes when the orchestrator is restarted, which also restarts the sequence numbers
+    /// Changes when the compose server is restarted, which also restarts the sequence numbers
     pub instance_id: u64,
 }
 
@@ -214,15 +214,15 @@ pub struct ApiError {
     pub error: String,
 }
 
-/// Directory holding the sockets and lock files of all local orchestrate instances.
+/// Directory holding the sockets and lock files of all local compose server instances.
 pub fn default_socket_dir() -> PathBuf {
     match std::env::var_os("XDG_RUNTIME_DIR") {
-        Some(dir) if !dir.is_empty() => PathBuf::from(dir).join("bitbots_orchestrate"),
+        Some(dir) if !dir.is_empty() => PathBuf::from(dir).join("bitbots_compose"),
         _ => {
             let dir =
-                std::env::temp_dir().join(format!("bitbots_orchestrate-{}", nix::unistd::getuid()));
+                std::env::temp_dir().join(format!("bitbots_compose-{}", nix::unistd::getuid()));
             eprintln!(
-                "warning: XDG_RUNTIME_DIR is not set, using {} for the orchestrate socket",
+                "warning: XDG_RUNTIME_DIR is not set, using {} for the compose server socket",
                 dir.display()
             );
             dir
@@ -245,7 +245,7 @@ pub fn resolve_socket(socket: Option<PathBuf>, name: &str) -> Result<PathBuf> {
     Ok(default_socket_dir().join(format!("{name}.sock")))
 }
 
-/// Lock file guarding the socket against a second orchestrate instance.
+/// Lock file guarding the socket against a second compose server instance.
 pub fn lock_path(socket: &Path) -> Result<PathBuf> {
     let file_name = socket
         .file_name()
@@ -255,7 +255,7 @@ pub fn lock_path(socket: &Path) -> Result<PathBuf> {
     Ok(socket.with_file_name(lock_name))
 }
 
-/// Pid of the orchestrate instance holding the lock of `socket`, as recorded in the lock file.
+/// Pid of the compose server instance holding the lock of `socket`, as recorded in the lock file.
 ///
 /// Only meaningful while an instance is listening; the file outlives its instance.
 pub fn lock_owner(socket: &Path) -> Option<u32> {

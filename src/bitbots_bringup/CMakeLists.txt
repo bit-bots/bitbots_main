@@ -11,8 +11,8 @@ enable_bitbots_docs()
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
 
-cargo_binary(bitbots_orchestrate)
-cargo_binary(teamplayer)
-cargo_test(bitbots_stack)
+cargo_binary(bitbots_compose_server)
+cargo_binary(bitbots_compose_tui)
+cargo_test(bitbots_compose_file)
 
 ament_package()

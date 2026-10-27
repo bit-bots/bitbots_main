@@ -46,7 +46,7 @@ def generate_launch_description() -> LaunchDescription:
                 "parameters_file",
                 default_value="",
                 description="ROS parameter file with overrides of global parameters, e.g. passed by "
-                "bitbots_orchestrate. They take precedence over the configuration files and may only "
+                "bitbots_compose_server. They take precedence over the configuration files and may only "
                 "replace parameters defined there.",
             ),
             IncludeLaunchDescription(

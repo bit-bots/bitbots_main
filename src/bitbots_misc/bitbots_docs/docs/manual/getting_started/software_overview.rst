@@ -10,44 +10,45 @@ Global Software Overview
    - A high level data flow diagram of the software stack.
    - A list of all bitbots packages with a short description, grouped by topic.
 
-Orchestrator and Teamplayer TUI
-===============================
+Compose Server and TUI
+======================
 
-``bitbots_bringup`` contains a process orchestrator and a terminal frontend for it.
+``bitbots_bringup`` contains the compose server, which runs the software stack described by a compose file,
+and a terminal frontend for it.
 
-``bitbots_orchestrate`` (``pixi run orchestrate``) starts, stops and restarts the software components of the robot,
+``bitbots_compose_server`` (``pixi run compose_server``) starts, stops and restarts the software components of the robot,
 each as its own process group, and keeps their logs.
 Its output is the combined log of all components.
 Pass ``--autostart`` to start all enabled components right away.
 ``--profile <name>``, ``--set <parameter>=<value>``, ``--enable <component>`` and ``--disable <component>``
 preselect what is started, see ``--help``.
 
-``teamplayer`` (``pixi run teamplayer``) is a TUI for the orchestrator.
+``bitbots_compose_tui`` (``pixi run teamplayer``) is a TUI for the compose server.
 It configures and starts the components, shows their state and logs, and restarts or stops single components.
-If no orchestrator is running, it starts one in the background and accepts the same preset flags for it,
+If no compose server is running, it starts one in the background and accepts the same preset flags for it,
 including ``--global``.
-When quitting, it asks whether to stop the orchestrator together with all components or to leave it running,
-also when it attached to an orchestrator that was already running, so the TUI can be closed and reopened at any time.
-``--attach`` only connects to a running orchestrator.
-``--headless`` runs an orchestrator in the foreground instead of the TUI and starts all enabled components;
-Ctrl-C then stops the components and the orchestrator.
+When quitting, it asks whether to stop the compose server together with all components or to leave it running,
+also when it attached to a compose server that was already running, so the TUI can be closed and reopened at any time.
+``--attach`` only connects to a running compose server.
+``--headless`` runs a compose server in the foreground instead of the TUI and starts all enabled components;
+Ctrl-C then stops the components and the compose server.
 
-Both talk over an HTTP API on a Unix socket in ``$XDG_RUNTIME_DIR/bitbots_orchestrate``.
-Several orchestrators can run on one machine, e.g. for multiple simulated robots, by giving each a different ``--name``;
+Both talk over an HTTP API on a Unix socket in ``$XDG_RUNTIME_DIR/bitbots_compose``.
+Several compose servers can run on one machine, e.g. for multiple simulated robots, by giving each a different ``--name``;
 pass the same ``--name`` to the TUI to connect to it.
-A second orchestrator with the same name refuses to start.
-The routes live below ``/api/v1``, see ``orchestrate/src/server.rs`` in ``bitbots_bringup``.
+A second compose server with the same name refuses to start.
+The routes live below ``/api/v1``, see ``compose_server/src/server.rs`` in ``bitbots_bringup``.
 For example, the current state can be queried with:
 
 .. code-block:: bash
 
-   curl --unix-socket $XDG_RUNTIME_DIR/bitbots_orchestrate/default.sock http://localhost/api/v1/status
+   curl --unix-socket $XDG_RUNTIME_DIR/bitbots_compose/default.sock http://localhost/api/v1/status
 
-The Stack File
---------------
+The Compose File
+----------------
 
-What the orchestrator starts is declared in ``config/teamplayer.yaml`` of ``bitbots_bringup``,
-not in the orchestrator itself.
+What the compose server starts is declared in ``config/teamplayer.yaml`` of ``bitbots_bringup``,
+not in the compose server itself.
 It lists the stack's parameters, named profiles (e.g. ``sim``), and its components.
 Each component names the launch file or executable that runs it and may declare
 
@@ -62,9 +63,9 @@ The field can be chosen in the TUI or with ``--set fieldname=<field>``, the avai
 Game settings come from ``game_settings.yaml``, which the deploy tool writes;
 they cannot be changed in the TUI.
 For setups that need different values, such as several simulated robots,
-the orchestrator passes overrides on to the blackboard when it starts:
+the compose server passes overrides on to the blackboard when it starts:
 give them with ``--global <parameter>=<value>`` (the value is read as YAML) or ``PUT /api/v1/global_parameters``.
-The orchestrator writes them to a ROS parameter file, which components receive through ``${global_parameters_file}``;
+The compose server writes them to a ROS parameter file, which components receive through ``${global_parameters_file}``;
 a running blackboard keeps its values until it is restarted.
 The blackboard refuses overrides of parameters that its configuration files do not define, or with another type.
 

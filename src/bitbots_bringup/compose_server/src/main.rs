@@ -5,14 +5,14 @@ use std::{
 };
 
 use anyhow::{bail, Result};
-use bitbots_stack::Stack;
+use bitbots_compose_file::Stack;
 use clap::Parser;
 use tokio::{
     signal::unix::{signal, SignalKind},
     time,
 };
 
-use bitbots_orchestrate::{
+use bitbots_compose_server::{
     api::{resolve_socket, LogStream, DEFAULT_INSTANCE_NAME},
     logs::LogStore,
     server::{self, ServerState},
@@ -25,8 +25,8 @@ const SHUTDOWN_TIMEOUT: Duration = Duration::from_secs(10);
 
 #[derive(Parser)]
 #[command(
-    name = "bitbots_orchestrate",
-    about = "Bit-Bots process orchestrator — runs the robot software components and serves an \
+    name = "bitbots_compose_server",
+    about = "Bit-Bots compose server — runs the robot software components and serves an \
              HTTP API on a Unix socket for frontends such as the teamplayer TUI",
     long_about = None,
 )]
@@ -35,15 +35,15 @@ struct Cli {
     #[arg(long)]
     autostart: bool,
 
-    /// Stack file declaring the components [default: config/teamplayer.yaml of bitbots_bringup]
+    /// Compose file declaring the components [default: config/teamplayer.yaml of bitbots_bringup]
     #[arg(long, value_name = "PATH")]
-    stack: Option<PathBuf>,
+    file: Option<PathBuf>,
 
-    /// Apply a profile of the stack file, e.g. sim
+    /// Apply a profile of the compose file, e.g. sim
     #[arg(long, value_name = "NAME")]
     profile: Option<String>,
 
-    /// Set a parameter of the stack file, applied after the profile; may be repeated
+    /// Set a parameter of the compose file, applied after the profile; may be repeated
     #[arg(long = "set", value_name = "NAME=VALUE")]
     set: Vec<String>,
 
@@ -70,12 +70,12 @@ struct Cli {
     socket: Option<PathBuf>,
 }
 
-/// The teamplayer stack file in the share directory of bitbots_bringup.
+/// The teamplayer compose file in the share directory of bitbots_bringup.
 fn default_stack_path() -> Result<PathBuf> {
     let path = ament_share("bitbots_bringup")?.join("config/teamplayer.yaml");
     if !path.is_file() {
         bail!(
-            "{} does not exist; pass --stack to use another file",
+            "{} does not exist; pass --file to use another one",
             path.display()
         );
     }
@@ -86,7 +86,7 @@ fn default_stack_path() -> Result<PathBuf> {
 async fn main() -> Result<()> {
     let cli = Cli::parse();
 
-    let stack_path = match cli.stack {
+    let stack_path = match cli.file {
         Some(path) => path,
         None => default_stack_path()?,
     };
@@ -109,7 +109,7 @@ async fn main() -> Result<()> {
         &cli.global,
     )?;
     eprintln!(
-        "bitbots_orchestrate serving {} on {}",
+        "bitbots_compose_server serving {} on {}",
         stack_path.display(),
         socket.display()
     );
@@ -173,7 +173,7 @@ async fn main() -> Result<()> {
 fn print_logs(logs: &LogStore, since: u64) -> u64 {
     let batch = logs.since(since, None, usize::MAX);
     if batch.truncated {
-        eprintln!("[orchestrate] log output fell behind, some lines were dropped");
+        eprintln!("[compose] log output fell behind, some lines were dropped");
     }
     let mut last = since;
     for line in batch.lines {

@@ -1,6 +1,6 @@
 use std::collections::{HashMap, VecDeque};
 
-use bitbots_orchestrate_api::{
+use bitbots_compose_api::{
     api::{
         ComponentInfo, LogStream, Logs, ParamType, ParameterInfo, ProcState, SetParameters, Status,
         Value,
@@ -8,7 +8,7 @@ use bitbots_orchestrate_api::{
     client::Client,
 };
 
-use crate::spawn::OwnedOrchestrator;
+use crate::spawn::OwnedComposeServer;
 
 const ALL_LOGS_CAPACITY: usize = 5000;
 const COMPONENT_LOGS_CAPACITY: usize = 5000;
@@ -25,16 +25,16 @@ pub enum Screen {
 
 pub enum ConfirmAction {
     StopAll,
-    /// Quit while owning the orchestrator: stop it or leave it running
+    /// Quit while owning the compose server: stop it or leave it running
     Quit,
 }
 
 #[derive(Debug, PartialEq)]
 pub enum ExitMode {
-    /// Leave the orchestrator and its components running
+    /// Leave the compose server and its components running
     Detach,
-    /// Stop the orchestrator this TUI started, and with it all components
-    StopOrchestrator,
+    /// Stop the compose server this TUI started, and with it all components
+    StopComposeServer,
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -47,7 +47,7 @@ pub enum ConfigFocus {
     Start,
 }
 
-/// Local copy of a log stream of the orchestrator, fetched incrementally.
+/// Local copy of a log stream of the compose server, fetched incrementally.
 pub struct LogMirror {
     pub lines: VecDeque<String>,
     since: u64,
@@ -83,16 +83,16 @@ impl LogMirror {
 
     fn apply(&mut self, logs: Logs) {
         if self.instance_id.is_some_and(|id| id != logs.instance_id) {
-            // The orchestrator was restarted and its sequence numbers start over, so this
+            // The compose server was restarted and its sequence numbers start over, so this
             // answer is relative to a stale position. Start over with the next fetch.
             self.clear();
-            self.push("[teamplayer] orchestrator restarted".to_string());
+            self.push("[tui] compose server restarted".to_string());
             self.instance_id = Some(logs.instance_id);
             return;
         }
         self.instance_id = Some(logs.instance_id);
         if logs.truncated {
-            self.push("[teamplayer] … older lines were dropped by the orchestrator …".to_string());
+            self.push("[tui] … older lines were dropped by the compose server …".to_string());
         }
         for line in logs.lines {
             let err = if line.stream == LogStream::Stderr {
@@ -115,21 +115,21 @@ impl LogMirror {
 
 pub struct App {
     pub client: Client,
-    /// The orchestrator, if this TUI started it
-    pub orchestrator: Option<OwnedOrchestrator>,
-    /// Why the orchestrator started by this TUI is gone
-    pub orchestrator_failure: Option<String>,
+    /// The compose server, if this TUI started it
+    pub compose_server: Option<OwnedComposeServer>,
+    /// Why the compose server started by this TUI is gone
+    pub compose_server_failure: Option<String>,
     /// Set when the TUI should exit
     pub exit: Option<ExitMode>,
-    /// Latest status of the orchestrator, None until it was reached once
+    /// Latest status of the compose server, None until it was reached once
     pub status: Option<Status>,
-    /// Why the orchestrator cannot be reached right now
+    /// Why the compose server cannot be reached right now
     pub connection_error: Option<String>,
     /// Why the last action was refused
     pub action_error: Option<String>,
     pub screen: Screen,
     pub config_focus: ConfigFocus,
-    /// Edit buffers of the string parameters, sent to the orchestrator on launch
+    /// Edit buffers of the string parameters, sent to the compose server on launch
     pub param_inputs: HashMap<String, String>,
     pub runtime_selected: usize,
     pub tick_count: u64,
@@ -149,8 +149,8 @@ impl App {
     pub fn new(client: Client) -> Self {
         App {
             client,
-            orchestrator: None,
-            orchestrator_failure: None,
+            compose_server: None,
+            compose_server_failure: None,
             exit: None,
             status: None,
             connection_error: None,
@@ -188,7 +188,7 @@ impl App {
     fn set_status(&mut self, status: Status) {
         let first = self.status.is_none();
         if first && status.components.iter().any(|c| c.state.is_started()) {
-            // Jump straight to the runtime view if the orchestrator already runs something.
+            // Jump straight to the runtime view if the compose server already runs something.
             self.screen = Screen::Runtime;
         }
         self.status = Some(status);
@@ -197,7 +197,7 @@ impl App {
         }
     }
 
-    /// Reset the edit buffers to the orchestrator's parameter values.
+    /// Reset the edit buffers to the compose server's parameter values.
     pub fn sync_inputs(&mut self) {
         self.param_inputs = self
             .parameters()
@@ -239,8 +239,8 @@ impl App {
         }
     }
 
-    /// Ask whether to stop the orchestrator or leave it running, or quit right away if there is
-    /// no orchestrator to ask about.
+    /// Ask whether to stop the compose server or leave it running, or quit right away if there is
+    /// no compose server to ask about.
     pub fn request_quit(&mut self) {
         if self.status.is_some() && self.connection_error.is_none() {
             self.confirm_action = Some(ConfirmAction::Quit);
@@ -249,15 +249,15 @@ impl App {
         }
     }
 
-    /// Fetch status and logs from the orchestrator.
+    /// Fetch status and logs from the compose server.
     pub async fn refresh(&mut self) {
-        if let Some(orchestrator) = &mut self.orchestrator {
-            if let Some(status) = orchestrator.try_exited() {
-                self.orchestrator_failure = Some(format!(
-                    "the orchestrator started by teamplayer exited ({status}), see {}",
-                    orchestrator.log_path.display()
+        if let Some(compose_server) = &mut self.compose_server {
+            if let Some(status) = compose_server.try_exited() {
+                self.compose_server_failure = Some(format!(
+                    "the compose server started by the TUI exited ({status}), see {}",
+                    compose_server.log_path.display()
                 ));
-                self.orchestrator = None;
+                self.compose_server = None;
             }
         }
         match self.client.status().await {
@@ -440,7 +440,7 @@ impl App {
 #[cfg(test)]
 pub mod tests {
     use super::*;
-    use bitbots_orchestrate_api::api::{LogLine, ProfileInfo};
+    use bitbots_compose_api::api::{LogLine, ProfileInfo};
 
     fn component(key: &str, locked: bool) -> ComponentInfo {
         ComponentInfo {
@@ -488,7 +488,7 @@ pub mod tests {
         }
     }
 
-    /// An app that never reaches an orchestrator but has a known status.
+    /// An app that never reaches a compose server but has a known status.
     pub fn offline_app() -> App {
         let mut app = App::new(Client::new("/nonexistent/teamplayer-test.sock".into()));
         let mut components = vec![component("base", true)];

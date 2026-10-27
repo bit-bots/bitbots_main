@@ -1,4 +1,4 @@
-use bitbots_orchestrate_api::api::{ParamType, SetParameters, Value};
+use bitbots_compose_api::api::{ParamType, SetParameters, Value};
 use crossterm::event::{KeyCode, KeyModifiers};
 
 use crate::app::{App, ConfigFocus, ConfirmAction, ExitMode, Screen};
@@ -266,7 +266,7 @@ pub async fn handle_confirm_key(app: &mut App, key: KeyCode) {
                     let result = app.client.stop_all().await;
                     app.apply_action(result);
                 }
-                Some(ConfirmAction::Quit) => app.exit = Some(ExitMode::StopOrchestrator),
+                Some(ConfirmAction::Quit) => app.exit = Some(ExitMode::StopComposeServer),
                 None => {}
             }
         }
@@ -287,7 +287,7 @@ pub async fn handle_confirm_key(app: &mut App, key: KeyCode) {
 mod tests {
     use super::*;
     use crate::app::tests::offline_app;
-    use crate::spawn::OwnedOrchestrator;
+    use crate::spawn::OwnedComposeServer;
 
     #[tokio::test]
     async fn confirm_dialog_only_reacts_to_labeled_keys() {
@@ -306,7 +306,7 @@ mod tests {
             app.confirm_action = Some(ConfirmAction::StopAll);
             handle_confirm_key(&mut app, key).await;
             assert!(app.confirm_action.is_none(), "{key:?} must confirm");
-            // There is no orchestrator in this test, the refusal must be visible.
+            // There is no compose server in this test, the refusal must be visible.
             assert!(app.action_error.is_some());
         }
         // Detaching only exists when quitting.
@@ -317,23 +317,23 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn quit_asks_whenever_an_orchestrator_is_connected() {
-        // Without a reachable orchestrator there is nothing to ask about.
+    async fn quit_asks_whenever_an_compose_server_is_connected() {
+        // Without a reachable compose server there is nothing to ask about.
         let mut app = offline_app();
         app.connection_error = Some("unreachable".into());
         handle_runtime_key(&mut app, KeyCode::Char('q')).await;
         assert_eq!(app.exit, Some(ExitMode::Detach));
 
-        // Connected to an orchestrator this TUI did not start.
+        // Connected to a compose server this TUI did not start.
         let mut app = offline_app();
         handle_runtime_key(&mut app, KeyCode::Char('q')).await;
         assert!(app.exit.is_none(), "must ask before quitting");
         handle_confirm_key(&mut app, KeyCode::Char('y')).await;
-        assert_eq!(app.exit, Some(ExitMode::StopOrchestrator));
+        assert_eq!(app.exit, Some(ExitMode::StopComposeServer));
 
         for (key, expected) in [
             (KeyCode::Char('d'), Some(ExitMode::Detach)),
-            (KeyCode::Char('y'), Some(ExitMode::StopOrchestrator)),
+            (KeyCode::Char('y'), Some(ExitMode::StopComposeServer)),
             (KeyCode::Esc, None),
         ] {
             let mut app = offline_app();
@@ -342,7 +342,7 @@ mod tests {
                 .kill_on_drop(true)
                 .spawn()
                 .unwrap();
-            app.orchestrator = Some(OwnedOrchestrator::from_child(child));
+            app.compose_server = Some(OwnedComposeServer::from_child(child));
             handle_runtime_key(&mut app, KeyCode::Char('q')).await;
             assert!(app.exit.is_none(), "must ask before quitting");
             handle_confirm_key(&mut app, key).await;

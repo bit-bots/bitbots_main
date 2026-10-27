@@ -1,11 +1,11 @@
-//! Keeps the shipped stack file consistent with the workspace it refers to.
+//! Keeps the shipped compose file consistent with the workspace it refers to.
 
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
 };
 
-use bitbots_stack::{ProcessSpec, Stack};
+use bitbots_compose_file::{ProcessSpec, Stack};
 
 fn bringup_dir() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("..")

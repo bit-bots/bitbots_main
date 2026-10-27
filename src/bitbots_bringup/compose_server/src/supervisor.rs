@@ -3,7 +3,7 @@
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 
 use anyhow::{bail, Context};
-use bitbots_stack::{Resolved, Stack, Value, Values};
+use bitbots_compose_file::{Resolved, Stack, Value, Values};
 use indexmap::IndexMap;
 use tokio::{
     io::{AsyncBufReadExt, BufReader},
@@ -45,7 +45,7 @@ pub enum ActionError {
     Conflict(String),
     /// The request itself is invalid
     BadRequest(String),
-    /// The orchestrator could not carry out a valid request
+    /// The compose server could not carry out a valid request
     Failed(String),
 }
 
@@ -72,9 +72,9 @@ impl ComponentLog {
         self.logs.push(&self.key, &self.name, stream, text);
     }
 
-    /// Messages from the orchestrator itself, as opposed to output of the child processes.
-    fn push_orchestrate(&self, msg: &str) {
-        self.push(LogStream::Stderr, &format!("[orchestrate] {msg}"));
+    /// Messages from the compose server itself, as opposed to output of the child processes.
+    fn push_compose(&self, msg: &str) {
+        self.push(LogStream::Stderr, &format!("[compose] {msg}"));
     }
 
     async fn pump<R: tokio::io::AsyncRead + Unpin>(&self, mut r: BufReader<R>, stream: LogStream) {
@@ -423,7 +423,7 @@ impl Supervisor {
         let def = &self.stack.components()[comp_idx];
         if self.shutting_down {
             return Err(ActionError::Conflict(
-                "orchestrate is shutting down".to_string(),
+                "the compose server is shutting down".to_string(),
             ));
         }
         if self.components[comp_idx].state.is_started() {
@@ -455,7 +455,7 @@ impl Supervisor {
             self.spawn_commands(comp_idx, cmds);
         } else {
             let msg = format!("waiting for {} to run", missing.join(", "));
-            self.component_log(comp_idx).push_orchestrate(&msg);
+            self.component_log(comp_idx).push_compose(&msg);
             self.components[comp_idx].state = ProcState::Waiting;
         }
         Ok(())
@@ -492,12 +492,12 @@ impl Supervisor {
             {
                 Ok(c) => c,
                 Err(e) => {
-                    log.push_orchestrate(&format!("failed to spawn `{}`: {e}", cmd_args.join(" ")));
+                    log.push_compose(&format!("failed to spawn `{}`: {e}", cmd_args.join(" ")));
                     comp.exit_code = Some(-1);
                     if comp.pids.is_empty() {
                         comp.state = ProcState::Crashed;
                     } else {
-                        log.push_orchestrate("stopping the already started processes");
+                        log.push_compose("stopping the already started processes");
                         signal_pids(&comp.pids, nix::sys::signal::Signal::SIGTERM);
                         comp.state = ProcState::Stopping;
                     }
@@ -615,7 +615,7 @@ impl Supervisor {
                     &def.name,
                     LogStream::Stderr,
                     &format!(
-                        "[orchestrate] processes {:?} did not exit after SIGTERM, sending SIGKILL",
+                        "[compose] processes {:?} did not exit after SIGTERM, sending SIGKILL",
                         comp.pids
                     ),
                 );
@@ -632,7 +632,7 @@ impl Supervisor {
         for comp_idx in self.drain_messages() {
             if let Err(e) = self.start_component(comp_idx) {
                 self.component_log(comp_idx)
-                    .push_orchestrate(&format!("restart failed: {e}"));
+                    .push_compose(&format!("restart failed: {e}"));
             }
         }
         for comp_idx in 0..self.components.len() {
@@ -644,7 +644,7 @@ impl Supervisor {
                     Ok(cmds) => self.spawn_commands(comp_idx, cmds),
                     Err(e) => {
                         self.component_log(comp_idx)
-                            .push_orchestrate(&format!("cannot start: {e}"));
+                            .push_compose(&format!("cannot start: {e}"));
                         self.components[comp_idx].state = ProcState::Crashed;
                     }
                 }
@@ -665,7 +665,7 @@ impl Supervisor {
                     let log = self.component_log(comp_idx);
                     let comp = &mut self.components[comp_idx];
                     let Some(pos) = comp.pids.iter().position(|&p| p == pid) else {
-                        log.push_orchestrate(&format!(
+                        log.push_compose(&format!(
                             "exit of untracked pid {pid} (code {code}) reported, ignoring it"
                         ));
                         continue;
@@ -674,12 +674,12 @@ impl Supervisor {
                     comp.exit_code.get_or_insert(code);
 
                     if comp.state == ProcState::Running {
-                        log.push_orchestrate(&format!(
+                        log.push_compose(&format!(
                             "process {pid} exited unexpectedly with code {code}"
                         ));
                         if !comp.pids.is_empty() {
                             // Do not leave the component half running.
-                            log.push_orchestrate("stopping the remaining processes");
+                            log.push_compose("stopping the remaining processes");
                             signal_pids(&comp.pids, nix::sys::signal::Signal::SIGTERM);
                             comp.state = ProcState::Stopping;
                         }
@@ -748,7 +748,7 @@ fn write_parameter_file(
     let mut doc = Mapping::new();
     doc.insert(Y::String("/**".into()), Y::Mapping(node));
     let text = format!(
-        "# Overrides of global parameters, written by bitbots_orchestrate\n{}",
+        "# Overrides of global parameters, written by bitbots_compose_server\n{}",
         serde_norway::to_string(&doc)?
     );
     if let Some(dir) = path.parent() {
@@ -825,7 +825,7 @@ components:
     /// Path of the global parameter file of one test.
     fn global_file(test: &str) -> PathBuf {
         std::env::temp_dir()
-            .join(format!("bitbots_orchestrate_sup_{}", std::process::id()))
+            .join(format!("bitbots_compose_sup_{}", std::process::id()))
             .join(format!("{test}.global_parameters.yaml"))
     }
 
@@ -895,7 +895,7 @@ components:
             idx,
             vec![
                 cmd(&["sleep", "30"]),
-                cmd(&["/nonexistent/orchestrate-test-binary"]),
+                cmd(&["/nonexistent/compose-test-binary"]),
             ],
         );
         assert_eq!(sup.components[idx].state, ProcState::Stopping);
@@ -909,7 +909,7 @@ components:
     async fn spawn_failure_of_only_process_crashes_immediately() {
         let mut sup = supervisor();
         let idx = idx(&sup, "base");
-        sup.spawn_commands(idx, vec![cmd(&["/nonexistent/orchestrate-test-binary"])]);
+        sup.spawn_commands(idx, vec![cmd(&["/nonexistent/compose-test-binary"])]);
         assert_eq!(sup.components[idx].state, ProcState::Crashed);
         assert!(sup.components[idx].pids.is_empty());
     }
@@ -950,7 +950,7 @@ components:
         let idx = idx(&sup, "base");
         sup.spawn_commands(idx, vec![cmd(&["sh", "-c", "echo out; echo err >&2"])]);
         wait_settled(&mut sup, idx).await;
-        sup.spawn_commands(idx, vec![cmd(&["/nonexistent/orchestrate-test-binary"])]);
+        sup.spawn_commands(idx, vec![cmd(&["/nonexistent/compose-test-binary"])]);
 
         let lines = logs.since(0, Some("base"), usize::MAX).lines;
         let has = |stream, text: &str| {

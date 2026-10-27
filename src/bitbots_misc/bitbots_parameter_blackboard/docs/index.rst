@@ -12,7 +12,7 @@ It merges the configuration of the selected field (``config/fields/<field.name>/
 simulated robot that matches ``ROS_DOMAIN_ID``.
 Later files take precedence, parameters passed to the node directly (e.g. by the launch file) take precedence over all
 files.
-The launch file accepts a ``parameters_file`` with such overrides, which ``bitbots_orchestrate`` uses to pass
+The launch file accepts a ``parameters_file`` with such overrides, which ``bitbots_compose_server`` uses to pass
 ``--global`` values on.
 Overrides may only replace parameters that the files define, with a value of the same type;
 otherwise the node refuses to start, so that a typo does not silently add a parameter.

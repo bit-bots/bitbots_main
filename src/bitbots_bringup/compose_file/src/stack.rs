@@ -81,8 +81,8 @@ const SUPPORTED_VERSION: u32 = 1;
 impl Stack {
     pub fn load(path: &Path) -> Result<Self> {
         let text = std::fs::read_to_string(path)
-            .with_context(|| format!("cannot read stack file {}", path.display()))?;
-        Self::parse(&text).with_context(|| format!("invalid stack file {}", path.display()))
+            .with_context(|| format!("cannot read compose file {}", path.display()))?;
+        Self::parse(&text).with_context(|| format!("invalid compose file {}", path.display()))
     }
 
     pub fn parse(yaml: &str) -> Result<Self> {

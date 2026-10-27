@@ -1,16 +1,16 @@
 //! Talks to a real server on a temporary socket through the client, using the shipped
-//! teamplayer stack file. No component is started.
+//! teamplayer compose file. No component is started.
 
 use std::sync::{Arc, Mutex};
 
-use bitbots_orchestrate::{
+use bitbots_compose_file::Stack;
+use bitbots_compose_server::{
     api::{GlobalValue, LogStream, SetGlobalParameters, SetParameters, Value},
     client::Client,
     logs::LogStore,
     server::{self, ServerState},
     supervisor::Supervisor,
 };
-use bitbots_stack::Stack;
 
 /// Source directory of a workspace package, which has the layout of its share directory for
 /// the configuration used here.
@@ -39,7 +39,7 @@ fn workspace_package(name: &str) -> Option<std::path::PathBuf> {
 
 fn temp_socket(test: &str) -> std::path::PathBuf {
     std::env::temp_dir()
-        .join(format!("bitbots_orchestrate_test_{}", std::process::id()))
+        .join(format!("bitbots_compose_test_{}", std::process::id()))
         .join(format!("{test}.sock"))
 }
 
@@ -86,7 +86,7 @@ async fn serve_with_shutdown(
 #[tokio::test]
 async fn parameters_profiles_and_selection_round_trip() {
     let (client, _logs, _guard) = serve("config").await;
-    let find = |status: &bitbots_orchestrate::api::Status, key: &str| {
+    let find = |status: &bitbots_compose_server::api::Status, key: &str| {
         status
             .components
             .iter()
