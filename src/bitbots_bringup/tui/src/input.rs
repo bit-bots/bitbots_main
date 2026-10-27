@@ -1,4 +1,4 @@
-use bitbots_orchestrate::api::{ParamType, SetParameters, Value};
+use bitbots_orchestrate_api::api::{ParamType, SetParameters, Value};
 use crossterm::event::{KeyCode, KeyModifiers};
 
 use crate::app::{App, ConfigFocus, ConfirmAction, ExitMode, Screen};
@@ -57,7 +57,29 @@ pub async fn handle_config_key(app: &mut App, key: KeyCode, modifiers: KeyModifi
             }
         }
 
-        // String parameters are edited locally and sent on launch
+        // Parameters with choices cycle through them right away
+        (ConfigFocus::Param(i), KeyCode::Char(' ') | KeyCode::Enter)
+            if app
+                .parameters()
+                .get(*i)
+                .is_some_and(|p| p.choices.is_some()) =>
+        {
+            let param = &app.parameters()[*i];
+            let choices = param.choices.as_deref().unwrap_or_default();
+            let current = param.value.to_string();
+            let next = match choices.iter().position(|c| *c == current) {
+                Some(pos) => choices.get((pos + 1) % choices.len()),
+                None => choices.first(),
+            };
+            if let Some(next) = next {
+                let update =
+                    SetParameters::from([(param.name.clone(), Value::String(next.clone()))]);
+                let result = app.client.set_parameters(&update).await;
+                app.apply_action(result);
+            }
+        }
+
+        // Free text parameters are edited locally and sent on launch
         (ConfigFocus::Param(i), KeyCode::Char(c)) if !modifiers.contains(KeyModifiers::CONTROL) => {
             if let Some(name) = string_param(app, *i) {
                 app.param_inputs.entry(name).or_default().push(c);
@@ -101,11 +123,11 @@ pub async fn handle_config_key(app: &mut App, key: KeyCode, modifiers: KeyModifi
     }
 }
 
-/// Name of the parameter at `idx` if it is a string parameter.
+/// Name of the parameter at `idx` if it is a free text parameter.
 fn string_param(app: &App, idx: usize) -> Option<String> {
     app.parameters()
         .get(idx)
-        .filter(|p| p.param_type == ParamType::String)
+        .filter(|p| p.param_type == ParamType::String && p.choices.is_none())
         .map(|p| p.name.clone())
 }
 

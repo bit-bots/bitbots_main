@@ -5,7 +5,9 @@ use std::path::Path;
 use anyhow::{bail, Context, Result};
 use indexmap::IndexMap;
 
-use crate::spec::{ComponentSpec, ParamType, ProcessSpec, StackFile, Value};
+use crate::spec::{
+    BlackboardSpec, ChoicesFrom, ComponentSpec, ParamType, ProcessSpec, StackFile, Value,
+};
 
 /// Current value of every parameter, in declaration order.
 pub type Values = IndexMap<String, Value>;
@@ -16,6 +18,7 @@ pub struct Parameter {
     pub param_type: ParamType,
     pub default: Value,
     pub description: String,
+    pub choices_from: Option<ChoicesFrom>,
 }
 
 #[derive(Clone, Debug)]
@@ -52,6 +55,7 @@ pub struct Stack {
     parameters: Vec<Parameter>,
     profiles: Vec<Profile>,
     components: Vec<Component>,
+    blackboard: Option<BlackboardSpec>,
 }
 
 /// State of every component for a given set of parameter values and selection.
@@ -100,6 +104,7 @@ impl Stack {
                 param_type: p.param_type,
                 default: p.default,
                 description: p.description,
+                choices_from: p.choices_from,
             })
             .collect();
         let components = file
@@ -122,6 +127,7 @@ impl Stack {
             parameters,
             profiles,
             components,
+            blackboard: file.blackboard,
         };
         let errors = stack.validate();
         if !errors.is_empty() {
@@ -218,6 +224,37 @@ impl Stack {
                 }
             }
         }
+        for p in &self.parameters {
+            if p.choices_from.is_some() && p.param_type != ParamType::String {
+                errors.push(format!(
+                    "parameter '{}': choices_from requires type string",
+                    p.name
+                ));
+            }
+        }
+        if let Some(bb) = &self.blackboard {
+            for req in &bb.requires {
+                if self.component(req).is_none() {
+                    errors.push(format!("blackboard: requires unknown component '{req}'"));
+                }
+            }
+            let mut texts: Vec<&str> = bb.files.iter().map(String::as_str).collect();
+            texts.extend(bb.parameters.values().map(String::as_str));
+            if let Some(maps) = &bb.maps {
+                texts.push(&maps.directory);
+            }
+            for text in texts {
+                for name in placeholders(text) {
+                    match name {
+                        Ok(name) if self.parameter(name).is_none() => errors.push(format!(
+                            "blackboard: '${{{name}}}' refers to an unknown parameter"
+                        )),
+                        Ok(_) => {}
+                        Err(e) => errors.push(format!("blackboard: {e} in '{text}'")),
+                    }
+                }
+            }
+        }
         if let Some(cycle) = self.requires_cycle() {
             errors.push(format!("requirement cycle: {}", cycle.join(" → ")));
         }
@@ -270,6 +307,26 @@ impl Stack {
 
     pub fn components(&self) -> &[Component] {
         &self.components
+    }
+
+    pub fn blackboard(&self) -> Option<&BlackboardSpec> {
+        self.blackboard.as_ref()
+    }
+
+    /// Substitute the `${name}` placeholders of a validated text.
+    pub fn substitute(&self, text: &str, values: &Values) -> String {
+        substitute(text, values)
+    }
+
+    /// Like [`Stack::substitute`], but a text that consists of a single placeholder keeps the
+    /// type of the parameter.
+    pub fn substitute_typed(&self, text: &str, values: &Values) -> Value {
+        if let Some(name) = text.strip_prefix("${").and_then(|t| t.strip_suffix('}')) {
+            if let Some(value) = values.get(name) {
+                return value.clone();
+            }
+        }
+        Value::String(substitute(text, values))
     }
 
     pub fn parameter(&self, name: &str) -> Option<&Parameter> {

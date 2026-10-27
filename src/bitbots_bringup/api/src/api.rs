@@ -60,6 +60,8 @@ pub struct ParameterInfo {
     pub param_type: ParamType,
     pub description: String,
     pub value: Value,
+    /// The only valid values, if they are restricted
+    pub choices: Option<Vec<String>>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -110,7 +112,104 @@ pub struct Status {
     pub problems: Vec<String>,
     /// All components, always in the same order
     pub components: Vec<ComponentInfo>,
+    /// State of the global parameter blackboard, if the stack declares one
+    pub blackboard: Option<BlackboardSummary>,
 }
+
+/// Value of a global parameter, with the types of ROS parameters.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum GlobalValue {
+    Bool(bool),
+    Integer(i64),
+    Double(f64),
+    String(String),
+    BoolArray(Vec<bool>),
+    IntegerArray(Vec<i64>),
+    DoubleArray(Vec<f64>),
+    StringArray(Vec<String>),
+}
+
+impl GlobalValue {
+    pub fn type_name(&self) -> &'static str {
+        match self {
+            GlobalValue::Bool(_) => "bool",
+            GlobalValue::Integer(_) => "integer",
+            GlobalValue::Double(_) => "double",
+            GlobalValue::String(_) => "string",
+            GlobalValue::BoolArray(_) => "bool array",
+            GlobalValue::IntegerArray(_) => "integer array",
+            GlobalValue::DoubleArray(_) => "double array",
+            GlobalValue::StringArray(_) => "string array",
+        }
+    }
+}
+
+impl std::fmt::Display for GlobalValue {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            GlobalValue::Bool(v) => write!(f, "{v}"),
+            GlobalValue::Integer(v) => write!(f, "{v}"),
+            GlobalValue::Double(v) => write!(f, "{v}"),
+            GlobalValue::String(v) => f.write_str(v),
+            GlobalValue::BoolArray(v) => write!(f, "{v:?}"),
+            GlobalValue::IntegerArray(v) => write!(f, "{v:?}"),
+            GlobalValue::DoubleArray(v) => write!(f, "{v:?}"),
+            GlobalValue::StringArray(v) => write!(f, "{v:?}"),
+        }
+    }
+}
+
+/// Where the value of a global parameter comes from.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum GlobalSource {
+    /// A parameter file, given as path
+    File(String),
+    /// Derived from a stack parameter
+    Stack,
+    /// An override set through the API or the command line
+    Override,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case", tag = "state", content = "detail")]
+pub enum RosState {
+    /// The ROS node waits for these components to run
+    WaitingFor(Vec<String>),
+    Starting,
+    Running,
+    /// Setting up the ROS node failed, it is retried
+    Failed(String),
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct BlackboardSummary {
+    pub node: String,
+    pub ros: RosState,
+    /// Why the global parameters could not be assembled; nothing new is published then
+    pub error: Option<String>,
+    pub overrides: IndexMap<String, GlobalValue>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct GlobalParameterInfo {
+    pub name: String,
+    pub value: GlobalValue,
+    pub source: GlobalSource,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct BlackboardInfo {
+    pub summary: BlackboardSummary,
+    /// The published parameters, sorted by name; empty while `summary.error` is set
+    pub parameters: Vec<GlobalParameterInfo>,
+    /// Topics of the published field maps
+    pub maps: Vec<String>,
+}
+
+/// Overrides of global parameters by name; `null` removes an override.
+pub type SetOverrides = IndexMap<String, Option<GlobalValue>>;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct SetEnabled {

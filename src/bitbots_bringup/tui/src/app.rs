@@ -1,6 +1,6 @@
 use std::collections::{HashMap, VecDeque};
 
-use bitbots_orchestrate::{
+use bitbots_orchestrate_api::{
     api::{
         ComponentInfo, LogStream, Logs, ParamType, ParameterInfo, ProcState, SetParameters, Status,
         Value,
@@ -209,11 +209,11 @@ impl App {
             .collect();
     }
 
-    /// The edited values of all string parameters.
+    /// The edited values of all free text parameters.
     pub fn edited_parameters(&self) -> SetParameters {
         self.parameters()
             .iter()
-            .filter(|p| p.param_type == ParamType::String)
+            .filter(|p| p.param_type == ParamType::String && p.choices.is_none())
             .filter_map(|p| {
                 let input = self.param_inputs.get(&p.name)?;
                 Some((p.name.clone(), Value::String(input.clone())))
@@ -439,7 +439,7 @@ impl App {
 #[cfg(test)]
 pub mod tests {
     use super::*;
-    use bitbots_orchestrate::api::{LogLine, ProfileInfo};
+    use bitbots_orchestrate_api::api::{LogLine, ProfileInfo};
 
     fn component(key: &str, locked: bool) -> ComponentInfo {
         ComponentInfo {
@@ -466,12 +466,14 @@ pub mod tests {
                     param_type: ParamType::Bool,
                     description: "Simulation".into(),
                     value: Value::Bool(false),
+                    choices: None,
                 },
                 ParameterInfo {
                     name: "field".into(),
                     param_type: ParamType::String,
                     description: "Field".into(),
                     value: Value::String("lab".into()),
+                    choices: None,
                 },
             ],
             profiles: vec![ProfileInfo {
@@ -481,6 +483,7 @@ pub mod tests {
             profile: None,
             problems: Vec::new(),
             components,
+            blackboard: None,
         }
     }
 

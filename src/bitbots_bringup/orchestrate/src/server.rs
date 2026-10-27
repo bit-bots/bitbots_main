@@ -21,9 +21,12 @@ use axum::{
 use tokio::net::UnixListener;
 
 use crate::{
-    api::{lock_path, ApiError, Logs, LogsQuery, SetEnabled, SetParameters, Status, API_PREFIX},
+    api::{
+        lock_path, ApiError, BlackboardInfo, Logs, LogsQuery, SetEnabled, SetOverrides,
+        SetParameters, Status, API_PREFIX,
+    },
     logs::LogStore,
-    supervisor::{ActionError, Supervisor},
+    supervisor::{ActionError, Supervisor, BLACKBOARD_LOG_KEY},
 };
 
 #[derive(Clone)]
@@ -94,7 +97,9 @@ pub fn router(state: ServerState) -> Router {
         .route("/components/{key}/restart", post(restart))
         .route("/start_all", post(start_all))
         .route("/stop_all", post(stop_all))
-        .route("/logs", get(logs));
+        .route("/logs", get(logs))
+        .route("/blackboard", get(blackboard))
+        .route("/blackboard/overrides", put(set_overrides));
     Router::new().nest(API_PREFIX, api).with_state(state)
 }
 
@@ -150,16 +155,41 @@ async fn stop_all(State(state): State<ServerState>) -> ApiResult<Status> {
     })
 }
 
+fn no_blackboard() -> Failure {
+    Failure(
+        StatusCode::NOT_FOUND,
+        "the stack declares no blackboard".to_string(),
+    )
+}
+
+async fn blackboard(State(state): State<ServerState>) -> ApiResult<BlackboardInfo> {
+    let sup = state.supervisor.lock().unwrap();
+    sup.blackboard_info().map(Json).ok_or_else(no_blackboard)
+}
+
+async fn set_overrides(
+    State(state): State<ServerState>,
+    Json(overrides): Json<SetOverrides>,
+) -> ApiResult<BlackboardInfo> {
+    let mut sup = state.supervisor.lock().unwrap();
+    if sup.blackboard_info().is_none() {
+        return Err(no_blackboard());
+    }
+    sup.set_overrides(overrides)?;
+    Ok(Json(sup.blackboard_info().expect("checked above")))
+}
+
 async fn logs(State(state): State<ServerState>, Query(query): Query<LogsQuery>) -> ApiResult<Logs> {
     if let Some(key) = &query.component {
-        if state
-            .supervisor
-            .lock()
-            .unwrap()
-            .stack()
-            .component_idx(key)
-            .is_none()
-        {
+        let known = key == BLACKBOARD_LOG_KEY
+            || state
+                .supervisor
+                .lock()
+                .unwrap()
+                .stack()
+                .component_idx(key)
+                .is_some();
+        if !known {
             return Err(unknown_component(key));
         }
     }

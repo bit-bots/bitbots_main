@@ -1,0 +1,16 @@
+[package]
+name = "bitbots_orchestrate_api"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1"
+bitbots_stack = { path = "../stack" }
+http-body-util = "0.1"
+hyper = { version = "1", features = ["client", "http1"] }
+hyper-util = { version = "0.1", features = ["tokio"] }
+indexmap = { version = "2", features = ["serde"] }
+nix = { version = "0.29", features = ["user"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["net", "rt"] }

@@ -1,9 +1,10 @@
 //! Starts, stops and restarts the components and keeps track of their processes.
 
-use std::sync::Arc;
+use std::{collections::HashMap, path::PathBuf, sync::Arc};
 
-use anyhow::bail;
-use bitbots_stack::{Resolved, Stack, Values};
+use anyhow::{bail, Context};
+use bitbots_stack::{BlackboardSpec, Resolved, Stack, Value, Values};
+use indexmap::IndexMap;
 use tokio::{
     io::{AsyncBufReadExt, BufReader},
     process::Command,
@@ -11,9 +12,31 @@ use tokio::{
 };
 
 use crate::{
-    api::{ComponentInfo, LogStream, ParameterInfo, ProcState, ProfileInfo, SetParameters, Status},
+    api::{
+        BlackboardInfo, BlackboardSummary, ComponentInfo, GlobalParameterInfo, GlobalValue,
+        LogStream, ParameterInfo, ProcState, ProfileInfo, RosState, SetOverrides, SetParameters,
+        Status,
+    },
+    blackboard::{self, Blackboard, ShareResolver},
     logs::LogStore,
+    ros::RosBlackboard,
 };
+
+/// Log key of messages about the blackboard, which is not a component.
+pub const BLACKBOARD_LOG_KEY: &str = "blackboard";
+const BLACKBOARD_LOG_NAME: &str = "Blackboard";
+
+/// The global parameters declared by the stack and their publication.
+struct BlackboardState {
+    spec: BlackboardSpec,
+    share_dir: PathBuf,
+    overrides: IndexMap<String, GlobalValue>,
+    /// Last successful assembly
+    current: Option<Arc<Blackboard>>,
+    /// Why the last assembly failed
+    error: Option<String>,
+    ros: Option<RosBlackboard>,
+}
 
 /// Runtime state of a component.
 pub struct ComponentState {
@@ -87,6 +110,9 @@ pub struct Supervisor {
     enabled: Vec<bool>,
     /// The profile applied last
     profile: Option<String>,
+    /// Valid values of the parameters that declare `choices_from`
+    choices: HashMap<String, Vec<String>>,
+    blackboard: Option<BlackboardState>,
     /// Runtime state of every component, in stack order
     pub components: Vec<ComponentState>,
     /// Set once shutdown has begun; no components are started afterwards.
@@ -97,7 +123,37 @@ pub struct Supervisor {
 }
 
 impl Supervisor {
-    pub fn new(stack: Stack, logs: Arc<LogStore>) -> Self {
+    /// Fails if the choices of a parameter or the blackboard package cannot be found.
+    pub fn new(stack: Stack, logs: Arc<LogStore>, share: ShareResolver) -> anyhow::Result<Self> {
+        let mut choices = HashMap::new();
+        for p in stack.parameters() {
+            if let Some(from) = &p.choices_from {
+                let dir = share(&from.package)?.join(&from.directory);
+                let names = blackboard::subdirectories(&dir)
+                    .with_context(|| format!("choices of parameter '{}'", p.name))?;
+                if let Value::String(default) = &p.default {
+                    if !names.contains(default) {
+                        bail!(
+                            "default '{default}' of parameter '{}' is none of its choices: {}",
+                            p.name,
+                            names.join(", ")
+                        );
+                    }
+                }
+                choices.insert(p.name.clone(), names);
+            }
+        }
+        let blackboard = match stack.blackboard() {
+            Some(spec) => Some(BlackboardState {
+                share_dir: share(&spec.package)?,
+                spec: spec.clone(),
+                overrides: IndexMap::new(),
+                current: None,
+                error: None,
+                ros: None,
+            }),
+            None => None,
+        };
         let (msg_tx, msg_rx) = mpsc::unbounded_channel();
         let components = stack
             .components()
@@ -108,17 +164,173 @@ impl Supervisor {
                 exit_code: None,
             })
             .collect();
-        Self {
+        let mut sup = Self {
             values: stack.default_values(),
             enabled: stack.default_enabled(),
             profile: None,
+            choices,
+            blackboard,
             stack,
             components,
             shutting_down: false,
             logs,
             msg_tx,
             msg_rx,
+        };
+        sup.refresh_blackboard();
+        Ok(sup)
+    }
+
+    fn log_blackboard(&self, msg: &str) {
+        self.logs.push(
+            BLACKBOARD_LOG_KEY,
+            BLACKBOARD_LOG_NAME,
+            LogStream::Stderr,
+            &format!("[orchestrate] {msg}"),
+        );
+    }
+
+    /// Hand over the ROS node that publishes the blackboard; it is started by [`Self::tick`].
+    pub fn attach_ros(&mut self, ros: RosBlackboard) {
+        let Some(bb) = &mut self.blackboard else {
+            return;
+        };
+        if let Some(current) = &bb.current {
+            ros.publish(current.clone());
         }
+        bb.ros = Some(ros);
+    }
+
+    /// Blackboard log messages for the ROS node.
+    pub fn blackboard_logger(&self) -> impl Fn(&str) + Send + 'static {
+        let logs = self.logs.clone();
+        move |msg: &str| {
+            logs.push(
+                BLACKBOARD_LOG_KEY,
+                BLACKBOARD_LOG_NAME,
+                LogStream::Stderr,
+                &format!("[orchestrate] {msg}"),
+            )
+        }
+    }
+
+    fn assemble(
+        &self,
+        overrides: &IndexMap<String, GlobalValue>,
+    ) -> Option<anyhow::Result<Blackboard>> {
+        let bb = self.blackboard.as_ref()?;
+        Some(blackboard::assemble(
+            &self.stack,
+            &bb.spec,
+            &self.values,
+            overrides,
+            &bb.share_dir,
+        ))
+    }
+
+    /// Reassemble the blackboard after its inputs changed and publish it.
+    fn refresh_blackboard(&mut self) {
+        let Some(overrides) = self.blackboard.as_ref().map(|bb| bb.overrides.clone()) else {
+            return;
+        };
+        let result = self.assemble(&overrides).expect("blackboard exists");
+        if let Err(e) = &result {
+            self.log_blackboard(&format!(
+                "cannot assemble the global parameters, keeping the previous ones: {e:#}"
+            ));
+        }
+        let bb = self.blackboard.as_mut().expect("blackboard exists");
+        match result {
+            Ok(assembled) => {
+                if bb.current.as_deref() != Some(&assembled) {
+                    let assembled = Arc::new(assembled);
+                    if let Some(ros) = &bb.ros {
+                        ros.publish(assembled.clone());
+                    }
+                    bb.current = Some(assembled);
+                }
+                bb.error = None;
+            }
+            Err(e) => bb.error = Some(format!("{e:#}")),
+        }
+    }
+
+    /// Set or remove overrides of global parameters, all or none.
+    pub fn set_overrides(&mut self, changes: SetOverrides) -> Result<(), ActionError> {
+        let Some(bb) = &self.blackboard else {
+            return Err(ActionError::BadRequest(
+                "the stack declares no blackboard".to_string(),
+            ));
+        };
+        let mut overrides = bb.overrides.clone();
+        for (name, value) in changes {
+            match value {
+                Some(value) => overrides.insert(name, value),
+                None => overrides.shift_remove(&name),
+            };
+        }
+        // Validate against the files, so that a broken override is refused instead of stored.
+        self.assemble(&overrides)
+            .expect("blackboard exists")
+            .map_err(|e| ActionError::BadRequest(format!("{e:#}")))?;
+        self.blackboard
+            .as_mut()
+            .expect("blackboard exists")
+            .overrides = overrides;
+        self.refresh_blackboard();
+        Ok(())
+    }
+
+    fn blackboard_summary(&self) -> Option<BlackboardSummary> {
+        let bb = self.blackboard.as_ref()?;
+        Some(BlackboardSummary {
+            node: bb.spec.node.clone(),
+            ros: bb
+                .ros
+                .as_ref()
+                .map(RosBlackboard::state)
+                .unwrap_or(RosState::Failed("no ROS node attached".to_string())),
+            error: bb.error.clone(),
+            overrides: bb.overrides.clone(),
+        })
+    }
+
+    pub fn blackboard_info(&self) -> Option<BlackboardInfo> {
+        let bb = self.blackboard.as_ref()?;
+        let current = bb.current.as_deref();
+        Some(BlackboardInfo {
+            summary: self.blackboard_summary()?,
+            parameters: current
+                .map(|c| {
+                    c.parameters
+                        .iter()
+                        .map(|(name, (value, source))| GlobalParameterInfo {
+                            name: name.clone(),
+                            value: value.clone(),
+                            source: source.clone(),
+                        })
+                        .collect()
+                })
+                .unwrap_or_default(),
+            maps: current
+                .map(|c| c.maps.iter().map(|m| m.topic.clone()).collect())
+                .unwrap_or_default(),
+        })
+    }
+
+    /// Fails if a value is none of the parameter's choices.
+    fn check_choices(&self, values: &Values) -> Result<(), ActionError> {
+        for (name, value) in values {
+            if let (Some(choices), Value::String(v)) = (self.choices.get(name), value) {
+                if !choices.contains(v) {
+                    return Err(ActionError::BadRequest(format!(
+                        "'{v}' is no valid {name}, choose one of: {}",
+                        choices.join(", ")
+                    )));
+                }
+            }
+        }
+        Ok(())
     }
 
     pub fn stack(&self) -> &Stack {
@@ -133,6 +345,7 @@ impl Supervisor {
         set: &[String],
         enable: &[String],
         disable: &[String],
+        globals: &[String],
     ) -> anyhow::Result<()> {
         if let Some(profile) = profile {
             self.apply_profile(profile)
@@ -165,6 +378,26 @@ impl Supervisor {
                     .map_err(|e| anyhow::anyhow!("{e}"))?;
             }
         }
+        if !globals.is_empty() {
+            let Some(current) = self.blackboard.as_ref().and_then(|bb| bb.current.clone()) else {
+                bail!("cannot override global parameters: the blackboard could not be assembled");
+            };
+            let mut overrides = SetOverrides::new();
+            for assignment in globals {
+                let Some((name, raw)) = assignment.split_once('=') else {
+                    bail!("expected name=value, got '{assignment}'");
+                };
+                let Some((value, _)) = current.parameters.get(name) else {
+                    bail!("unknown global parameter '{name}'");
+                };
+                overrides.insert(
+                    name.to_string(),
+                    Some(blackboard::parse_override(name, raw, value)?),
+                );
+            }
+            self.set_overrides(overrides)
+                .map_err(|e| anyhow::anyhow!("{e}"))?;
+        }
         Ok(())
     }
 
@@ -176,9 +409,11 @@ impl Supervisor {
         self.stack
             .apply_profile(name, &mut values, &mut enabled)
             .map_err(|e| ActionError::BadRequest(e.to_string()))?;
+        self.check_choices(&values)?;
         self.values = values;
         self.enabled = enabled;
         self.profile = Some(name.to_string());
+        self.refresh_blackboard();
         Ok(())
     }
 
@@ -190,7 +425,9 @@ impl Supervisor {
                 .check_value(name, value)
                 .map_err(|e| ActionError::BadRequest(e.to_string()))?;
         }
+        self.check_choices(&params)?;
         self.values.extend(params);
+        self.refresh_blackboard();
         Ok(())
     }
 
@@ -222,6 +459,7 @@ impl Supervisor {
                     param_type: p.param_type,
                     description: p.description.clone(),
                     value: self.values[&p.name].clone(),
+                    choices: self.choices.get(&p.name).cloned(),
                 })
                 .collect(),
             profiles: self
@@ -257,6 +495,7 @@ impl Supervisor {
                     exit_code: comp.exit_code,
                 })
                 .collect(),
+            blackboard: self.blackboard_summary(),
         }
     }
 
@@ -510,6 +749,33 @@ impl Supervisor {
                 self.spawn_commands(comp_idx, cmds);
             }
         }
+        self.start_blackboard_node();
+    }
+
+    /// Start the ROS node of the blackboard once the selected components it requires run.
+    fn start_blackboard_node(&mut self) {
+        let Some(bb) = &self.blackboard else {
+            return;
+        };
+        let resolved = self.resolved();
+        let waiting: Vec<String> = bb
+            .spec
+            .requires
+            .iter()
+            .filter(|req| {
+                let r = self.stack.component_idx(req).expect("validated on load");
+                resolved.components[r].active && self.components[r].state != ProcState::Running
+            })
+            .cloned()
+            .collect();
+        let bb = self.blackboard.as_mut().expect("checked above");
+        if let Some(ros) = &mut bb.ros {
+            if waiting.is_empty() {
+                ros.start();
+            } else {
+                ros.set_waiting_for(waiting);
+            }
+        }
     }
 
     /// Process exit reports and return the components whose restart is pending.
@@ -620,8 +886,17 @@ components:
         args.iter().map(|s| s.to_string()).collect()
     }
 
+    fn no_share() -> ShareResolver {
+        Box::new(|package| bail!("no share directory for {package} in this test"))
+    }
+
     fn supervisor() -> Supervisor {
-        Supervisor::new(Stack::parse(TEST_STACK).unwrap(), Arc::new(LogStore::new()))
+        Supervisor::new(
+            Stack::parse(TEST_STACK).unwrap(),
+            Arc::new(LogStore::new()),
+            no_share(),
+        )
+        .unwrap()
     }
 
     fn idx(sup: &Supervisor, key: &str) -> usize {
@@ -721,7 +996,8 @@ components:
     #[tokio::test]
     async fn output_and_spawn_errors_reach_the_log_store() {
         let logs = Arc::new(LogStore::new());
-        let mut sup = Supervisor::new(Stack::parse(TEST_STACK).unwrap(), logs.clone());
+        let mut sup =
+            Supervisor::new(Stack::parse(TEST_STACK).unwrap(), logs.clone(), no_share()).unwrap();
         let idx = idx(&sup, "base");
         sup.spawn_commands(idx, vec![cmd(&["sh", "-c", "echo out; echo err >&2"])]);
         wait_settled(&mut sup, idx).await;
@@ -816,6 +1092,7 @@ components:
             &["field=custom".into()],
             &["extra".into()],
             &[],
+            &[],
         )
         .unwrap();
         let status = sup.status();
@@ -834,11 +1111,17 @@ components:
     #[test]
     fn cli_rejects_unknown_names_and_bad_values() {
         let mut sup = supervisor();
-        assert!(sup.apply_cli(Some("nope"), &[], &[], &[]).is_err());
-        assert!(sup.apply_cli(None, &["sim=yes".into()], &[], &[]).is_err());
-        assert!(sup.apply_cli(None, &["nope=1".into()], &[], &[]).is_err());
-        assert!(sup.apply_cli(None, &["sim".into()], &[], &[]).is_err());
-        assert!(sup.apply_cli(None, &[], &["nope".into()], &[]).is_err());
+        assert!(sup.apply_cli(Some("nope"), &[], &[], &[], &[]).is_err());
+        assert!(sup
+            .apply_cli(None, &["sim=yes".into()], &[], &[], &[])
+            .is_err());
+        assert!(sup
+            .apply_cli(None, &["nope=1".into()], &[], &[], &[])
+            .is_err());
+        assert!(sup.apply_cli(None, &["sim".into()], &[], &[], &[]).is_err());
+        assert!(sup
+            .apply_cli(None, &[], &["nope".into()], &[], &[])
+            .is_err());
     }
 
     #[test]

@@ -6,7 +6,7 @@ mod ui;
 use std::{path::PathBuf, time::Duration};
 
 use anyhow::{bail, Result};
-use bitbots_orchestrate::{
+use bitbots_orchestrate_api::{
     api::{lock_owner, resolve_socket, DEFAULT_INSTANCE_NAME},
     client::Client,
 };

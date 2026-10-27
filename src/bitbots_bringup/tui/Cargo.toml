@@ -8,7 +8,7 @@ name = "teamplayer"
 path = "src/main.rs"
 
 [dependencies]
-bitbots_orchestrate = { path = "../orchestrate" }
+bitbots_orchestrate_api = { path = "../api" }
 ratatui = "0.30"
 crossterm = { version = "0.29", features = ["event-stream"] }
 tokio = { version = "1", features = ["full"] }

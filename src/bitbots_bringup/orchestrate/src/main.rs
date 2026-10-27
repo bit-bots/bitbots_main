@@ -14,7 +14,9 @@ use tokio::{
 
 use bitbots_orchestrate::{
     api::{resolve_socket, LogStream, DEFAULT_INSTANCE_NAME},
+    blackboard::ament_share,
     logs::LogStore,
+    ros::RosBlackboard,
     server::{self, ServerState},
     supervisor::Supervisor,
 };
@@ -54,6 +56,10 @@ struct Cli {
     #[arg(long = "disable", value_name = "KEY")]
     disable: Vec<String>,
 
+    /// Override a global parameter of the blackboard, e.g. bot_id=2; may be repeated
+    #[arg(long = "global", value_name = "NAME=VALUE")]
+    global: Vec<String>,
+
     /// Instance name, selects the socket so several instances can run on one machine
     #[arg(long, default_value = DEFAULT_INSTANCE_NAME)]
     name: String,
@@ -65,17 +71,14 @@ struct Cli {
 
 /// The teamplayer stack file in the share directory of bitbots_bringup.
 fn default_stack_path() -> Result<PathBuf> {
-    let prefixes = std::env::var_os("AMENT_PREFIX_PATH").unwrap_or_default();
-    for prefix in std::env::split_paths(&prefixes) {
-        let candidate = prefix.join("share/bitbots_bringup/config/teamplayer.yaml");
-        if candidate.is_file() {
-            return Ok(candidate);
-        }
+    let path = ament_share("bitbots_bringup")?.join("config/teamplayer.yaml");
+    if !path.is_file() {
+        bail!(
+            "{} does not exist; pass --stack to use another file",
+            path.display()
+        );
     }
-    bail!(
-        "config/teamplayer.yaml of bitbots_bringup not found in AMENT_PREFIX_PATH; is the \
-         workspace built and sourced? Pass --stack to use another file"
-    );
+    Ok(path)
 }
 
 #[tokio::main]
@@ -88,8 +91,22 @@ async fn main() -> Result<()> {
     };
     let stack = Stack::load(&stack_path)?;
     let logs = Arc::new(LogStore::new());
-    let mut supervisor = Supervisor::new(stack, logs.clone());
-    supervisor.apply_cli(cli.profile.as_deref(), &cli.set, &cli.enable, &cli.disable)?;
+    let mut supervisor = Supervisor::new(stack, logs.clone(), Box::new(ament_share))?;
+    supervisor.apply_cli(
+        cli.profile.as_deref(),
+        &cli.set,
+        &cli.enable,
+        &cli.disable,
+        &cli.global,
+    )?;
+    if let Some(spec) = supervisor.stack().blackboard() {
+        let ros = RosBlackboard::spawn(
+            spec.node.clone(),
+            spec.topic.clone(),
+            supervisor.blackboard_logger(),
+        );
+        supervisor.attach_ros(ros);
+    }
 
     let socket = resolve_socket(cli.socket, &cli.name)?;
     let (listener, _guard) = server::bind(&socket)?;

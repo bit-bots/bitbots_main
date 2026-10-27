@@ -4,8 +4,9 @@
 //! HTTP API on a Unix socket (see [`server`]). Frontends such as the teamplayer TUI talk to it
 //! through [`client::Client`].
 
-pub mod api;
-pub mod client;
+pub use bitbots_orchestrate_api::{api, client};
+pub mod blackboard;
 pub mod logs;
+pub mod ros;
 pub mod server;
 pub mod supervisor;

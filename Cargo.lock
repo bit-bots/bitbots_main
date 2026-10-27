@@ -651,8 +651,26 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "axum",
+ "bitbots_orchestrate_api",
  "bitbots_stack",
  "clap",
+ "futures",
+ "image",
+ "indexmap",
+ "nix",
+ "r2r",
+ "serde",
+ "serde_json",
+ "serde_norway",
+ "tokio",
+]
+
+[[package]]
+name = "bitbots_orchestrate_api"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "bitbots_stack",
  "http-body-util",
  "hyper",
  "hyper-util",
@@ -4538,7 +4556,7 @@ version = "0.1.0"
 dependencies = [
  "ansi-to-tui",
  "anyhow",
- "bitbots_orchestrate",
+ "bitbots_orchestrate_api",
  "clap",
  "crossterm",
  "futures",

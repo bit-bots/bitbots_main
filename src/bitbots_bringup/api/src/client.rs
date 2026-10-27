@@ -13,7 +13,9 @@ use hyper_util::rt::TokioIo;
 use serde::{de::DeserializeOwned, Serialize};
 use tokio::net::UnixStream;
 
-use crate::api::{ApiError, Logs, SetEnabled, SetParameters, Status, API_PREFIX};
+use crate::api::{
+    ApiError, BlackboardInfo, Logs, SetEnabled, SetOverrides, SetParameters, Status, API_PREFIX,
+};
 
 #[derive(Clone)]
 pub struct Client {
@@ -86,6 +88,16 @@ impl Client {
     /// Set all given parameters, or none if one is invalid.
     pub async fn set_parameters(&self, params: &SetParameters) -> Result<Status> {
         self.request(Method::PUT, "/parameters", Some(params)).await
+    }
+
+    pub async fn blackboard(&self) -> Result<BlackboardInfo> {
+        self.request(Method::GET, "/blackboard", None::<&()>).await
+    }
+
+    /// Set or, with `None`, remove overrides of global parameters; all or none.
+    pub async fn set_overrides(&self, overrides: &SetOverrides) -> Result<BlackboardInfo> {
+        self.request(Method::PUT, "/blackboard/overrides", Some(overrides))
+            .await
     }
 
     pub async fn apply_profile(&self, name: &str) -> Result<Status> {
