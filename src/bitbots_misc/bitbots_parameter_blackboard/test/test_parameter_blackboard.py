@@ -4,6 +4,16 @@ import cv2
 import numpy as np
 import pytest
 import rclpy
+from bitbots_parameter_blackboard.parameter_blackboard import (
+    FIELD_MAP_MAX_INTENSITY,
+    ParameterBlackboard,
+    check_overrides,
+    config_directory,
+    load_field_map,
+    load_parameter_files,
+    occupancy_grid_from_field_map,
+    parameter_files,
+)
 from bitbots_utils.utils import (
     MissingGlobalParameterError,
     get_global_parameters,
@@ -12,16 +22,6 @@ from bitbots_utils.utils import (
 from nav_msgs.msg import OccupancyGrid
 from rclpy.node import Node
 from rclpy.parameter import Parameter
-
-from bitbots_parameter_blackboard.parameter_blackboard import (
-    FIELD_MAP_MAX_INTENSITY,
-    ParameterBlackboard,
-    config_directory,
-    load_field_map,
-    load_parameter_files,
-    occupancy_grid_from_field_map,
-    parameter_files,
-)
 
 FIELD_NAME = "labor"
 
@@ -44,13 +44,30 @@ def test_later_parameter_files_take_precedence(tmp_path: Path):
     assert parameters["field.size.x"].value == 5.0
 
 
+def test_overrides_must_replace_file_parameters_of_the_same_type():
+    files = {"bot_id": Parameter("bot_id", value=1), "role": Parameter("role", value="offense")}
+
+    assert check_overrides({"bot_id": Parameter("bot_id", value=3)}, files) == []
+    assert check_overrides({"field.name": Parameter("field.name", value="labor")}, files) == []
+
+    problems = check_overrides(
+        {"boot_id": Parameter("boot_id", value=3), "role": Parameter("role", value=2)},
+        files,
+    )
+    assert len(problems) == 2
+    assert "'boot_id' is not defined" in problems[0]
+    assert "'role' is a STRING" in problems[1]
+
+
 def test_missing_parameter_file_raises(tmp_path: Path):
     with pytest.raises(FileNotFoundError):
         load_parameter_files([tmp_path / "does_not_exist.yaml"])
 
 
 def test_sim_game_settings_are_only_loaded_in_simulation(tmp_path: Path):
-    assert len(parameter_files(tmp_path, FIELD_NAME, False, "12")) == len(parameter_files(tmp_path, FIELD_NAME, True, None))
+    assert len(parameter_files(tmp_path, FIELD_NAME, False, "12")) == len(
+        parameter_files(tmp_path, FIELD_NAME, True, None)
+    )
     assert parameter_files(tmp_path, FIELD_NAME, True, "12")[-1].name == "sim_game_settings_12.yaml"
 
 

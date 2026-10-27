@@ -12,6 +12,16 @@ def generate_launch_description() -> LaunchDescription:
     def create_node(context, *args, **kwargs):
         in_sim = LaunchConfiguration("sim").perform(context) == "true"
         field_name = LaunchConfiguration("fieldname").perform(context)
+        parameters_file = LaunchConfiguration("parameters_file").perform(context)
+
+        parameters: list = [
+            {"simulation_active": in_sim},
+            {"use_sim_time": in_sim},
+            {"field.name": field_name},
+        ]
+        if parameters_file:
+            # Later entries take precedence, so the overrides win over the settings above
+            parameters.append(parameters_file)
 
         # The node loads the configuration files (field, global parameters, game settings) itself
         return [
@@ -19,11 +29,7 @@ def generate_launch_description() -> LaunchDescription:
                 package="bitbots_parameter_blackboard",
                 executable="parameter_blackboard",
                 name="parameter_blackboard",
-                parameters=[
-                    {"simulation_active": in_sim},
-                    {"use_sim_time": in_sim},
-                    {"field.name": field_name},
-                ],
+                parameters=parameters,
             )
         ]
 
@@ -35,6 +41,13 @@ def generate_launch_description() -> LaunchDescription:
                 "fieldname",
                 default_value=PythonExpression(["'hsl_kid' if '", sim, "' == 'true' else 'labor'"]),
                 description="Field name to load parameters for.",
+            ),
+            DeclareLaunchArgument(
+                "parameters_file",
+                default_value="",
+                description="ROS parameter file with overrides of global parameters, e.g. passed by "
+                "bitbots_orchestrate. They take precedence over the configuration files and may only "
+                "replace parameters defined there.",
             ),
             IncludeLaunchDescription(
                 AnyLaunchDescriptionSource(

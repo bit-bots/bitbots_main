@@ -6,17 +6,16 @@ Description
 
 |description|
 
-When the robot software is started through ``bitbots_orchestrate`` (``pixi run teamplayer``),
-the orchestrator publishes the global configuration of this package itself, with the same interface as described
-below; see the ``blackboard`` section of ``config/teamplayer.yaml`` in ``bitbots_bringup``.
-The ``parameter_blackboard`` node of this package serves the launch files that do not use the orchestrator.
-
 The ``parameter_blackboard`` node loads the global configuration itself.
 It merges the configuration of the selected field (``config/fields/<field.name>/config.yaml``),
 ``config/global_parameters.yaml``, ``config/game_settings.yaml`` and, in simulation, the game settings of the
 simulated robot that matches ``ROS_DOMAIN_ID``.
 Later files take precedence, parameters passed to the node directly (e.g. by the launch file) take precedence over all
 files.
+The launch file accepts a ``parameters_file`` with such overrides, which ``bitbots_orchestrate`` uses to pass
+``--global`` values on.
+Overrides may only replace parameters that the files define, with a value of the same type;
+otherwise the node refuses to start, so that a typo does not silently add a parameter.
 See ``parameter_files`` in ``bitbots_parameter_blackboard/parameter_blackboard.py`` for the exact order.
 
 The configuration is exposed in two ways:
