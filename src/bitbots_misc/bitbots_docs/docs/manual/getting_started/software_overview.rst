@@ -18,8 +18,9 @@ Orchestrator and Teamplayer TUI
 ``bitbots_orchestrate`` (``pixi run orchestrate``) starts, stops and restarts the software components of the robot,
 each as its own process group, and keeps their logs.
 Its output is the combined log of all components.
-Pass ``--autostart`` to start all enabled components right away,
-and ``--help`` to see how to preselect the simulation mode, field, DSD file and components.
+Pass ``--autostart`` to start all enabled components right away.
+``--profile <name>``, ``--set <parameter>=<value>``, ``--enable <component>`` and ``--disable <component>``
+preselect what is started, see ``--help``.
 
 ``teamplayer`` (``pixi run teamplayer``) is a TUI for the orchestrator.
 It configures and starts the components, shows their state and logs, and restarts or stops single components.
@@ -40,6 +41,25 @@ For example, the current state can be queried with:
 .. code-block:: bash
 
    curl --unix-socket $XDG_RUNTIME_DIR/bitbots_orchestrate/default.sock http://localhost/api/v1/status
+
+The Stack File
+--------------
+
+What the orchestrator starts is declared in ``config/teamplayer.yaml`` of ``bitbots_bringup``,
+not in the orchestrator itself.
+It lists the stack's parameters, named profiles (e.g. ``sim``), and its components.
+Each component names the launch file or executable that runs it and may declare
+
+- ``if``: parameter values under which it is available, e.g. only on hardware,
+- ``requires``: components that have to run before it is started,
+- ``fallback_for``: a component it replaces while that one is disabled,
+- ``locked``: that it cannot be deselected.
+
+To add a component, add an entry there and declare its package as ``exec_depend`` of ``bitbots_bringup``.
+The tests of ``bitbots_bringup`` check that the file is consistent,
+that every profile resolves without missing requirements,
+and that all referenced launch files and packages exist and are declared.
+The header of the file documents all fields.
 
 Bringup Launch Scripts
 ======================

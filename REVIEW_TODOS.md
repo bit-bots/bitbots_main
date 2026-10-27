@@ -31,11 +31,14 @@ re-check of build-system findings against the head of PR #944
       it explicitly as an operator/dev tool.
       Decision: migrate. Done: process management split into
       `bitbots_orchestrate` (backend with HTTP-over-Unix-socket API) and the
-      `teamplayer` TUI frontend, both in `src/bitbots_bringup`. Open: TUI
-      lacks parts of `teamplayer.launch` (player state aggregator, workspace
-      status publisher, static map→odom when localization is off); switch
-      deploy to `bitbots_orchestrate --autostart --no-zenoh`; cover the sim
-      launch files; then remove `teamplayer.launch`.
+      `teamplayer` TUI frontend, both in `src/bitbots_bringup`. The stack is
+      declared in `bitbots_bringup/config/teamplayer.yaml` (parameters,
+      profiles, components with `if`/`requires`/`fallback_for`/`locked`),
+      which now also covers the player state aggregator, the workspace
+      status publisher and the static map→odom fallback. Open: switch deploy
+      to `bitbots_orchestrate --autostart --profile game --disable zenoh`;
+      cover the multi-robot sim launch (per-instance environment such as
+      `ROS_DOMAIN_ID`); then remove `teamplayer.launch`.
 
 ## Nits / polish
 
