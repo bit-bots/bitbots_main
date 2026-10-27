@@ -84,7 +84,7 @@ class PlayerStateAggregator(Node):
 
         if self._relative_ball is not None:
             try:
-                response.ball = self._tf_buffer.transform(self._relative_ball, self.ball_frame_out)
+                response.ball = self._tf_buffer.transform(self._relative_ball, self.ball_frame_out, timeout=Duration(seconds=0.5))
             except Exception as e:
                 self.get_logger().warn(str(e), throttle_duration_sec=10.0)
                 pass
