@@ -21,7 +21,7 @@
 #
 # ${global_parameters_file} is provided by the orchestrator instead of being declared: a ROS
 # parameter file with the overrides of global parameters given through `--global name=value` or
-# its API, or empty if there are none. Components receive it when they start.
+# its API; without overrides it holds no parameters. Components receive it when they start.
 version: 1
 
 parameters:

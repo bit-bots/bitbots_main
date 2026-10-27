@@ -202,7 +202,11 @@ async fn global_parameters_are_written_for_the_next_start() {
     let (client, _logs, _guard) = serve("globals").await;
     let file = client.socket().with_extension("global_parameters.yaml");
     assert!(client.status().await.unwrap().global_parameters.is_empty());
-    assert!(!file.exists());
+    let no_overrides = std::fs::read_to_string(&file).unwrap();
+    assert!(
+        no_overrides.contains("ros__parameters: {}"),
+        "{no_overrides}"
+    );
 
     let status = client
         .set_global_parameters(&SetGlobalParameters::from([(
@@ -238,5 +242,5 @@ async fn global_parameters_are_written_for_the_next_start() {
         .await
         .unwrap();
     assert!(status.global_parameters.is_empty());
-    assert!(!file.exists());
+    assert_eq!(std::fs::read_to_string(&file).unwrap(), no_overrides);
 }

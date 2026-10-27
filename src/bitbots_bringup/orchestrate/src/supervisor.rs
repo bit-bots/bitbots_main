@@ -112,7 +112,8 @@ pub struct Supervisor {
 
 impl Supervisor {
     /// `global_parameters_file` is where the overrides of global parameters are written for the
-    /// components. Fails if the choices of a parameter cannot be found.
+    /// components. Fails if the choices of a parameter cannot be found or the file cannot be
+    /// written.
     pub fn new(
         stack: Stack,
         logs: Arc<LogStore>,
@@ -137,8 +138,10 @@ impl Supervisor {
                 choices.insert(p.name.clone(), names);
             }
         }
-        // A file of an earlier run of this instance must not reach the components.
-        let _ = std::fs::remove_file(&global_parameters_file);
+        // Components always receive a valid file, also without overrides. This also replaces
+        // the file of an earlier run of this instance.
+        write_parameter_file(&global_parameters_file, &IndexMap::new())
+            .context("cannot write the global parameters")?;
         let (msg_tx, msg_rx) = mpsc::unbounded_channel();
         let components = stack
             .components()
@@ -188,26 +191,37 @@ impl Supervisor {
                 None => global_parameters.shift_remove(&name),
             };
         }
-        if global_parameters.is_empty() {
-            // Nothing to pass on, see global_parameters_path().
-            let _ = std::fs::remove_file(&self.global_parameters_file);
-        } else {
-            write_parameter_file(&self.global_parameters_file, &global_parameters).map_err(
-                |e| ActionError::Failed(format!("cannot write the global parameters: {e:#}")),
-            )?;
-        }
+        write_parameter_file(&self.global_parameters_file, &global_parameters).map_err(|e| {
+            ActionError::Failed(format!("cannot write the global parameters: {e:#}"))
+        })?;
         self.global_parameters = global_parameters;
         Ok(())
     }
 
-    /// Path substituted for `${global_parameters_file}`; empty while there are no overrides, so
-    /// that components see that there is nothing to load.
+    /// Path substituted for `${global_parameters_file}`; the file always exists and holds no
+    /// parameters while there are no overrides.
     fn global_parameters_path(&self) -> String {
-        if self.global_parameters.is_empty() {
-            String::new()
-        } else {
-            self.global_parameters_file.display().to_string()
+        self.global_parameters_file.display().to_string()
+    }
+
+    /// The commands of a component, refused if a launch argument would be empty, which
+    /// `ros2 launch` rejects.
+    fn component_commands(&self, comp_idx: usize) -> Result<Vec<Vec<String>>, ActionError> {
+        let cmds = self
+            .stack
+            .commands(comp_idx, &self.values, &self.global_parameters_path());
+        for cmd in &cmds {
+            if cmd.get(1).map(String::as_str) != Some("launch") {
+                continue;
+            }
+            if let Some(arg) = cmd.iter().skip(4).find(|a| a.ends_with(":=")) {
+                return Err(ActionError::Conflict(format!(
+                    "{}: launch argument '{arg}' would be empty, which ros2 launch rejects",
+                    self.stack.components()[comp_idx].key
+                )));
+            }
         }
+        Ok(cmds)
     }
 
     /// Fails if a value is none of the parameter's choices.
@@ -434,11 +448,10 @@ impl Supervisor {
                 )));
             }
         }
+        // Fail now rather than after waiting for the requirements.
+        let cmds = self.component_commands(comp_idx)?;
         let missing = self.missing_requirements(comp_idx);
         if missing.is_empty() {
-            let cmds = self
-                .stack
-                .commands(comp_idx, &self.values, &self.global_parameters_path());
             self.spawn_commands(comp_idx, cmds);
         } else {
             let msg = format!("waiting for {} to run", missing.join(", "));
@@ -626,10 +639,15 @@ impl Supervisor {
             if self.components[comp_idx].state == ProcState::Waiting
                 && self.missing_requirements(comp_idx).is_empty()
             {
-                let cmds =
-                    self.stack
-                        .commands(comp_idx, &self.values, &self.global_parameters_path());
-                self.spawn_commands(comp_idx, cmds);
+                // The parameters may have changed while it waited.
+                match self.component_commands(comp_idx) {
+                    Ok(cmds) => self.spawn_commands(comp_idx, cmds),
+                    Err(e) => {
+                        self.component_log(comp_idx)
+                            .push_orchestrate(&format!("cannot start: {e}"));
+                        self.components[comp_idx].state = ProcState::Crashed;
+                    }
+                }
             }
         }
     }
@@ -791,6 +809,9 @@ components:
   board:
     name: Board
     command: [board, "file=${global_parameters_file}"]
+  launched:
+    name: Launched
+    launch: { package: pkg, file: f.launch, args: { field: "${field}" } }
 "#;
 
     fn cmd(args: &[&str]) -> Vec<String> {
@@ -1074,13 +1095,16 @@ components:
         let mut sup = supervisor_for("globals");
         let board = idx(&sup, "board");
         let file = global_file("globals");
-        // Without overrides there is nothing to load.
-        assert_eq!(
-            sup.stack
-                .commands(board, &sup.values, &sup.global_parameters_path()),
-            [["board", "file="]]
-        );
-        assert!(!file.exists());
+        // Without overrides the components get a valid file without parameters.
+        let expected = [["board".to_string(), format!("file={}", file.display())]];
+        assert_eq!(sup.component_commands(board).unwrap(), expected);
+        let empty = serde_norway::Value::Mapping(Default::default());
+        let params_in_file = || {
+            let text = std::fs::read_to_string(&file).unwrap();
+            let doc: serde_norway::Value = serde_norway::from_str(&text).unwrap();
+            doc["/**"]["ros__parameters"].clone()
+        };
+        assert_eq!(params_in_file(), empty);
 
         sup.apply_cli(
             None,
@@ -1106,13 +1130,29 @@ components:
         assert_eq!(params["field"]["size"]["x"], serde_norway::Value::from(6.5));
         assert_eq!(params["role"], serde_norway::Value::from("goalie"));
 
-        // Removing the last override removes the file.
+        // Removing the last override leaves a file without parameters.
         sup.set_global_parameters(SetGlobalParameters::from_iter(
             ["bot_id", "field.size.x", "role"].map(|n| (n.to_string(), None)),
         ))
         .unwrap();
-        assert!(!file.exists());
-        assert_eq!(sup.global_parameters_path(), "");
+        assert_eq!(params_in_file(), empty);
+    }
+
+    #[test]
+    fn empty_launch_arguments_are_refused() {
+        let mut sup = supervisor();
+        let launched = idx(&sup, "launched");
+        sup.set_parameters(SetParameters::from([(
+            "field".to_string(),
+            Value::String(String::new()),
+        )]))
+        .unwrap();
+        let err = sup.start_component(launched).unwrap_err();
+        assert!(
+            matches!(&err, ActionError::Conflict(m) if m.contains("'field:=' would be empty")),
+            "{err:?}"
+        );
+        assert_eq!(sup.components[launched].state, ProcState::Idle);
     }
 
     #[test]
