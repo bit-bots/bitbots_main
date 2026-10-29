@@ -46,3 +46,7 @@ $FirstDecision
     PARAMETER_SUBBEHAVIOR --> #ParameterSubBehavior + key2:value2 + key1:value1
     NESTED_PARAMETER_SUBBEHAVIOR --> #NestedParameterSubBehavior + key_nested2:nested2 + key_nested1:nested1
     SEQUENCE_TREE --> #SequenceTree
+    DECISION_AFTER_ACTION --> @FirstAction, $ThirdDecision
+        FIRST --> @FirstAction
+        SECOND --> @SecondAction
+    SUBTREE_AFTER_ACTION --> @FirstAction, #SubBehavior

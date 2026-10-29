@@ -16,12 +16,10 @@ from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElem
 from dynamic_stack_decider.abstract_stack_element import AbstractStackElement
 from dynamic_stack_decider.logger import get_logger
 from dynamic_stack_decider.parser import DsdParser
-from dynamic_stack_decider.sequence_element import SequenceElement
 from dynamic_stack_decider.tree import (
     AbstractTreeElement,
     ActionTreeElement,
     DecisionTreeElement,
-    SequenceTreeElement,
     Tree,
 )
 
@@ -188,6 +186,9 @@ class DSD:
                 element.name in self.actions
             ), f'Provided element "{element.name}" was not found in registered actions!'
             element.module = self.actions[element.name]
+            # Bind the rest of the chain (e.g. the following actions of a sequence)
+            if element.next_element is not None:
+                self._bind_modules(element.next_element)
         elif isinstance(element, DecisionTreeElement):
             assert (
                 element.name in self.decisions
@@ -195,18 +196,12 @@ class DSD:
             element.module = self.decisions[element.name]
             for child in element.children.values():
                 self._bind_modules(child)
-        elif isinstance(element, SequenceTreeElement):
-            for action in element.action_elements:
-                self._bind_modules(action)
         else:
             raise ValueError(f'Unknown parser tree element type "{type(element)}" for element "{element}"!')
 
     def _init_element(self, element: AbstractTreeElement) -> AbstractStackElement:
         """Initializes the module belonging to the given element."""
-        if isinstance(element, SequenceTreeElement):
-            return SequenceElement(self.blackboard, self, element.action_elements, self._init_element)
-        else:
-            return element.module(self.blackboard, self, element.parameters)
+        return element.module(self.blackboard, self, element.parameters)
 
     def set_start_element(self, start_element: AbstractTreeElement):
         """
@@ -274,12 +269,7 @@ class DSD:
             if reevaluate:
                 # reset flag
                 self.do_not_reevaluate = False
-            if (
-                isinstance(current_instance, AbstractActionElement)
-                and current_instance.never_reevaluate
-                or isinstance(current_instance, SequenceElement)
-                and current_instance.current_action.never_reevaluate
-            ):
+            if isinstance(current_instance, AbstractActionElement) and current_instance.never_reevaluate:
                 # Deactivate reevaluation if action had never_reevaluate flag
                 self.set_do_not_reevaluate()
             # Run the top module
@@ -316,15 +306,19 @@ class DSD:
                 # stop reevaluating
                 self.stack_reevaluate = False
             else:
-                if isinstance(self.stack[-1][1], SequenceElement):
-                    # If we are in a sequence, only one action should be popped
-                    if not self.stack[-1][1].in_last_element():
-                        # We are still in the sequence, therefore we do not want to pop the SequenceElement,
-                        # only a single element of the sequence
-                        # We also do not want to reset do_not_reevaluate because an action in the sequence
-                        # may control the stack beyond its own lifetime but in the sequence element's lifetime
-                        self.stack[-1][1].pop_one().on_pop()
-                        return
+                current_tree_element = self.stack[-1][0]
+                if (
+                    isinstance(current_tree_element, ActionTreeElement)
+                    and current_tree_element.next_element is not None
+                ):
+                    # This action is part of a chain (e.g. a sequence). Instead of returning to the
+                    # element below, we advance to the next element in the chain.
+                    # We do not reset do_not_reevaluate because an action in the chain may control
+                    # the stack beyond its own lifetime but within the chain's lifetime.
+                    self.stack.pop()[1].on_pop()
+                    next_element = current_tree_element.next_element
+                    self.stack.append((next_element, self._init_element(next_element)))
+                    return
                 # Remove the last element of the stack
                 self.stack.pop()[1].on_pop()
 
@@ -352,6 +346,9 @@ class DSD:
             for tree_elem, elem_instance in reversed(self.stack):
                 elem_data = elem_instance.repr_dict()
                 elem_data["activation_reason"] = tree_elem.activation_reason
+                # Attach the id of the corresponding tree element so the visualization can match this
+                # stack element to the exact tree element (names alone are ambiguous within a chain).
+                elem_data["id"] = id(tree_elem)
                 elem_data["next"] = data
                 data = elem_data
 
@@ -378,11 +375,9 @@ class DSD:
 
         # Get the top element
         stack_top = self.stack[-1][1]
-        # Check if it is an action or a sequence element and retrieve the current action
+        # Check if it is an action and retrieve it
         if isinstance(stack_top, AbstractActionElement):
             current_action = stack_top
-        elif isinstance(stack_top, SequenceElement):
-            current_action = stack_top.current_action
         else:
             return
 
