@@ -137,9 +137,7 @@ $IsPenalized
         READY --> $DoOnce
             NOT_DONE --> #ActivateDoubleTouchProtection
             DONE --> $AnyGoalScoreRecently + time:50
-                YES --> $ReachedAndAlignedToConfigRolePosition
-                    YES --> #StandAndLook
-                    NO --> #PositioningReady
+                YES --> #PositioningReady
                 NO --> $DoOnce
                     NOT_DONE --> @ChangeAction + action:waiting + r:false, @LookAtFieldFeatures + r:false, @Stand + duration:2
                     DONE --> $ReachedAndAlignedToConfigRolePosition
