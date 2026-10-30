@@ -31,12 +31,15 @@ find_package(zstd_vendor REQUIRED)
 find_package(zstd REQUIRED)
 
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
+find_package(bitbots_localization REQUIRED)
 
 set(GENERATED_CODE "${CMAKE_CURRENT_BINARY_DIR}/generated_code.cpp")
 
-add_custom_command(
-  OUTPUT ${GENERATED_CODE}
+# Discover interfaces on every build; the generator preserves unchanged output.
+add_custom_target(generate_bridge_interfaces
+  BYPRODUCTS ${GENERATED_CODE}
   COMMAND Python3::Interpreter ${CMAKE_CURRENT_SOURCE_DIR}/bin/generate_code.py --output ${GENERATED_CODE}
+    --require-service bitbots_localization/srv/ResetFilter
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/bin/generate_code.py ${CMAKE_CURRENT_SOURCE_DIR}/resources/code_template.cpp.em
 )
 
@@ -58,6 +61,7 @@ add_library(${PROJECT_NAME}_lib SHARED
   ${GENERATED_CODE}
 )
 
+add_dependencies(${PROJECT_NAME}_lib generate_bridge_interfaces)
 
 # generate per interface compilation units to keep the memory usage low
 ament_index_get_resources(ros2_interface_packages "rosidl_interfaces")
@@ -173,6 +177,11 @@ ament_export_dependencies(
 )
 
 if(BUILD_TESTING)
+  find_package(ament_cmake_pytest REQUIRED)
+  ament_add_pytest_test(test_generate_code test/test_generate_code.py
+    APPEND_ENV PYTEST_DISABLE_PLUGIN_AUTOLOAD=1
+  )
+
   find_package(ament_lint_auto REQUIRED)
   find_package(test_msgs REQUIRED)
   ament_lint_auto_find_test_dependencies()

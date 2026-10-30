@@ -5,9 +5,9 @@
 ; See https://github.com/flova/git-include
 ;
 [subrepo]
-	remote = ssh://git@github.com/bit-bots/domain_bridge
-	branch = main
-	commit = a988587e9e664c46710cf90436907b60ee1caea8
+	remote = https://github.com/bit-bots/domain_bridge.git
+	branch = fix/localization_service
+	commit = e88d2dd79c7664175ae80490665de76e261176bb
 	parent = 4f07f363a9e37c07f6e466dc8fb048ec4ea3a9a6
 	method = merge
 	cmdver = git-include/0.1.4
