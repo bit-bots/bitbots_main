@@ -5,7 +5,7 @@
     <arg name="behavior_dsd_file" default="main.dsd" description="The behavior dsd file that should be used" />
     <arg name="game_controller" default="true" description="Whether the Gamecontroller module should be started" />
     <arg name="ipm" default="true" description="Whether the inverse perspective mapping should be started"/>
-    <arg name="localization" default="true" description="Select particle-filter localization, simulator-ground-truth localization, or a static map frame" />
+    <arg name="localization" default="particle" description="Select particle-filter localization (particle), simulator-ground-truth localization (fake), or a static map frame (static)" />
     <arg name="motion" default="true" description="Whether the motion control system should be started" />
     <arg name="path_planning" default="true" description="Whether the path planning should be started"/>
     <arg name="teamcom" default="false" description="Whether the team communication system should be started" />

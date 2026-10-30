@@ -5,7 +5,7 @@
     <arg name="behavior" default="true" description="Whether the behavior control system should be started" />
     <arg name="game_controller" default="true" description="Whether the Gamecontroller module should be started" />
     <arg name="ipm" default="true" description="Whether the inverse perspective mapping should be started"/>
-    <arg name="localization" default="true" description="Select particle-filter localization, simulator-ground-truth localization, or a static map frame" />
+    <arg name="localization" default="particle" description="Select particle-filter localization (particle), simulator-ground-truth localization (fake), or a static map frame (static)" />
     <arg name="path_planning" default="true" description="Whether the path planning should be started"/>
     <arg name="sim" default="false" description="Whether the robot is running in simulation or on real hardware" />
     <arg name="teamcom" default="false" description="Whether the team communication system should be started" />
@@ -65,7 +65,7 @@
         </include>
     </group>
     <!-- launch localization or fake localization -->
-    <group if="$(eval '\'$(var localization)\' == \'true\'')">
+    <group if="$(eval '\'$(var localization)\' == \'particle\'')">
         <include file="$(find-pkg-share bitbots_localization)/launch/localization.launch">
             <arg name="sim" value="$(var sim)"/>
         </include>
@@ -76,7 +76,7 @@
             <arg name="sim" value="$(var sim)"/>
         </include>
     </group>
-    <group if="$(eval '\'$(var localization)\' == \'none\'')">
+    <group if="$(eval '\'$(var localization)\' == \'static\'')">
         <!-- simulate map frame -->
         <node name="map_odom" pkg="tf2_ros" exec="static_transform_publisher" args="--x 0 --y 0 --z 0 --roll 0 --pitch 0 --yaw 0 --frame-id map --child-frame-id odom" />
         <!-- publish perfect covariance -->

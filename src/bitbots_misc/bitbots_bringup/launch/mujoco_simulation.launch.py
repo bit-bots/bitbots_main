@@ -23,7 +23,7 @@ TEAMPLAYER_ARGS = [
     ("behavior_dsd_file", "The behavior dsd file that should be used"),
     ("game_controller", "Whether the Gamecontroller module should be started"),
     ("ipm", "Whether the inverse perspective mapping should be started"),
-    ("localization", "Select particle-filter localization, simulator-ground-truth localization, or a static map frame"),
+    ("localization", "Select particle-filter localization (particle), simulator-ground-truth localization (fake), or a static map frame (static)"),
     ("motion", "Whether the motion control system should be started"),
     ("path_planning", "Whether the path planning should be started"),
     ("teamcom", "Whether the team communication system should be started"),
