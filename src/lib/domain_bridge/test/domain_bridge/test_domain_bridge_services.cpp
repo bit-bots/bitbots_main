@@ -25,7 +25,9 @@
 #include "rclcpp/node.hpp"
 #include "test_msgs/srv/empty.hpp"
 
+#include "bitbots_localization/srv/reset_filter.hpp"
 #include "domain_bridge/domain_bridge.hpp"
+#include "domain_bridge/generated_code_interface.hpp"
 
 
 static constexpr std::size_t kDomain1{1u};
@@ -144,4 +146,39 @@ TEST_F(TestDomainBridgeServices, bridge_service)
   bridge.add_to_executor(spinner.get_executor());
   EXPECT_TRUE(poll_condition([&got_request]() {return got_request.load();}, 3s));
   EXPECT_EQ(future.wait_for(3s), std::future_status::ready);
+}
+
+TEST_F(TestDomainBridgeServices, bridge_localization_reset_by_name)
+{
+  using ResetFilter = bitbots_localization::srv::ResetFilter;
+  std::atomic<bool> got_request = false;
+  auto server = node_1_->create_service<ResetFilter>(
+    "reset_localization",
+    [&got_request](
+      const std::shared_ptr<ResetFilter::Request> request,
+      std::shared_ptr<ResetFilter::Response> response)
+    {
+      got_request = request->init_mode == ResetFilter::Request::OWN_SIDELINE;
+      response->success = got_request.load();
+    });
+  auto client = node_2_->create_client<ResetFilter>("robot/reset_localization");
+
+  domain_bridge::DomainBridge bridge;
+  domain_bridge::ServiceBridgeOptions options;
+  options.remap_name("robot/reset_localization");
+  ASSERT_TRUE(domain_bridge::add_service_bridge_by_name(
+    bridge, "reset_localization", "bitbots_localization/srv/ResetFilter",
+    kDomain1, kDomain2, options));
+
+  ScopedAsyncSpinner spinner{context_1_};
+  spinner.get_executor().add_node(node_1_);
+  spinner.get_executor().add_node(node_2_);
+  bridge.add_to_executor(spinner.get_executor());
+  ASSERT_TRUE(client->wait_for_service(10s));
+  auto request = std::make_shared<ResetFilter::Request>();
+  request->init_mode = ResetFilter::Request::OWN_SIDELINE;
+  auto future = client->async_send_request(request);
+  ASSERT_EQ(future.wait_for(10s), std::future_status::ready);
+  EXPECT_TRUE(future.get()->success);
+  EXPECT_TRUE(got_request.load());
 }
