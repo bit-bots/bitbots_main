@@ -19,6 +19,13 @@ namespace bl = bitbots_localization;
 
 namespace bitbots_localization {
 
+/**
+ * Validates that all intensities of the given grayscale map are within the expected [0, 100] range.
+ * Throws a std::invalid_argument with a helpful message if the map exceeds the range,
+ * which e.g. happens for maps from the field map generator that use the full [0, 255] range.
+ */
+void validate_map_value_range(const cv::Mat& map, const std::string& map_path);
+
 struct FieldDimensions {
   double x = 0;        // in m, x is the length of the field from goal to goal
   double y = 0;        // in m, y is the width of the field

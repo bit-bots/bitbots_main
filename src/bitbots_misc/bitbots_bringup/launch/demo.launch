@@ -12,5 +12,8 @@
         <arg name="sim" value="$(var sim)" />
         <arg name="teamcom" value="false" />
         <arg name="path_planning" value="true" />
+        <arg name="audio" value="false" />
+        <arg name="whistle_detector" value="false" />
+        <arg name="tts" value="false" />
     </include>
 </launch>

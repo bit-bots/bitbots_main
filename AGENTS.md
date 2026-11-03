@@ -160,7 +160,7 @@ commands may use incompatible installations or incomplete environment state.
 ## Repository Boundaries
 
 - Directories under `src/lib` with a `.gitrepo` file are imported using
-  git-subrepo. Treat them as separately maintained upstream projects.
+  git-include. Treat them as separately maintained upstream projects.
 - Avoid modifying imported libraries for a repository-local workaround unless
   the task explicitly requires an upstream library change.
 - When an imported library must change, keep the change focused, run that

@@ -49,6 +49,7 @@ python = "==3.12.1, <3.13"
 
 # Patches
 readline = ">=8.2.999"  # This is needed because we want to install an empty readline package from our models channel that leads to the system version being used. Otherwise we might have a mismatch between bash (often accessed globally ignoring the env) and readline (provided by the env)  breaking everything.
+pixi-pycharm = ">=0.0.12,<0.0.13"
 
 [feature.ros.dependencies]
 # Misc dependencies for our ROS 2 packages
@@ -64,7 +65,7 @@ eigen = ">=3.4.0,<4"
 fabric = ">=3.2.2,<4"
 flask = ">=3.1.2,<4"
 gitpython = ">=3.1.45,<4"
-git-subrepo = ">=0.4.9,<0.5"
+git-include = ">=0.1.4,<0.2"
 invoke = ">=2.2.1,<3"
 ipython = ">=9.7.0,<10"
 jaxtyping = ">=0.3.2,<0.4"
@@ -156,6 +157,7 @@ ros-jazzy-rosidl-default-runtime = ">=1.6.0,<2"
 ros-jazzy-rosidl-runtime-c = ">=4.6.7,<5"
 ros-jazzy-rqt-gui = ">=1.6.0,<2"
 ros-jazzy-rqt-gui-py = ">=1.6.0,<2"
+ros-jazzy-rqt-tf-tree = ">=1.0.5,<2"
 ros-jazzy-sensor-msgs = ">=5.3.6,<6"
 ros-jazzy-std-msgs = ">=5.3.6,<6"
 ros-jazzy-std-srvs = ">=5.3.6,<6"

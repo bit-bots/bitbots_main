@@ -96,7 +96,9 @@ class Robot:
         )
 
     def _get_name(self, base_name: str) -> str:
-        return f"robot_{base_name}_{self.index}"
+        # Each robot is attached with a unique "robot_<index>_" prefix in the world XML,
+        # so its element names are the prefix followed by the bare model element name.
+        return f"robot_{self.index}_{base_name}"
 
     @property
     def domain(self) -> int:
