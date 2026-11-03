@@ -16,7 +16,9 @@ DOWN = replace(UP, upright=0.1, relative_height=0.3)
 
 
 def setup():
-    config = RefereeConfig.from_parameters({name: spec.default for name, spec in PARAMETERS.items()})
+    values = {name: spec.default for name, spec in PARAMETERS.items()}
+    values.update(home_team_id=1, away_team_id=2)
+    config = RefereeConfig.from_parameters(values)
     state = replace(MatchState.initial(config), state="STATE_PLAYING", stopped=False)
     commands = Mock()
     completed = Future()

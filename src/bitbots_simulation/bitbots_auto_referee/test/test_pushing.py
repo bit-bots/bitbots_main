@@ -16,8 +16,9 @@ UP = RobotMotion(0, 0, 0, 0, 1, 1)
 
 
 def setup(config=None):
-    values = RefereeConfig.from_parameters({key: spec.default for key, spec in PARAMETERS.items()})
-    state = replace(MatchState.initial(values), state="STATE_PLAYING", stopped=False)
+    values = {key: spec.default for key, spec in PARAMETERS.items()}
+    values.update(home_team_id=1, away_team_id=2)
+    state = replace(MatchState.initial(RefereeConfig.from_parameters(values)), state="STATE_PLAYING", stopped=False)
     commands = Mock()
     completed = Future()
     completed.set_result(TeleportResult(True, "placed"))

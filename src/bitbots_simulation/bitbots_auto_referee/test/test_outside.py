@@ -13,7 +13,9 @@ from bitbots_auto_referee.rules.outside import FieldGeometry
 
 
 def state():
-    config = RefereeConfig.from_parameters({name: spec.default for name, spec in PARAMETERS.items()})
+    values = {name: spec.default for name, spec in PARAMETERS.items()}
+    values.update(home_team_id=1, away_team_id=2)
+    config = RefereeConfig.from_parameters(values)
     return replace(MatchState.initial(config), state="STATE_PLAYING", stopped=False)
 
 
@@ -22,13 +24,13 @@ def sample(seconds, ball, **kwargs):
 
 
 def test_whole_ball_and_marking_must_clear_boundary():
-    field = FieldGeometry()
+    field = FieldGeometry(home_defends_negative_x=False)
     assert not field.outside((4.55, 0.0, 0.1))
     assert field.outside((4.6, 0.0, 0.1))
 
 
 def test_goal_height_sides_and_own_goal():
-    field = FieldGeometry()
+    field = FieldGeometry(home_defends_negative_x=False)
     match = state()
     for last_touch in (1, 2, None):
         decision = field.classify((4.0, 0.0, 0.1), (5.0, 0.0, 0.1), match, last_touch, 0)
@@ -40,7 +42,7 @@ def test_goal_height_sides_and_own_goal():
 
 
 def test_restart_awards_and_first_crossing():
-    field = FieldGeometry()
+    field = FieldGeometry(home_defends_negative_x=False)
     match = state()
     corner = field.classify((4.0, 2.0, 0.1), (5.0, 2.0, 0.1), match, 1, 0)
     assert (corner.kind, corner.team_id, corner.position) == ("SET_PLAY_CORNER_KICK", 2, (4.5, 3.0))
@@ -55,7 +57,7 @@ def test_goal_delay_acknowledgement_and_ready_set_playing():
     commands = Mock()
     result = Future()
     commands.teleport_ball.return_value = result
-    checker = RuleChecker({}, teleport_commands=commands)
+    checker = RuleChecker({}, teleport_commands=commands, field=FieldGeometry(home_defends_negative_x=False))
     match = checker.check_rules(state(), sample(0, (4.0, 0.0, 0.1)))
     match = checker.check_rules(match, sample(1, (5.0, 0.0, 0.1)))
     match = checker.check_rules(match, sample(2, (5.0, 0.0, 0.1)))
@@ -81,7 +83,7 @@ def test_failed_placement_does_not_repeat_score_or_command():
     result = Future()
     result.set_result(TeleportResult(False, "unavailable"))
     commands.teleport_ball.return_value = result
-    checker = RuleChecker({}, teleport_commands=commands)
+    checker = RuleChecker({}, teleport_commands=commands, field=FieldGeometry(home_defends_negative_x=False))
     match = checker.check_rules(state(), sample(0, (4.0, 0.0, 0.1)))
     for seconds in (1, 3, 4, 10):
         match = checker.check_rules(match, sample(seconds, (5.0, 0.0, 0.1)))
@@ -90,7 +92,7 @@ def test_failed_placement_does_not_repeat_score_or_command():
 
 
 def test_external_teleport_does_not_score():
-    checker = RuleChecker({})
+    checker = RuleChecker({}, field=FieldGeometry(home_defends_negative_x=False))
     match = checker.check_rules(state(), sample(0, (0.0, 0.0, 0.1)))
     match = checker.check_rules(match, sample(1, (5.0, 0.0, 0.1), ball_teleported=True))
     match = checker.check_rules(match, sample(4, (5.0, 0.0, 0.1)))
@@ -101,7 +103,7 @@ def test_set_play_counts_down_and_rearms_for_next_exit():
     commands = Mock()
     result = Future()
     commands.teleport_ball.return_value = result
-    checker = RuleChecker({}, teleport_commands=commands)
+    checker = RuleChecker({}, teleport_commands=commands, field=FieldGeometry(home_defends_negative_x=False))
     checker.last_touch_team_id = 1
     match = checker.check_rules(state(), sample(0, (0.0, 3.0, 0.1)))
     match = checker.check_rules(match, sample(1, (0.0, 4.0, 0.1)))
@@ -124,20 +126,21 @@ def test_set_play_counts_down_and_rearms_for_next_exit():
 
 def test_default_home_side_and_explicit_override():
     config = RefereeConfig.from_parameters({name: spec.default for name, spec in PARAMETERS.items()})
-    assert not config.home_defends_negative_x
+    assert config.home_defends_negative_x
+    match = MatchState.initial(config)
     field = FieldGeometry.from_config(config)
-    decision = field.classify((-4.0, 0.0, 0.1), (-5.0, 0.0, 0.1), state(), None, 0)
-    assert decision.team_id == config.home_team_id
-    field = replace(field, home_defends_negative_x=True)
-    decision = field.classify((-4.0, 0.0, 0.1), (-5.0, 0.0, 0.1), state(), None, 0)
+    decision = field.classify((-4.0, 0.0, 0.1), (-5.0, 0.0, 0.1), match, None, 0)
     assert decision.team_id == config.away_team_id
+    field = replace(field, home_defends_negative_x=False)
+    decision = field.classify((-4.0, 0.0, 0.1), (-5.0, 0.0, 0.1), match, None, 0)
+    assert decision.team_id == config.home_team_id
 
 
 def test_delayed_service_response_resumes_after_teleport_observation():
     commands = Mock()
     result = Future()
     commands.teleport_ball.return_value = result
-    checker = RuleChecker({}, teleport_commands=commands)
+    checker = RuleChecker({}, teleport_commands=commands, field=FieldGeometry(home_defends_negative_x=False))
     checker.last_touch_team_id = 1
     match = checker.check_rules(state(), sample(0, (0.0, 3.0, 0.1)))
     match = checker.check_rules(match, sample(1, (0.0, 4.0, 0.1)))

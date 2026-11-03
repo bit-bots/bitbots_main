@@ -14,6 +14,7 @@ ANGULAR_SPEED_LIMIT = 0.2
 JOINT_SPEED_LIMIT = 0.3
 UPRIGHT_LIMIT = 0.7
 HEIGHT_LIMIT = 0.7
+SIDELINE_CLEARANCE = 0.3
 PENALTY_SECONDS = {
     "PENALTY_MOTION_IN_SET": 15,
     "PENALTY_MOTION_IN_STOP": 45,
@@ -154,9 +155,15 @@ class MotionRules:
     def _relocate(self, robot, team_id, state, observation):
         home_negative = self.field.home_defends_negative_x == state.first_half
         own_negative = home_negative if team_id == state.teams[0].team_number else not home_negative
-        x = (-1 if own_negative else 1) * (self.field.field_length / 2 - self.field.penalty_area_length)
+        # Stable slots also separate requests queued in the same physics step.
+        teammates = sorted(
+            (index for index, team in self.robot_teams.items() if team == team_id),
+            key=lambda index: (self.robot_players[index], index),
+        )
+        slot = teammates.index(robot)
+        x = (-1 if own_negative else 1) * (slot + 0.5) * self.field.field_length / (2 * len(teammates))
         side = 1 if observation.robot_positions[robot][1] >= 0 else -1
-        y = side * self.field.field_width / 2
+        y = side * (self.field.field_width / 2 + SIDELINE_CLEARANCE)
         yaw = -side * math.pi / 2
 
         def completed(future):

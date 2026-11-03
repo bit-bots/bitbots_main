@@ -1,8 +1,15 @@
 # Bit-Bots AutoReferee
 
+## Working solo-robot baseline
+
+Commit `b5b06ae6f46e5a340a8d060825c24ad187c78c39`, marked by the annotated
+tag `auto-ref-solo-working`, is the user-confirmed working single-robot state
+before the multi-team adaptations. This historical baseline was not revalidated
+in the environment used for the integration changes.
+
 Standalone referee infrastructure for a separately running MuJoCo simulation.
-The implemented component sends the complete match state to a GameController
-receiver using UDP unicast and receives the robot's return packets. Both teams
+The implemented component sends the complete match state to the GameController
+receivers using local UDP broadcast and receives the robots' return packets. Both teams
 are always included, regardless of which team the receiving robot belongs to.
 The existing `game_controller_hsl` binary schemas are reused unchanged.
 
@@ -73,8 +80,9 @@ protocol competition category and, together with `lineup_mode`, the per-team
 player limit. The canonical mapping is `PLAYERS_PER_TEAM` in `config.py`.
 `players_per_team` is a derived property, not a launch or ROS parameter.
 The loaded simulator field and robot population are unchanged.
-Home is assigned the initial kick-off, and the first permitted player slot is
-designated goalkeeper. Initially, all permitted slots are unpenalized; these are
+Home is assigned the initial kick-off. Goalkeepers are taken from the simulator's
+role assignments, or from the explicit goalkeeper parameters in standalone mode.
+Initially, all permitted slots are unpenalized; these are
 protocol entries, not a claim that robots are connected or present on the field.
 A later match snapshot may supply fewer player entries for either team, including
 an empty team. Only a count above the match limit is rejected. Entries remain
@@ -87,13 +95,16 @@ Team message budgets initially remain empty until a rule engine manages them.
 | --- | --- |
 | `leagueSize` | Competition size; combined with lineup mode determines the per-team player limit |
 | `lineup_mode` | `foundation` or `advanced`; combined with league size determines the per-team player limit |
+| `num_robots` | Same population specification as the multi-team simulator; derives identities, roles, colors and sides |
 | `home_team_id`, `away_team_id` | Distinct protocol team identities |
+| `home_goalkeeper`, `away_goalkeeper` | Goalkeeper player numbers, or the protocol's no-goalkeeper designation |
 | `robot_team_mapping` | JSON object mapping simulator robot indices to `home` or `away` |
 | `robot_player_mapping` | Optional simulator-index to protocol player-number overrides |
-| `penalty_area_length` | Penalty area depth used for motion-in-stop placement |
+| `penalty_area_length` | Penalty area depth used for position rules |
 | `home_color`, `away_color` | Distinct field-player jersey colors |
 | `home_goalkeeper_color`, `away_goalkeeper_color` | Independently selected goalkeeper colors |
-| `target_host`, `target_port` | IPv4 unicast receiver endpoint |
+| `broadcast` | Enable delivery to all receivers sharing the GameController port |
+| `target_host`, `target_port` | IPv4 destination and shared receiver port |
 | `bind_host`, `return_port` | Local interface and return packet port |
 | `send_rate`, `response_timeout` | Wall-clock heartbeat and connection timeout |
 | `use_sim_time` | Simulator clock for the opening sequence and referee decisions |
@@ -146,6 +157,37 @@ snapshot is indicated without extrapolating the game clock. If simulation time
 stops advancing, the display reports that it is waiting for simulation progress.
 The former web server, HTML page and `ui_host`/`ui_port` parameters were removed.
 
+## Multi-team simulator configuration
+
+After merging the multi-team simulator, pass the same `num_robots` specification
+to both launches. Run AutoRef in the simulator's ROS domain, not in an individual
+robot domain. The robot stacks and their existing domain bridges remain unchanged:
+
+```sh
+pixi run -e default ros2 launch bitbots_bringup mujoco_simulation.launch.py \
+  num_robots:="$NUM_ROBOTS"
+```
+
+In another terminal in the same environment:
+
+```sh
+pixi run -e default ros2 launch bitbots_auto_referee auto_referee.launch.py \
+  num_robots:="$NUM_ROBOTS" leagueSize:="$LEAGUE_SIZE" lineup_mode:="$LINEUP_MODE"
+```
+
+AutoRef calls `bitbots_mujoco_sim.world.parse_num_robots` and
+`compute_game_settings`, using exactly the simulator's robot ordering and player
+identities. The simulator palette supplies field-player and goalkeeper colors;
+its role assignments select goalkeeper player numbers. These derived settings
+take precedence over manual team, player, color, goalkeeper and side parameters.
+The selected competition roster must accommodate every configured player.
+Unsupported team counts or an oversized lineup fail during startup.
+
+An empty `num_robots` retains explicit referee configuration and works before
+the multi-team merge. A nonempty specification requires the multi-team world
+helper; it fails explicitly if that helper is unavailable. The simulator is
+still started separately. Camera-based team classification is unchanged.
+
 ## Robot receiver configuration
 
 Use the existing `game_controller_hsl` receiver in the robot's ROS namespace.
@@ -154,16 +196,19 @@ the permitted player-number range. Its `listen_port` must match `target_port`; `
 match `return_port`. Its listen interface must accept the configured target
 address. Match the receiver's simulation-clock setting to the robot stack.
 
-The default network configuration is restricted to the local machine. For a
-receiver on another host, select its target address and a reachable local bind
-interface. The receiver sends replies to the source IP of the received packet
+The default network configuration broadcasts over the loopback network. All
+robot receivers keep their existing shared listen port and wildcard interface,
+independently of their ROS domains. No per-robot UDP port changes are required.
+For a remote receiver, disable `broadcast` and select its unicast address and a
+reachable local bind interface. The receiver sends replies to the source IP of the received packet
 at its configured answer port. Only the referee binds that return port; a bind
 conflict is an explicit startup failure rather than silently sharing replies
 with another GameController.
 
-This implementation targets a single receiver. Robot replies are indexed by
-team and player identity, but sending to multiple receivers or broadcasting is
-not enabled yet. Valid replies update `adapter.latest_responses`; connection
+Robot replies are indexed by team and player identity. Broadcast replies are
+validated against the configured roster; a loopback-bound referee also rejects
+nonlocal senders. Unicast additionally requires the configured receiver IP.
+Valid replies update `adapter.latest_responses`; connection
 loss and recovery are logged. There is no ROS status publisher yet. Wire lengths
 are converted to meters, while yaw remains in radians. The protocol's team-frame
 robot pose and robot-relative ball frame are retained; no world-frame transform
@@ -338,7 +383,7 @@ line centers; goal dimensions refer to the clear opening. Defaults match the
 current MuJoCo kid field and ball. These dimensions must match the loaded simulator
 scene; `leagueSize` does not resize that scene or choose a different geometry.
 `home_defends_negative_x` sets the home goal side in the first half. By default,
-Home defends positive X and Away negative X; the sides reverse when `first_half`
+Home defends negative X and Away positive X; the sides reverse when `first_half`
 changes. Robot placement remains unchanged.
 
 The simulator uses the regular ROS executor so the asynchronous teleport service
@@ -375,9 +420,12 @@ rules are cleared by their shared deadlines; repeated motion does not extend the
 Deadlines use simulation time even when the match clock is stopped. A simulation
 clock reset clears owned motion penalties and restarts observation grace periods.
 
-Motion in STOP teleports the robot to the nearest touchline at the front edge of
-its own penalty area, facing toward the field center. Team side and half determine
-the own-goal direction. Teleport failure is logged without clearing the penalty.
+Motion in STOP teleports the robot just outside the nearest touchline, facing
+toward the field. Each configured teammate has a stable separate slot along
+that team's own half, ordered by player number. Simultaneous penalties therefore
+do not place teammates on the same point, even before teleport acknowledgements
+arrive. Team side and half determine the own-goal direction, including after a
+halftime side change. Teleport failure is logged without clearing the penalty.
 Expiry releases the penalty without teleporting the robot back onto the field.
 
 `SimulationRobotState` now includes motion telemetry. Rebuild `bitbots_msgs` and
@@ -416,7 +464,7 @@ distance to the field rectangle. A teleport observation itself is exempt; an
 illegal position persisting afterward is evaluated normally.
 
 Both rules use their protocol penalty names, the durations in
-`rules/motion.py:PENALTY_SECONDS`, and the same own-penalty-area touchline placement
+`rules/motion.py:PENALTY_SECONDS`, and the same separate own-half touchline placement
 as motion in STOP. Existing player penalties are preserved and no duplicate
 placement is requested. Deadlines use simulation time, and clock resets clear
 owned penalties and position history. The center-circle radius and penalty-area

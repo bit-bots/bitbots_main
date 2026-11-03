@@ -9,10 +9,13 @@ from bitbots_auto_referee.core.observations import RobotBounds, SimulationObserv
 from bitbots_auto_referee.core.state import MatchState
 from bitbots_auto_referee.core.teleport import TeleportResult
 from bitbots_auto_referee.rules.check_rules import RuleChecker
+from bitbots_auto_referee.rules.outside import FieldGeometry
 
 
 def match(**changes):
-    config = RefereeConfig.from_parameters({key: spec.default for key, spec in PARAMETERS.items()})
+    values = {key: spec.default for key, spec in PARAMETERS.items()}
+    values.update(home_team_id=1, away_team_id=2)
+    config = RefereeConfig.from_parameters(values)
     return replace(MatchState.initial(config), **changes)
 
 
@@ -32,7 +35,7 @@ def checker(teams):
     result = Future()
     result.set_result(TeleportResult(True, "placed"))
     commands.teleport_robot.return_value = result
-    return RuleChecker(teams, teleport_commands=commands), commands
+    return RuleChecker(teams, teleport_commands=commands, field=FieldGeometry(home_defends_negative_x=False)), commands
 
 
 def test_set_allows_only_one_kicker_touching_circle():

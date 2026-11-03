@@ -26,6 +26,14 @@ ROSTER_CASES = (
 
 def config(**overrides):
     values = {name: spec.default for name, spec in PARAMETERS.items()}
+    values.update(
+        home_team_id=1,
+        away_team_id=2,
+        home_goalkeeper=1,
+        away_goalkeeper=1,
+        home_goalkeeper_color="blue",
+        away_goalkeeper_color="red",
+    )
     values.update(overrides)
     return RefereeConfig.from_parameters(values)
 
@@ -117,10 +125,13 @@ class ConfigurationTest(unittest.TestCase):
             {"lineup_mode": "formation"},
             {"leagueSize": "unknown"},
             {"players_per_team": 21},
+            {"home_goalkeeper": -1},
+            {"away_goalkeeper": 5},
             {"target_port": 0},
             {"return_port": 3838},
             {"target_host": "0.0.0.0"},
             {"target_host": "::1"},
+            {"broadcast": False},
             {"send_rate": float("inf")},
             {"response_timeout": -1.0},
         )

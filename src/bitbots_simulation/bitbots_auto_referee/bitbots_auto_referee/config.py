@@ -5,6 +5,8 @@ import json
 import math
 from dataclasses import dataclass
 
+from bitbots_auto_referee.adapters.simulation.lineup import apply_simulation_lineup
+
 
 @dataclass(frozen=True)
 class ParameterSpec:
@@ -50,8 +52,13 @@ PARAMETERS = {
         "Together with leagueSize sets the per-team limit; fewer or no connected robots are allowed.",
         ("foundation", "advanced"),
     ),
-    "home_team_id": ParameterSpec(1, "Home team number; must match the home receiver's team_id."),
-    "away_team_id": ParameterSpec(2, "Away team number; must differ from home_team_id."),
+    "num_robots": ParameterSpec(
+        "", "Same setup as the multi-team simulator; when set, derive identities, roles, colors and sides from it."
+    ),
+    "home_team_id": ParameterSpec(6, "Home team number; must match the home receiver's team_id."),
+    "away_team_id": ParameterSpec(7, "Away team number; must differ from home_team_id."),
+    "home_goalkeeper": ParameterSpec(0, "Home goalkeeper player number, or the protocol's no-goalkeeper designation."),
+    "away_goalkeeper": ParameterSpec(0, "Away goalkeeper player number, or the protocol's no-goalkeeper designation."),
     "robot_player_mapping": ParameterSpec(
         "{}", "Optional JSON robot-index to player-number overrides; otherwise ordered within each team."
     ),
@@ -61,9 +68,10 @@ PARAMETERS = {
     "robot_team_mapping": ParameterSpec('{"0":"home"}', "JSON object mapping simulator robot indices to home or away."),
     "home_color": ParameterSpec("blue", "Home field-player jersey color.", COLORS),
     "away_color": ParameterSpec("red", "Away field-player jersey color.", COLORS),
-    "home_goalkeeper_color": ParameterSpec("blue", "Home goalkeeper jersey color.", COLORS),
-    "away_goalkeeper_color": ParameterSpec("red", "Away goalkeeper jersey color.", COLORS),
-    "target_host": ParameterSpec("127.0.0.1", "Unicast IPv4 address of the robot receiver."),
+    "home_goalkeeper_color": ParameterSpec("yellow", "Home goalkeeper jersey color.", COLORS),
+    "away_goalkeeper_color": ParameterSpec("green", "Away goalkeeper jersey color.", COLORS),
+    "broadcast": ParameterSpec(True, "Send UDP broadcast to the shared receiver port in all robot domains."),
+    "target_host": ParameterSpec("127.255.255.255", "IPv4 broadcast destination or explicit unicast receiver."),
     "target_port": ParameterSpec(3838, "Must match the receiver's listen_port."),
     "bind_host": ParameterSpec("127.0.0.1", "Local IPv4 interface for sending and receiving UDP packets."),
     "return_port": ParameterSpec(3939, "Must match the receiver's answer_port."),
@@ -78,7 +86,7 @@ PARAMETERS = {
     "goal_area_width": ParameterSpec(3.0, "Goal area width in metres."),
     "ball_radius": ParameterSpec(0.07, "Simulated ball radius in metres."),
     "home_defends_negative_x": ParameterSpec(
-        False, "Home defends negative X in the first half; sides swap at halftime."
+        True, "Home defends negative X in the first half; sides swap at halftime."
     ),
     "ui_enabled": ParameterSpec(True, "Launch the native read-only AutoRef window."),
     "use_sim_time": ParameterSpec(True, "Use the simulator's clock for the opening sequence and referee decisions."),
@@ -87,6 +95,8 @@ PARAMETERS = {
 
 @dataclass(frozen=True)
 class RefereeConfig:
+    num_robots: str
+    robot_roles: dict[int, str]
     double_touch_min_force: float
     double_touch_min_impulse: float
     double_touch_release_time: float
@@ -102,6 +112,8 @@ class RefereeConfig:
     lineup_mode: str
     home_team_id: int
     away_team_id: int
+    home_goalkeeper: int
+    away_goalkeeper: int
     robot_player_mapping: str
     center_circle_radius: float
     penalty_area_width: float
@@ -112,6 +124,7 @@ class RefereeConfig:
     home_goalkeeper_color: str
     away_goalkeeper_color: str
     target_host: str
+    broadcast: bool
     target_port: int
     bind_host: str
     return_port: int
@@ -188,6 +201,8 @@ class RefereeConfig:
             if spec.choices and value not in spec.choices:
                 raise ValueError(f"{name} must be one of {', '.join(spec.choices)}")
 
+        values = dict(values)
+        roles = apply_simulation_lineup(values)
         for name in ("home_team_id", "away_team_id"):
             if not 1 <= values[name] < 255:
                 raise ValueError(f"{name} must be a team number below the reserved no-team value")
@@ -202,10 +217,15 @@ class RefereeConfig:
             raise ValueError("Receiver and return ports must be different")
         for name in ("target_host", "bind_host"):
             address = ipaddress.IPv4Address(values[name])
-            if address.is_multicast or int(address) == 0xFFFFFFFF:
-                raise ValueError(f"{name} must be a unicast IPv4 address")
+            if address.is_multicast or (name == "bind_host" and int(address) == 0xFFFFFFFF):
+                raise ValueError(f"Invalid IPv4 interface or destination for {name}")
             if name == "target_host" and address.is_unspecified:
                 raise ValueError("target_host cannot be the wildcard address")
+        if not values["broadcast"] and (
+            int(ipaddress.IPv4Address(values["target_host"])) == 0xFFFFFFFF
+            or values["target_host"] == PARAMETERS["target_host"].default
+        ):
+            raise ValueError("Unicast requires a receiver address instead of the broadcast destination")
         for name in ("send_rate", "response_timeout"):
             if not math.isfinite(values[name]) or values[name] <= 0:
                 raise ValueError(f"{name} must be finite and positive")
@@ -244,7 +264,10 @@ class RefereeConfig:
         if values["pushing_tilt_drop"] > 2:
             raise ValueError("Pushing tilt drop exceeds the upright projection range")
         fields = {name: value for name, value in values.items() if name not in ("leagueSize", "use_sim_time")}
-        config = cls(league_size=values["leagueSize"], **fields)
+        config = cls(league_size=values["leagueSize"], robot_roles=roles, **fields)
+        for number in (config.home_goalkeeper, config.away_goalkeeper):
+            if not 0 <= number <= config.players_per_team:
+                raise ValueError("Goalkeeper must fit the team roster or indicate no goalkeeper")
         if not values["goal_area_length"] <= values["penalty_area_length"] < values["field_length"] / 2:
             raise ValueError("Penalty area must contain the goal area and fit its half")
         if not values["goal_area_width"] <= values["penalty_area_width"] <= values["field_width"]:

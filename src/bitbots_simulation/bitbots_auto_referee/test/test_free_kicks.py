@@ -9,6 +9,7 @@ from bitbots_auto_referee.core.observations import RobotContact, RobotMotion, Si
 from bitbots_auto_referee.core.state import MatchState
 from bitbots_auto_referee.core.teleport import TeleportResult
 from bitbots_auto_referee.rules.check_rules import RuleChecker
+from bitbots_auto_referee.rules.outside import FieldGeometry
 
 
 def sample(time, ball=(0.0, 0.0, 0.1), touches=(), **changes):
@@ -23,14 +24,18 @@ def sample(time, ball=(0.0, 0.0, 0.1), touches=(), **changes):
 
 
 def setup():
-    config = RefereeConfig.from_parameters({name: spec.default for name, spec in PARAMETERS.items()})
+    values = {name: spec.default for name, spec in PARAMETERS.items()}
+    values.update(home_team_id=1, away_team_id=2)
+    config = RefereeConfig.from_parameters(values)
     state = replace(MatchState.initial(config), state="STATE_PLAYING", stopped=False)
     commands = Mock()
     ready = Future()
     ready.set_result(TeleportResult(True, "placed"))
     commands.teleport_ball.return_value = ready
     commands.teleport_robot.return_value = ready
-    checker = RuleChecker({0: 1, 1: 1, 2: 2}, teleport_commands=commands)
+    checker = RuleChecker(
+        {0: 1, 1: 1, 2: 2}, teleport_commands=commands, field=FieldGeometry(home_defends_negative_x=False)
+    )
     state = checker.check_rules(state, sample(0))
     return state, checker, commands
 

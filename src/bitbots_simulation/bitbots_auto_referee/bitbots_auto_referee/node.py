@@ -39,6 +39,7 @@ class AutoReferee(Node):
                 target=(self.config.target_host, self.config.target_port),
                 bind=(self.config.bind_host, self.config.return_port),
                 state=MatchState.initial(self.config),
+                broadcast=self.config.broadcast,
             )
             self._started_at = time.monotonic()
             self._connected: bool | None = None
@@ -81,7 +82,7 @@ class AutoReferee(Node):
                 f"league {self.config.league_size}, lineup {self.config.lineup_mode}, "
                 f"maximum players per team {self.config.players_per_team}. "
                 "The opening sequence advances automatically to PLAYING. "
-                "Robot and ball positions and contacts are observed; robot placement is not implemented yet."
+                "Robot and ball positions and contacts are observed."
             )
         except Exception:
             self.destroy_node()

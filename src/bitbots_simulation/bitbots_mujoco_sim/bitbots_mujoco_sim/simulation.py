@@ -20,9 +20,9 @@ from transforms3d.quaternions import qmult
 
 from bitbots_msgs.msg import JointCommand, SimulationState
 from bitbots_msgs.srv import MoveBall, SimulatorPush, Teleport
+from bitbots_mujoco_sim import teleport
 from bitbots_mujoco_sim.referee import RefereeObservationBuilder
 from bitbots_mujoco_sim.robot import Robot
-from bitbots_mujoco_sim.teleport import TeleportController
 
 BALL_JOINT_NAME = "ball-root"
 
@@ -128,7 +128,7 @@ class Simulation(Node):
             {robot.robot.index: robot.robot.base_body_id for robot in self.robots},
             self.ball_joint_id,
         )
-        self.teleports = TeleportController(
+        self.teleports = teleport.TeleportController(
             self.model,
             {robot.robot.index: robot.robot.base_body_id for robot in self.robots},
             self.ball_joint_id,

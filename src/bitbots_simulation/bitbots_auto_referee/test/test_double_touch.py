@@ -11,7 +11,9 @@ from bitbots_auto_referee.rules.outside import FieldGeometry
 
 
 def setup():
-    config = RefereeConfig.from_parameters({name: spec.default for name, spec in PARAMETERS.items()})
+    values = {name: spec.default for name, spec in PARAMETERS.items()}
+    values.update(home_team_id=1, away_team_id=2)
+    config = RefereeConfig.from_parameters(values)
     state = replace(MatchState.initial(config), state="STATE_PLAYING", stopped=False)
     rule = DoubleTouchRules({0: 1, 1: 1, 2: 1, 3: 2}, {0: 1, 1: 2, 2: 3, 3: 1}, FieldGeometry(), Mock())
     rule.arm(1)

@@ -31,7 +31,7 @@ class FieldGeometry:
     penalty_area_width: float = 4.0
     penalty_area_length: float = 2.0
     ball_radius: float = 0.07
-    home_defends_negative_x: bool = False
+    home_defends_negative_x: bool = True
 
     @classmethod
     def from_config(cls, config: RefereeConfig) -> "FieldGeometry":

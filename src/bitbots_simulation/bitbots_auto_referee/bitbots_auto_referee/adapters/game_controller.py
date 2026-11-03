@@ -1,5 +1,6 @@
-"""Nonblocking unicast transport using the receiver's existing wire schemas."""
+"""Nonblocking UDP transport using the receiver's existing wire schemas."""
 
+import ipaddress
 import math
 import socket
 import time
@@ -76,20 +77,24 @@ def decode_robot_status(data: bytes, received_at: float) -> RobotStatus:
 
 
 class GameControllerUDPAdapter:
-    """Own a return-port socket and send identical match packets to a receiver.
+    """Own a return-port socket and send identical match packets to robot receivers.
 
     Call from a single owner thread. No simulator or ROS objects are accessed here.
     The configured receiver answers the sender's IP at its configured answer_port.
     """
 
-    def __init__(self, target: tuple[str, int], bind: tuple[str, int], state: MatchState):
+    def __init__(self, target: tuple[str, int], bind: tuple[str, int], state: MatchState, *, broadcast: bool = False):
         self.target = target
+        self.broadcast = broadcast
+        self._local_only = ipaddress.IPv4Address(bind[0]).is_loopback
         self.packet_number = 0
         self.latest_responses: dict[tuple[int, int], RobotStatus] = {}
         self.rejected_packets = 0
         self.set_state(state)
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
+            if broadcast:
+                self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
             self._socket.setblocking(False)
             self._socket.bind(bind)
         except OSError:
@@ -120,7 +125,12 @@ class GameControllerUDPAdapter:
                 data, peer = self._socket.recvfrom(GameControlReturnDataStruct.sizeof() + 1)
             except BlockingIOError:
                 break
-            if peer[0] != self.target[0]:
+            permitted_peer = (
+                (not self._local_only or ipaddress.IPv4Address(peer[0]).is_loopback)
+                if self.broadcast
+                else peer[0] == self.target[0]
+            )
+            if not permitted_peer:
                 self.rejected_packets += 1
                 continue
             try:

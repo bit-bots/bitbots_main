@@ -14,7 +14,9 @@ STILL = RobotMotion(0.0, 0.0, 0.0, 0.0, 1.0, 1.0)
 
 
 def initial(**changes):
-    config = RefereeConfig.from_parameters({name: spec.default for name, spec in PARAMETERS.items()})
+    values = {name: spec.default for name, spec in PARAMETERS.items()}
+    values.update(home_team_id=1, away_team_id=2)
+    config = RefereeConfig.from_parameters(values)
     return replace(MatchState.initial(config), **changes)
 
 
@@ -74,7 +76,7 @@ def test_stop_includes_head_and_teleports_only_once():
     assert state.teams[0].players[1].penalty == "PENALTY_MOTION_IN_STOP"
     commands.teleport_robot.assert_called_once()
     robot, x, y, yaw = commands.teleport_robot.call_args.args
-    assert robot == 0 and x > 0 and y > 0 and yaw < 0
+    assert robot == 0 and x < 0 and y > 0 and yaw < 0
     state = checker.check_rules(state, sample(46.25))
     assert state.teams[0].players[1].penalty == "PENALTY_NONE"
 
