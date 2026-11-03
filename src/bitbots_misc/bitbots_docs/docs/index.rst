@@ -40,6 +40,7 @@ The main repository is `bitbots_main <https://github.com/bit-bots/bitbots_main>`
     manual/development/how_to_document
     manual/development/testing
     manual/development/rl_models
+    manual/development/piplus_amp_policies
 
 .. toctree::
     :maxdepth: 1
