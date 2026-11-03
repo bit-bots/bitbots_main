@@ -136,6 +136,25 @@ def test_default_home_side_and_explicit_override():
     assert decision.team_id == config.home_team_id
 
 
+def test_continuous_contact_after_duel_awards_corner_to_the_opponent():
+    checker = RuleChecker({0: 1, 1: 2}, field=FieldGeometry(home_defends_negative_x=False))
+    match = state()
+    for time, touching, ball in (
+        (0, (0,), (4, 2, 0.1)),
+        (0.1, (0, 1), (4, 2, 0.1)),
+        (0.2, (0,), (4, 2, 0.1)),
+        (0.3, (), (5, 2, 0.1)),
+    ):
+        observation = replace(
+            sample(time, ball),
+            robot_positions={0: (4, 2, 0.4), 1: (3, 2, 0.4)},
+            touching_ball=frozenset(touching),
+        )
+        match = checker.check_rules(match, observation)
+    assert checker._pending_outside.kind == "SET_PLAY_CORNER_KICK"
+    assert checker._pending_outside.team_id == 2
+
+
 def test_delayed_service_response_resumes_after_teleport_observation():
     commands = Mock()
     result = Future()

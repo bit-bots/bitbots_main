@@ -5,7 +5,8 @@ from queue import Empty, Full, Queue
 
 import mujoco
 from rclpy.task import Future
-from transforms3d.euler import euler2quat
+from transforms3d.euler import euler2quat, quat2euler
+from transforms3d.quaternions import qmult
 
 from bitbots_msgs.srv import Teleport
 
@@ -40,7 +41,7 @@ class TeleportController:
         return await completed
 
     def apply_pending(self, data: mujoco.MjData, step_number: int) -> tuple[set[int], bool]:
-        """Apply a bounded batch before physics; preserve height and articulated pose."""
+        """Apply a bounded batch before physics; preserve height, tilt and articulated pose."""
         teleported_robots: set[int] = set()
         ball_teleported = False
         for _ in range(self._queue.maxsize):
@@ -53,7 +54,10 @@ class TeleportController:
             qpos = int(self.model.jnt_qposadr[joint])
             root = int(self.model.jnt_bodyid[joint])
             data.qpos[qpos : qpos + 2] = [request.x, request.y]
-            data.qpos[qpos + 3 : qpos + 7] = euler2quat(0.0, 0.0, request.yaw)
+            orientation = data.qpos[qpos + 3 : qpos + 7].copy()
+            yaw = quat2euler(orientation)[2]
+            rotation = euler2quat(0.0, 0.0, request.yaw - yaw)
+            data.qpos[qpos + 3 : qpos + 7] = qmult(rotation, orientation)
             for dof in range(self.model.nv):
                 body = int(self.model.dof_bodyid[dof])
                 while body and body != root:

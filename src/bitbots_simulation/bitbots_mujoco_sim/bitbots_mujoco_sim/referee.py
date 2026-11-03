@@ -1,6 +1,7 @@
 """Extract referee observations without modifying MuJoCo's physics state."""
 
 import math
+from dataclasses import dataclass
 
 import mujoco
 import numpy as np
@@ -9,8 +10,23 @@ from transforms3d.euler import mat2euler
 from bitbots_msgs.msg import SimulationRobotContact, SimulationRobotState, SimulationState
 
 
+@dataclass(frozen=True)
+class RefereeStepState:
+    """Coordinates and timestamp at the start of a completed contact solve."""
+
+    time: float
+    qpos: np.ndarray
+    qvel: np.ndarray
+
+    @classmethod
+    def capture(cls, data: mujoco.MjData) -> "RefereeStepState":
+        return cls(float(data.time), data.qpos.copy(), data.qvel.copy())
+
+
 class RefereeObservationBuilder:
     def __init__(self, model: mujoco.MjModel, robot_body_ids: dict[int, int], ball_joint_id: int):
+        if model.opt.integrator == mujoco.mjtIntegrator.mjINT_RK4:
+            raise ValueError("Referee observations require a single-step integrator instead of RK4")
         self.robot_qpos = {
             index: int(model.jnt_qposadr[model.body_jntadr[body]]) for index, body in robot_body_ids.items()
         }
@@ -60,8 +76,17 @@ class RefereeObservationBuilder:
         step_number: int,
         teleported_robots: set[int] | None = None,
         ball_teleported: bool = False,
+        *,
+        state: RefereeStepState | None = None,
     ) -> SimulationState:
-        """Copy end-of-step positions and contacts from the completed physics solve."""
+        """Combine solved contacts with coordinates from the same calculation time.
+
+        After integration, pass the captured state to match the retained MuJoCo
+        geometry and contact forces. Omit it only for data evaluated without
+        subsequent integration, such as immediately after mj_forward.
+        """
+        state_qpos = state.qpos if state is not None else data.qpos
+        state_qvel = state.qvel if state is not None else data.qvel
         touching = set()
         ball_forces = {}
         robot_contacts = {}
@@ -126,22 +151,22 @@ class RefereeObservationBuilder:
         message.ball_teleported = ball_teleported
         message.ball_present = self.ball_qpos is not None
         if self.ball_qpos is not None:
-            position = data.qpos[self.ball_qpos : self.ball_qpos + 3]
+            position = state_qpos[self.ball_qpos : self.ball_qpos + 3]
             message.ball_position.x, message.ball_position.y, message.ball_position.z = map(float, position)
         for index, qpos in sorted(self.robot_qpos.items()):
             robot = SimulationRobotState(robot_index=index, touching_ball=index in touching)
             robot.ball_contact_force = ball_forces.get(index, 0.0)
-            robot.position.x, robot.position.y, robot.position.z = map(float, data.qpos[qpos : qpos + 3])
+            robot.position.x, robot.position.y, robot.position.z = map(float, state_qpos[qpos : qpos + 3])
             root, dof, head_dofs, body_dofs = self.robot_motion_layout[index]
-            robot.linear_speed = math.sqrt(sum(float(v) ** 2 for v in data.qvel[dof : dof + 3]))
-            robot.angular_speed = math.sqrt(sum(float(v) ** 2 for v in data.qvel[dof + 3 : dof + 6]))
-            robot.head_joint_speed = max((abs(float(data.qvel[d])) for d in head_dofs), default=0.0)
-            robot.body_joint_speed = max((abs(float(data.qvel[d])) for d in body_dofs), default=0.0)
+            robot.linear_speed = math.sqrt(sum(float(v) ** 2 for v in state_qvel[dof : dof + 3]))
+            robot.angular_speed = math.sqrt(sum(float(v) ** 2 for v in state_qvel[dof + 3 : dof + 6]))
+            robot.head_joint_speed = max((abs(float(state_qvel[d])) for d in head_dofs), default=0.0)
+            robot.body_joint_speed = max((abs(float(state_qvel[d])) for d in body_dofs), default=0.0)
             robot.yaw = float(mat2euler(np.asarray(data.xmat[root]).reshape(3, 3))[2])
             robot.heading_valid = True
             robot.upright = float(data.xmat[root][8])
             initial_height = float(self.model.qpos0[qpos + 2])
-            robot.relative_height = float(data.qpos[qpos + 2]) / initial_height if initial_height > 0 else 1.0
+            robot.relative_height = float(state_qpos[qpos + 2]) / initial_height if initial_height > 0 else 1.0
             robot.motion_valid = True
             geoms = self.robot_geoms[index]
             if geoms:
@@ -157,7 +182,7 @@ class RefereeObservationBuilder:
             message.robots.append(robot)
         # Only cast rays when an upright robot actually surrounds the ball's horizontal position.
         if self.ball_qpos is not None:
-            point = np.asarray(data.qpos[self.ball_qpos : self.ball_qpos + 3], dtype=float)
+            point = np.asarray(state_qpos[self.ball_qpos : self.ball_qpos + 3], dtype=float)
             candidates = {
                 robot.robot_index
                 for robot in message.robots

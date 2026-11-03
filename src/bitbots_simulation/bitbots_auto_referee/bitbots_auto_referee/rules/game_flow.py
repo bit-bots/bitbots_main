@@ -230,7 +230,7 @@ class GameFlowRules:
             self._local_since.setdefault(robot, now)
         overdue = [robot for robot in near if now - self._local_since[robot] >= LOCAL_STUCK_NS]
         if overdue:
-            robot = min(near, key=lambda index: (math.dist(observation.robot_positions[index][:2], ball[:2]), index))
+            robot = min(overdue, key=lambda index: (math.dist(observation.robot_positions[index][:2], ball[:2]), index))
             state = self.penalties.penalize(state, observation, robot, "PENALTY_LOCAL_GAME_STUCK")
             self._local_since.clear()
         if now - self._free_since >= GLOBAL_STUCK_NS:

@@ -1,6 +1,7 @@
 """Position storage and contact-edge regression cases without a simulator."""
 
 import unittest
+from dataclasses import replace
 from unittest.mock import Mock
 
 from bitbots_auto_referee.config import PARAMETERS, RefereeConfig
@@ -62,6 +63,43 @@ class ObservationTest(unittest.TestCase):
         self.checker.check_rules(self.state, observation(2, positions={}, ball=None))
         self.assertIsNone(self.checker.ball_position)
         self.assertEqual(self.checker.robot_positions, {})
+
+    def test_continuous_contact_recovers_last_team_after_opponent_releases(self):
+        positions = {0: (1, 0, 0.4), 1: (2, 0, 0.4)}
+        for step, touching, expected in ((1, (0,), 8), (2, (0, 1), None), (3, (0,), 8), (4, (), 8)):
+            self.checker.check_rules(self.state, observation(step, touching, positions))
+            self.assertEqual(self.checker.last_touch_team_id, expected)
+
+    def test_simultaneous_teammate_contacts_are_unambiguous(self):
+        checker = RuleChecker({0: 8, 1: 8})
+        checker.check_rules(self.state, observation(1, (0, 1), {0: (1, 0, 0.4), 1: (2, 0, 0.4)}))
+        self.assertEqual(checker.last_touch_team_id, 8)
+
+    def test_unmapped_continuous_contact_does_not_preserve_a_known_team(self):
+        self.checker.check_rules(self.state, observation(1, (0,)))
+        self.checker.check_rules(self.state, observation(2, (2,), {2: (1, 0, 0.4)}))
+        self.assertIsNone(self.checker.last_touch_team_id)
+
+    def test_robot_teleport_contact_is_suppressed_until_release(self):
+        positions = {0: (1, 0, 0.4), 1: (2, 0, 0.4)}
+        self.checker.check_rules(self.state, observation(1, (0,), positions))
+        teleported = replace(observation(2, (0, 1), positions), teleported_robots=frozenset({1}))
+        self.checker.check_rules(self.state, teleported)
+        self.assertEqual(self.checker.last_touch_team_id, 8)
+        self.checker.check_rules(self.state, observation(3, (0, 1), positions))
+        self.assertEqual(self.checker.last_touch_team_id, 8)
+        self.checker.check_rules(self.state, observation(4, (0,), positions))
+        self.checker.check_rules(self.state, observation(5, (1,), positions))
+        self.assertEqual(self.checker.last_touch_team_id, 9)
+
+    def test_ball_teleport_contact_is_suppressed_until_release(self):
+        teleported = replace(observation(1, (0,)), ball_teleported=True)
+        self.checker.check_rules(self.state, teleported)
+        self.checker.check_rules(self.state, observation(2, (0,)))
+        self.assertIsNone(self.checker.last_touch_team_id)
+        self.checker.check_rules(self.state, observation(3))
+        self.checker.check_rules(self.state, observation(4, (0,)))
+        self.assertEqual(self.checker.last_touch_team_id, 8)
 
     def test_simulator_restart_clears_contact_history(self):
         self.checker.check_rules(self.state, observation(10, (0,)))

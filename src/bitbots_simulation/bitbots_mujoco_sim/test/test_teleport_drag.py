@@ -43,3 +43,15 @@ def test_teleport_releases_drag_and_rejects_late_mouse_updates():
     drag("start")
     drag("update")
     assert (0, 0) in simulation._drag_targets
+
+
+def test_body_drag_uses_existing_robot_body_ids():
+    simulation = Mock()
+    simulation.robots = [SimpleNamespace(robot=SimpleNamespace(base_body_id=7))]
+    simulation._free_joint_key_for_body.return_value = (3, 4)
+    mesh_group = SimpleNamespace(body_ids=[7], handle=Mock())
+    scene = SimpleNamespace(_mesh_groups=[mesh_group])
+    Simulation._add_body_drag(simulation, scene)
+    simulation.model.body.assert_not_called()
+    simulation._free_joint_key_for_body.assert_called_once_with(7)
+    assert simulation._register_free_joint_drag.call_args.kwargs["rotation_keys"] == {(3, 4)}

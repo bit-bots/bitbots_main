@@ -103,3 +103,17 @@ def test_teleport_cancels_contact_episode():
     state = checker.check_rules(state, sample(4, (contact,), teleported_robots=frozenset({1})))
     state = checker.check_rules(state, sample(5, (contact,)))
     assert penalty(state) == "PENALTY_NONE"
+
+
+def test_teammate_contacts_do_not_award_penalties_or_free_kicks():
+    state, _, commands = setup()
+    checker = RuleChecker({0: 1, 1: 1}, teleport_commands=commands)
+    contact = RobotContact(0, 1, 30, 0.2, 0)
+    state = checker.check_rules(state, sample(0))
+    for time in (0.1, 0.2, 5.2):
+        state = checker.check_rules(state, sample(time, (contact,), victim=replace(UP, upright=0.5)))
+    assert all(player.penalty == "PENALTY_NONE" for team in state.teams for player in team.players)
+    assert state.set_play == "SET_PLAY_NONE"
+    assert checker.pushing_rules.fouls == []
+    commands.teleport_robot.assert_not_called()
+    commands.teleport_ball.assert_not_called()

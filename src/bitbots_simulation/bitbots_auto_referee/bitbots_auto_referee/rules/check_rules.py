@@ -42,6 +42,7 @@ class RuleChecker:
         self._indirect_first_robot: int | None = None
         self.unmapped_robot_indices: set[int] = set()
         self._touching_ball: frozenset[int] = frozenset()
+        self._suppressed_ball_contacts: frozenset[int] = frozenset()
         self._clock_was_running = False
         self._fractional_time_ns = 0
         self._expected_seconds: int | None = None
@@ -99,6 +100,7 @@ class RuleChecker:
             and (observation.step_number < self.step_number or observation.time_ns < self.simulation_time_ns)
         ):
             self._touching_ball = frozenset()
+            self._suppressed_ball_contacts = frozenset()
             self.last_touch_team_id = None
             self._reset_outside()
         self._previous_ball_position = self.ball_position
@@ -116,19 +118,25 @@ class RuleChecker:
             if observation.ball_position is not None
             else frozenset()
         )
-        new_contacts = touching - self._touching_ball - observation.teleported_robots
+        self._suppressed_ball_contacts = (
+            self._suppressed_ball_contacts.intersection(touching)
+            | touching.intersection(observation.teleported_robots)
+        )
+        new_contacts = touching - self._touching_ball - self._suppressed_ball_contacts
         if observation.ball_teleported:
+            self._suppressed_ball_contacts = touching
             new_contacts = frozenset()
             self.last_touch_team_id = None
         self._touching_ball = touching
+        active_teams = {self.robot_teams.get(index) for index in touching - self._suppressed_ball_contacts}
+        if active_teams:
+            self.last_touch_team_id = next(iter(active_teams)) if len(active_teams) == 1 else None
         for robot_index in sorted(new_contacts):
             team_id = self.robot_teams.get(robot_index)
             if team_id is not None:
                 self.on_robot_ball_contact(team_id)
 
         contact_teams = {self.robot_teams.get(index) for index in new_contacts}
-        if None in contact_teams or len(contact_teams) > 1:
-            self.last_touch_team_id = None
         if observation.ball_teleported:
             if self._placement is None and not self._placement_failed:
                 self._pending_outside = None
@@ -402,6 +410,5 @@ class RuleChecker:
 
     def on_robot_ball_contact(self, team_id: int) -> None:
         """Handle a new robot-ball contact; repeated contact points count as one touch."""
-        self.last_touch_team_id = team_id
         if self._event_callback is not None:
             self._event_callback(f"Ballkontakt: Team {team_id}")

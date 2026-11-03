@@ -22,7 +22,7 @@ from transforms3d.quaternions import qmult
 from bitbots_msgs.msg import JointCommand, SimulationState
 from bitbots_msgs.srv import MoveBall, SimulatorPush, Teleport
 from bitbots_mujoco_sim import teleport
-from bitbots_mujoco_sim.referee import RefereeObservationBuilder
+from bitbots_mujoco_sim.referee import RefereeObservationBuilder, RefereeStepState
 from bitbots_mujoco_sim.robot import Robot
 from bitbots_mujoco_sim.world import generate_world_xml
 
@@ -398,7 +398,7 @@ class Simulation(Node):
         itself) and drag that whole articulated system as a rigid unit.
         """
         robot_keys = {
-            self._free_joint_key_for_body(self.model.body(f"robot_base_link_{robot_sim.robot.index}").id)
+            self._free_joint_key_for_body(robot_sim.robot.base_body_id)
             for robot_sim in self.robots
         }
         robot_keys.discard(None)
@@ -613,17 +613,23 @@ class Simulation(Node):
                 event_config["handler"]()
         self._teleported_robots, self._ball_teleported = self.teleports.apply_pending(self.data, self.step_number)
         self._release_teleported_drag_targets()
+        referee_state = RefereeStepState.capture(self.data)
         mujoco.mj_step(self.model, self.data)
-        self.publish_referee_step()
+        self.publish_referee_step(referee_state)
         for event_config in self.events:
             if self.step_number % event_config["frequency"] == 0:
                 event_config["handler"]()
 
-    def publish_referee_step(self) -> None:
+    def publish_referee_step(self, state: RefereeStepState) -> None:
         """Notify the separate referee after each completed physics step."""
         self.referee_step_publisher.publish(
             self.referee_observations.build(
-                self.data, self.time_message, self.step_number, self._teleported_robots, self._ball_teleported
+                self.data,
+                Time(seconds=state.time).to_msg(),
+                self.step_number,
+                self._teleported_robots,
+                self._ball_teleported,
+                state=state,
             )
         )
 

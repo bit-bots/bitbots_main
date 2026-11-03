@@ -252,13 +252,22 @@ receive work is bounded so a stream of packets cannot monopolize the executor.
 
 Because the simulator is a separate process, its adapter consumes timestamped ROS
 observations instead of accessing MuJoCo memory. Robot root and ball positions are
-copied from free-joint coordinates after each physics step. Contacts come from
+copied from free-joint coordinates before integration, after pending teleports.
+Contacts come from
 the completed physics solve, with ball geometry and robot ancestry resolved from
 the MuJoCo model. Multiple contact points and robot links collapse into a per-robot
 touch flag. Only touching, solver-active contacts are included, not proximity
 contacts. AutoRef teleports are acknowledged and marked in the observation stream
 to suppress artificial ball-contact callbacks. Other repositioning mechanisms,
 including viewer dragging, do not yet carry these markers.
+
+Snapshots are published after the completed solve but describe its starting
+state: saved positions and velocities match the geometry and contact forces
+retained by MuJoCo's single-step integrators. The header carries that state's
+physics timestamp, while `step_number` identifies the completed solve. `/clock`
+continues to report the end of the step. No extra forward solve is performed on
+the live physics data. RK4 is rejected because its intermediate stages do not
+retain the same observation state.
 
 The simulation-step signal carries the timestamp, step counter, ball presence,
 ball position, robot indices, root positions and ball-contact flags. It uses reliable, volatile KEEP_ALL QoS
@@ -276,7 +285,7 @@ start the AutoRef before the simulator to observe the opening step. The separate
 - `robot_positions`: simulation robot index to world-frame position tuple.
 - `ball_position`: world-frame position tuple, or `None` if the model has no ball.
 - `simulation_time_ns` and `step_number`: the latest processed simulation step.
-- `last_touch_team_id`: team passed to the most recent ball-contact callback.
+- `last_touch_team_id`: most recent unambiguous team in physical contact with the ball.
 
 Positions use meters and are replaced before callbacks execute. Removed robots
 do not leave stale entries. Keeping attributes on each instance prevents separate
@@ -285,9 +294,13 @@ referees from sharing mutable state.
 `on_robot_ball_contact(team_id)` runs when a robot starts touching the ball.
 A continuing contact does not retrigger it; release followed by renewed contact
 does. Simultaneous touching robots each receive a callback, ordered by simulator
-index for determinism. That ordering does not establish physical precedence;
-the stored last team reflects callback order for simultaneous touches. The default
-handler records the team and does not yet change scores or penalties.
+index for determinism. Last-touch attribution is updated separately from all
+ongoing contacts. Opposing teams touching simultaneously, or an unmapped robot
+touching, make the attribution unknown. When only one team remains in contact,
+that team becomes the last toucher even without a new contact onset. After
+release, its attribution is retained until the next contact. Teleport-induced
+contacts are suppressed until release and a subsequent new touch. The default
+callback records an event without changing scores or penalties.
 
 `robot_team_mapping` supplies explicit simulator-index assignments to `home` or
 `away`; those names resolve to the configured team IDs. The default maps the first
@@ -313,9 +326,11 @@ ball_result = self.teleport_ball(x, y, yaw)
 
 `robot_id` is the simulator index used by `robot_positions`, not a team or
 GameController player number. Coordinates are absolute world-frame meters;
-`yaw` is in radians. Height and articulated joint positions are preserved, the
-root is oriented upright with the requested yaw, and velocities of the target
-are cleared. The ball's yaw controls its orientation, including its texture.
+`yaw` is in radians. Height, tilt and articulated joint positions are preserved.
+A rotation about the world vertical axis changes the root heading to the
+requested yaw without standing up a fallen robot. Velocities of the target are
+cleared; existing motor targets are retained. The ball's yaw controls its
+orientation, including its texture.
 
 Both calls return a future containing `TeleportResult` with `success`, `message`
 and `applied_step`. Do not block on `result()` inside a rule callback. Check
@@ -531,7 +546,8 @@ victim: decreased upright projection, a fall in relative height, or increased
 angular speed within the configured effect window. Weaker contact must persist
 continuously for `SUSTAINED_NS` in `rules/pushing.py`. Contact gaps reset that timer.
 Mutual approach and an upright, ball-facing duel with the ball centrally between
-both robots are exempt. Teleports and simulation resets discard old episodes.
+both robots are exempt. Contacts between teammates do not produce pushing
+penalties or free kicks. Teleports and simulation resets discard old episodes.
 This remains a tunable physical heuristic, not proof of intent or causality.
 
 Violations issue `PENALTY_PUSHING` using the shared penalty duration and sideline

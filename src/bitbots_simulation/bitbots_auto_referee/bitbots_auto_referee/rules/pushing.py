@@ -66,6 +66,9 @@ class PushingRules:
             for team in state.teams
         )
 
+    def _opponents(self, pair):
+        return self.penalties.robot_teams.get(pair[0]) != self.penalties.robot_teams.get(pair[1])
+
     def _ball_duel(self, pair, observation):
         if observation.ball_position is None:
             return False
@@ -110,7 +113,7 @@ class PushingRules:
             ):
                 continue
             self.contact_forces[pair] = contact.force
-            if any(
+            if not self._opponents(pair) or any(
                 robot not in observation.robot_positions
                 or robot in observation.teleported_robots
                 or not self._eligible(state, robot)
@@ -183,7 +186,7 @@ class PushingRules:
                 episode.strong_at = now
             active.add(pair)
         for pair, episode in list(self._episodes.items()):
-            if any(
+            if not self._opponents(pair) or any(
                 robot not in observation.robot_positions
                 or robot in observation.teleported_robots
                 or not self._eligible(state, robot)

@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import mujoco
 import numpy as np
-from bitbots_mujoco_sim.referee import RefereeObservationBuilder
+from bitbots_mujoco_sim.referee import RefereeObservationBuilder, RefereeStepState
 
 from bitbots_msgs.msg import SimulationState
 
@@ -14,6 +14,7 @@ from bitbots_msgs.msg import SimulationState
 class RefereeObservationTest(unittest.TestCase):
     def setUp(self):
         self.model = SimpleNamespace(
+            opt=SimpleNamespace(integrator=mujoco.mjtIntegrator.mjINT_EULER),
             ngeom=4,
             geom_contype=[1] * 4,
             geom_conaffinity=[1] * 4,
@@ -29,6 +30,7 @@ class RefereeObservationTest(unittest.TestCase):
             jnt_bodyid=[1, 3, 5],
         )
         self.data = SimpleNamespace(qpos=[1, 2, 3, 0, 0, 0, 0, 4, 5, 6, 0, 0, 0, 0, 7, 8, 9], contact=[], ncon=0)
+        self.data.time = 0.0
         self.data.geom_xmat = np.tile(np.eye(3).reshape(9), (4, 1))
         self.data.geom_xpos = np.zeros((4, 3))
         self.data.qvel = [0.0] * 18
@@ -76,6 +78,17 @@ class RefereeObservationTest(unittest.TestCase):
         message = builder.build(self.data, self.stamp, 1)
         self.assertFalse(message.ball_present)
         self.assertEqual(message.robots, [])
+
+    def test_integrated_coordinates_do_not_replace_the_solved_state(self):
+        self.data.qvel[0] = 0.4
+        state = RefereeStepState.capture(self.data)
+        self.data.qpos[0] = 99
+        self.data.qpos[14] = 100
+        self.data.qvel[0] = 20
+        message = self.builder.build(self.data, self.stamp, 10, state=state)
+        self.assertEqual(message.robots[0].position.x, 1.0)
+        self.assertEqual(message.robots[0].linear_speed, 0.4)
+        self.assertEqual(message.ball_position.x, 7.0)
 
     def test_motion_is_copied_from_root_velocity_and_torso_orientation(self):
         self.data.qvel[0] = 0.4

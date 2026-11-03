@@ -81,6 +81,23 @@ def test_global_restart_waits_for_ack_and_preserves_match():
     assert state.teams[0].score == 2
 
 
+def test_local_stuck_does_not_penalize_a_closer_newcomer():
+    state, _, commands = setup()
+    checker = RuleChecker({0: 1, 1: 2}, teleport_commands=commands)
+    for time, newcomer_x in ((0, 1.2), (9.9, 0.2), (10, 0.2)):
+        observation = replace(
+            sample(time),
+            robot_positions={0: (0.4, 0, 0.4), 1: (newcomer_x, 0, 0.4)},
+            robot_motion={0: UP, 1: UP},
+            robot_yaws={0: math.pi, 1: math.pi},
+        )
+        state = checker.check_rules(state, observation)
+    assert state.teams[0].players[0].penalty == "PENALTY_LOCAL_GAME_STUCK"
+    assert state.teams[1].players[0].penalty == "PENALTY_NONE"
+    commands.teleport_robot.assert_called_once()
+    assert commands.teleport_robot.call_args.args[0] == 0
+
+
 def test_set_play_does_not_accumulate_stuck_time():
     state, checker, _ = setup()
     state = replace(state, set_play="SET_PLAY_THROW_IN")
