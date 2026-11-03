@@ -31,6 +31,8 @@ setup(
             f"mjlab_walk_node = {package_name}.nodes.mjlab_walk_node:main",
             f"mjlab_getup_node = {package_name}.nodes.mjlab_getup_node:main",
             f"kick_ball_node = {package_name}.nodes.kick_ball_node:main",
+            f"piplus_amp_walk_node = {package_name}.nodes.piplus_amp_walk_node:main",
+            f"piplus_amp_kick_node = {package_name}.nodes.piplus_amp_kick_node:main",
             f"phase_from_transform = {package_name}.nodes.phase_from_transform:main",
         ],
     },

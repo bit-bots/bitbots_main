@@ -1,0 +1,201 @@
+# Configuration of the Pi Plus AMP velocity walk policy with a gait clock.
+#
+# Training: repository piplus_amp_mjlab, task Mjlab-Velocity-Flat-Amp-DA-HighTorque-PiPlus,
+# run piplus_velocity_amp_symmetric/2026-11-01_09-22-24_gait_lowcmd_strict, checkpoint
+# model_29999.pt (iteration 29999). The joint order, default pose, gains, action scales,
+# joint ranges, gait frequency range, command ranges and control period come from the
+# env.yaml of this run and from the robot model of the training.
+# See the "Pi Plus AMP walk and kick policies" page in bitbots_docs.
+piplus_amp_walk_node:
+  ros__parameters:
+    model: piplus_amp_walk.onnx
+
+    joints:
+      ordered_relevant_joint_names: [
+        "r_shoulder_pitch_joint",
+        "r_shoulder_roll_joint",
+        "r_upper_arm_joint",
+        "r_elbow_joint",
+        "l_shoulder_pitch_joint",
+        "l_shoulder_roll_joint",
+        "l_upper_arm_joint",
+        "l_elbow_joint",
+        "r_hip_pitch_joint",
+        "r_hip_roll_joint",
+        "r_thigh_joint",
+        "r_calf_joint",
+        "r_ankle_pitch_joint",
+        "r_ankle_roll_joint",
+        "l_hip_pitch_joint",
+        "l_hip_roll_joint",
+        "l_thigh_joint",
+        "l_calf_joint",
+        "l_ankle_pitch_joint",
+        "l_ankle_roll_joint",
+      ]
+      # Default pose of the training task. The policy observes the joint positions
+      # relative to this pose and adds its scaled action to this pose.
+      walkready_state: [
+        -1.6361,  # r_shoulder_pitch_joint
+        -1.0965,  # r_shoulder_roll_joint
+        -0.4169,  # r_upper_arm_joint
+        -1.0214,  # r_elbow_joint
+         1.6361,  # l_shoulder_pitch_joint
+         1.0965,  # l_shoulder_roll_joint
+         0.4169,  # l_upper_arm_joint
+         1.0214,  # l_elbow_joint
+         0.4815,  # r_hip_pitch_joint
+        -0.1121,  # r_hip_roll_joint
+        -0.1040,  # r_thigh_joint
+         0.7871,  # r_calf_joint
+         0.2166,  # r_ankle_pitch_joint
+         0.1468,  # r_ankle_roll_joint
+        -0.4815,  # l_hip_pitch_joint
+         0.1121,  # l_hip_roll_joint
+         0.1040,  # l_thigh_joint
+        -0.7871,  # l_calf_joint
+        -0.2166,  # l_ankle_pitch_joint
+        -0.1468,  # l_ankle_roll_joint
+      ]
+      kp: [
+        6.0,  # r_shoulder_pitch_joint
+        6.0,  # r_shoulder_roll_joint
+        6.0,  # r_upper_arm_joint
+        6.0,  # r_elbow_joint
+        6.0,  # l_shoulder_pitch_joint
+        6.0,  # l_shoulder_roll_joint
+        6.0,  # l_upper_arm_joint
+        6.0,  # l_elbow_joint
+        50.0,  # r_hip_pitch_joint
+        50.0,  # r_hip_roll_joint
+        50.0,  # r_thigh_joint
+        50.0,  # r_calf_joint
+        50.0,  # r_ankle_pitch_joint
+        50.0,  # r_ankle_roll_joint
+        50.0,  # l_hip_pitch_joint
+        50.0,  # l_hip_roll_joint
+        50.0,  # l_thigh_joint
+        50.0,  # l_calf_joint
+        50.0,  # l_ankle_pitch_joint
+        50.0,  # l_ankle_roll_joint
+      ]
+      kd: [
+        0.60,  # r_shoulder_pitch_joint
+        0.60,  # r_shoulder_roll_joint
+        0.60,  # r_upper_arm_joint
+        0.60,  # r_elbow_joint
+        0.60,  # l_shoulder_pitch_joint
+        0.60,  # l_shoulder_roll_joint
+        0.60,  # l_upper_arm_joint
+        0.60,  # l_elbow_joint
+        1.10,  # r_hip_pitch_joint
+        1.40,  # r_hip_roll_joint
+        1.10,  # r_thigh_joint
+        1.10,  # r_calf_joint
+        1.10,  # r_ankle_pitch_joint
+        1.10,  # r_ankle_roll_joint
+        1.10,  # l_hip_pitch_joint
+        1.40,  # l_hip_roll_joint
+        1.10,  # l_thigh_joint
+        1.10,  # l_calf_joint
+        1.10,  # l_ankle_pitch_joint
+        1.10,  # l_ankle_roll_joint
+      ]
+      action_scales: [
+        0.3500,  # r_shoulder_pitch_joint
+        0.3500,  # r_shoulder_roll_joint
+        0.3500,  # r_upper_arm_joint
+        0.3500,  # r_elbow_joint
+        0.3500,  # l_shoulder_pitch_joint
+        0.3500,  # l_shoulder_roll_joint
+        0.3500,  # l_upper_arm_joint
+        0.3500,  # l_elbow_joint
+        0.2125,  # r_hip_pitch_joint
+        0.2375,  # r_hip_roll_joint
+        0.1197,  # r_thigh_joint
+        0.3500,  # r_calf_joint
+        0.1915,  # r_ankle_pitch_joint
+        0.1915,  # r_ankle_roll_joint
+        0.2125,  # l_hip_pitch_joint
+        0.2375,  # l_hip_roll_joint
+        0.1197,  # l_thigh_joint
+        0.3500,  # l_calf_joint
+        0.1915,  # l_ankle_pitch_joint
+        0.1915,  # l_ankle_roll_joint
+      ]
+      # Joint ranges of the training model (piplus.xml). The joint targets are clipped
+      # to these ranges, shrunk around their centers by soft_limit_factor (the
+      # soft_joint_pos_limit_factor of the training).
+      soft_limit_factor: 0.9
+      position_limits_lower: [
+        -2.5500,  # r_shoulder_pitch_joint
+        -1.6500,  # r_shoulder_roll_joint
+        -2.5500,  # r_upper_arm_joint
+        -1.8000,  # r_elbow_joint
+        -2.5500,  # l_shoulder_pitch_joint
+        -1.4000,  # l_shoulder_roll_joint
+        -2.5500,  # l_upper_arm_joint
+        -2.0400,  # l_elbow_joint
+        -2.8400,  # r_hip_pitch_joint
+        -1.0000,  # r_hip_roll_joint
+        -2.7700,  # r_thigh_joint
+        -1.9700,  # r_calf_joint
+        -0.9500,  # r_ankle_pitch_joint
+        -0.7200,  # r_ankle_roll_joint
+        -2.8400,  # l_hip_pitch_joint
+        -0.1500,  # l_hip_roll_joint
+        -2.7700,  # l_thigh_joint
+        -2.2100,  # l_calf_joint
+        -0.8500,  # l_ankle_pitch_joint
+        -0.7200,  # l_ankle_roll_joint
+      ]
+      position_limits_upper: [
+         2.5500,  # r_shoulder_pitch_joint
+         1.4000,  # r_shoulder_roll_joint
+         2.5500,  # r_upper_arm_joint
+         2.0400,  # r_elbow_joint
+         2.5500,  # l_shoulder_pitch_joint
+         1.6500,  # l_shoulder_roll_joint
+         2.5500,  # l_upper_arm_joint
+         1.8000,  # l_elbow_joint
+         2.8400,  # r_hip_pitch_joint
+         0.1500,  # r_hip_roll_joint
+         2.4500,  # r_thigh_joint
+         2.2100,  # r_calf_joint
+         0.8500,  # r_ankle_pitch_joint
+         0.7200,  # r_ankle_roll_joint
+         2.8400,  # l_hip_pitch_joint
+         1.0000,  # l_hip_roll_joint
+         2.4500,  # l_thigh_joint
+         1.9700,  # l_calf_joint
+         0.9500,  # l_ankle_pitch_joint
+         0.7200,  # l_ankle_roll_joint
+      ]
+      # Bound for the last action in the observation. The training does not bound it.
+      # This value is much larger than the actions of the trained policy. It only stops
+      # a feedback loop that diverges.
+      action_limit: 50.0
+
+    phase:
+      # The policy runs at the control rate of the training task
+      control_dt: 0.02
+      # The gait clock of this policy is in the gait section, not here
+      gait_frequency: 0.0
+      use_phase: False
+
+    gait:
+      # The last action sets the gait clock frequency in this range (Hz) with tanh
+      frequency_min: 1.0
+      frequency_max: 2.0
+      # Phase in [0, 1) at each start of the policy. The training starts with a random phase.
+      initial_phase: 0.0
+
+    command:
+      # The velocity command (vx, vy, wz) is clipped to the range of the training
+      min: [-1.0, -1.0, -1.0]
+      max: [1.2, 1.0, 1.0]
+      # Time in seconds that the policy continues to run after the command becomes zero.
+      # The policy was trained to stand still at a zero command (stand flag).
+      stand_settle_time: 1.0
+
+    providers: ["CPUExecutionProvider"]
