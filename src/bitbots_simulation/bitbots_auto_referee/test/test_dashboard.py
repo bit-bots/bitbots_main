@@ -7,7 +7,7 @@ from unittest.mock import Mock
 
 from bitbots_auto_referee.config import PARAMETERS, RefereeConfig
 from bitbots_auto_referee.core.state import MatchState
-from bitbots_auto_referee.ui.application import DashboardSubscriber, format_snapshot
+from bitbots_auto_referee.ui.application import DashboardSubscriber, format_connections, format_snapshot
 from bitbots_auto_referee.ui.dashboard import Dashboard
 from std_msgs.msg import String
 
@@ -67,3 +67,25 @@ class DashboardTest(unittest.TestCase):
         data["published_at"] = float("nan")
         with self.assertRaises(ValueError):
             format_snapshot(data)
+
+    def test_team_budgets_and_individual_receiver_status_are_displayed(self):
+        home, away = self.state.teams
+        state = replace(self.state, teams=(replace(home, message_budget=11998), replace(away, message_budget=11993)))
+        self.dashboard.update(
+            state,
+            None,
+            None,
+            False,
+            {(home.team_number, 1): True, (away.team_number, 1): False},
+            "Simulator-Aufstellung geprüft",
+        )
+        message = self.node.create_publisher.return_value.publish.call_args.args[0]
+        data = json.loads(message.data)
+        home_text, away_text, _, _, details, _ = format_snapshot(data)
+        self.assertIn("11998", home_text)
+        self.assertIn("11993", away_text)
+        self.assertIn("1 / 2 aktuell", details[1])
+        self.assertIn("Simulator-Aufstellung geprüft", details[1])
+        connections = format_connections(data)
+        self.assertIn(f"Team {home.team_number}: Spieler 1: OK", connections)
+        self.assertIn(f"Team {away.team_number}: Spieler 1: fehlt", connections)

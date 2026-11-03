@@ -183,10 +183,51 @@ take precedence over manual team, player, color, goalkeeper and side parameters.
 The selected competition roster must accommodate every configured player.
 Unsupported team counts or an oversized lineup fail during startup.
 
-An empty `num_robots` retains explicit referee configuration and works before
-the multi-team merge. A nonempty specification requires the multi-team world
-helper; it fails explicitly if that helper is unavailable. The simulator is
-still started separately. Camera-based team classification is unchanged.
+An empty `num_robots` retains explicit referee configuration. A nonempty
+specification requires the multi-team world helper; it fails explicitly if that
+helper is unavailable. The simulator is still started separately.
+Camera-based team classification is unchanged.
+
+The generated world embeds the identities used for the robot stacks. The
+simulator publishes this roster as retained JSON on `/simulation/roster`
+(`std_msgs/String`), including each robot's `index`, `domain`, `team_id`,
+`bot_id`, `team_color`, `role`, and `position_number`. It checks the roster
+against the robot bodies before publishing. Regenerate older world files that
+do not contain this metadata.
+
+When using simulation time or `num_robots`, AutoRef waits for this roster before
+sending GameController packets, advancing the opening sequence, or evaluating
+observations. It validates the exact index-to-team/player assignments, roles,
+goalkeeper assignments, and palette against its own configuration. An unequal
+split with the same total population is therefore rejected as well. A mismatch
+is shown in the dashboard and log; restart AutoRef with the matching
+`num_robots` specification. Standalone operation without simulation time or a
+population specification does not require a simulator roster.
+
+## Team message budget
+
+Each team starts with the budget defined by `TeamState.message_budget`. A
+successful logical team message consumes a unit from that team's shared
+budget. Local fanout to multiple player ports is counted once; a failed send
+before any successful datagram and an oversized or disallowed message consume
+nothing. A partially successful fanout is counted.
+
+In simulation, team communication publishes retained cumulative send statistics
+on `team_communication/sent` (`std_msgs/String`). Reports contain `team_id`,
+`player_id`, a sender-process `session`, and the cumulative `sent` count. The
+domain bridge forwards each robot's reports into its namespace in the main
+domain. AutoRef checks sender identity against the verified simulator roster
+and applies only counter increases. Duplicate, skipped, and out-of-order
+reports do not duplicate or lose the count within a sender session; a new
+process gets a new session without resetting the team budget.
+
+The remaining budget is sent in GameController packets and displayed for both
+teams in the UI. Simulation senders may use the remaining budget down to
+exhaustion; the hardware sender's existing reserve is preserved. Budget updates
+travel asynchronously, so already in-flight messages can still arrive after
+exhaustion. The reported budget is clamped to the wire format's lower bound.
+Restarting AutoRef creates a fresh match budget and replays retained sender
+counts; restart the robot stacks as well when starting a fresh match.
 
 ## Robot receiver configuration
 
@@ -208,8 +249,13 @@ with another GameController.
 Robot replies are indexed by team and player identity. Broadcast replies are
 validated against the configured roster; a loopback-bound referee also rejects
 nonlocal senders. Unicast additionally requires the configured receiver IP.
-Valid replies update `adapter.latest_responses`; connection
-loss and recovery are logged. There is no ROS status publisher yet. Wire lengths
+Valid replies update `adapter.latest_responses`. Every configured team/player
+pair is monitored separately using wall-clock time, including robots that have
+never answered. Connection loss and recovery are logged per identity and shown
+in the dashboard. The summary indicates a complete connection only when all
+expected robots have current replies; one responding robot cannot hide missing
+players or an absent opposing team. Unused protocol player slots are not
+reported as missing. Wire lengths
 are converted to meters, while yaw remains in radians. The protocol's team-frame
 robot pose and robot-relative ball frame are retained; no world-frame transform
 is inferred.

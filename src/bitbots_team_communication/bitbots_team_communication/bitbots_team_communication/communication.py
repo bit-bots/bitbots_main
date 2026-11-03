@@ -1,4 +1,5 @@
 import socket
+from collections.abc import Callable
 
 from rclpy.node import Node
 
@@ -69,11 +70,15 @@ class SocketCommunication:
         self.buffer_size *= 2
         self.logger.info(f"doubled buffer size to {self.buffer_size}")
 
-    def send_message(self, message):
+    def send_message(self, message, on_sent: Callable[[], None] | None = None):
         self.assert_is_setup()
+        reported = False
         for port in self.target_ports:
             self.logger.debug(f"Sending message to {port} on {self.target_ip}")
             self.socket.sendto(message, (str(self.target_ip), port))  # type: ignore[union-attr]
+            if not reported and on_sent is not None:
+                on_sent()
+                reported = True
 
     def assert_is_setup(self):
         assert self.is_setup(), "Socket is not yet initialized"

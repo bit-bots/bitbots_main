@@ -41,12 +41,19 @@ class Dashboard:
         simulation_time_ns: int | None,
         last_touch_team_id: int | None,
         connected: bool | None,
+        robot_connections: dict[tuple[int, int], bool | None] | None = None,
+        roster_status: str = "",
     ) -> None:
         snapshot = {
             "match": asdict(state),
             "simulation_time_ns": simulation_time_ns,
             "last_touch_team_id": last_touch_team_id,
             "robot_connected": connected,
+            "robot_connections": [
+                {"team_id": team, "player_id": player, "connected": status}
+                for (team, player), status in sorted((robot_connections or {}).items())
+            ],
+            "roster_status": roster_status,
             "events": list(self._events),
             "published_at": time.time(),
         }

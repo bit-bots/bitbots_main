@@ -1,6 +1,8 @@
 """Standalone ROS entry point composing the implemented referee components."""
 
+import json
 import time
+from functools import partial
 
 import rclpy
 from rcl_interfaces.msg import ParameterDescriptor
@@ -8,18 +10,22 @@ from rclpy.clock import Clock, ClockType
 from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, HistoryPolicy, QoSProfile, ReliabilityPolicy
+from rclpy.subscription import Subscription
+from std_msgs.msg import String
 
 from bitbots_auto_referee.adapters.game_controller import GameControllerUDPAdapter
 from bitbots_auto_referee.adapters.simulation.commands import SimulationCommands
 from bitbots_auto_referee.adapters.simulation.observations import decode_observation
+from bitbots_auto_referee.adapters.simulation.roster import validate_roster
 from bitbots_auto_referee.config import PARAMETERS, RefereeConfig
+from bitbots_auto_referee.core.communication import MessageBudget, robot_connections
 from bitbots_auto_referee.core.state import MatchState
 from bitbots_auto_referee.rules.check_rules import RuleChecker
 from bitbots_auto_referee.rules.double_touch import DoubleTouchConfig
 from bitbots_auto_referee.rules.outside import FieldGeometry
 from bitbots_auto_referee.rules.pushing import PushingConfig
 from bitbots_auto_referee.rules.startup import StartupSequence
-from bitbots_auto_referee.ui.dashboard import Dashboard
+from bitbots_auto_referee.ui.dashboard import Dashboard, dashboard_qos
 from bitbots_msgs.msg import SimulationState
 
 
@@ -43,6 +49,12 @@ class AutoReferee(Node):
             )
             self._started_at = time.monotonic()
             self._connected: bool | None = None
+            self._robot_connections: dict[tuple[int, int], bool | None] = {}
+            self._budget = MessageBudget()
+            self._roster: dict[int, dict] = {}
+            self._send_subscriptions: dict[int, Subscription] = {}
+            self._roster_valid = not (self.config.num_robots or self.get_parameter("use_sim_time").value)
+            self._roster_status = "Standalone" if self._roster_valid else "Warte auf Simulator-Aufstellung"
             self._rejected_packets = 0
             self._network_clock = Clock(clock_type=ClockType.STEADY_TIME)
             self._startup = StartupSequence()
@@ -60,6 +72,7 @@ class AutoReferee(Node):
             self._record_event("AutoRef gestartet: INITIAL")
             self._refresh_dashboard()
             self.create_timer(0.25, self._refresh_dashboard, clock=self._network_clock)
+            self.create_subscription(String, "/simulation/roster", self._on_roster, dashboard_qos())
             self._unmapped_robot_indices: set[int] = set()
             self.create_subscription(
                 SimulationState,
@@ -90,7 +103,7 @@ class AutoReferee(Node):
 
     def _on_simulation_step(self, message: SimulationState) -> None:
         """Evaluate rules in every phase whenever the simulator completes a step."""
-        if self.adapter is None:
+        if self.adapter is None or not self._roster_valid:
             return
         previous = self.adapter.state
         updated = self.rule_checker.check_rules(previous, decode_observation(message))
@@ -108,7 +121,7 @@ class AutoReferee(Node):
             self._send()
 
     def _advance_startup(self) -> None:
-        if self.adapter is None or self._startup.finished:
+        if self.adapter is None or not self._roster_valid or self._startup.finished:
             return
         if self.get_parameter("use_sim_time").value:
             now_ns = self.get_clock().now().nanoseconds
@@ -136,10 +149,60 @@ class AutoReferee(Node):
                 self.rule_checker.simulation_time_ns,
                 self.rule_checker.last_touch_team_id,
                 self._connected,
+                self._robot_connections,
+                self._roster_status,
             )
 
+    def _on_roster(self, message: String) -> None:
+        try:
+            roster = validate_roster(self.config, json.loads(message.data))
+        except (ValueError, TypeError, KeyError) as error:
+            self._roster_valid = False
+            status = f"Aufstellung ungültig: {error}"
+            if status != self._roster_status:
+                self._roster_status = status
+                self.get_logger().error(status)
+                self._record_event(status)
+            return
+        if roster == self._roster and self._roster_valid:
+            return
+        for subscription in self._send_subscriptions.values():
+            self.destroy_subscription(subscription)
+        self._send_subscriptions.clear()
+        self._roster = roster
+        self._roster_valid = True
+        self._roster_status = "Simulator-Aufstellung geprüft"
+        for index, robot in roster.items():
+            self._send_subscriptions[index] = self.create_subscription(
+                String,
+                f"/robot{robot['domain']}/team_communication/sent",
+                partial(self._on_team_message_count, index),
+                dashboard_qos(),
+            )
+        self._record_event(self._roster_status)
+        self._send()
+
+    def _on_team_message_count(self, index: int, message: String) -> None:
+        if self.adapter is None or not self._roster_valid or index not in self._roster:
+            return
+        try:
+            report = json.loads(message.data)
+            robot = self._roster[index]
+            if (report["team_id"], report["player_id"]) != (robot["team_id"], robot["bot_id"]):
+                raise ValueError("Sender identity does not match the simulator roster")
+            previous = self.adapter.state
+            updated = self._budget.update(
+                previous, robot["team_id"], robot["bot_id"], report["session"], report["sent"]
+            )
+        except (ValueError, TypeError, KeyError) as error:
+            self.get_logger().error(f"Invalid team send report: {error}", throttle_duration_sec=5.0)
+            return
+        if updated != previous:
+            self.adapter.set_state(updated)
+            self._send()
+
     def _send(self) -> None:
-        if self.adapter is None:
+        if self.adapter is None or not self._roster_valid:
             return
         try:
             self.adapter.send_state()
@@ -162,19 +225,24 @@ class AutoReferee(Node):
             self._rejected_packets = self.adapter.rejected_packets
 
         now = time.monotonic()
-        last_reply = max((status.received_at for status in self.adapter.latest_responses.values()), default=None)
-        connected = last_reply is not None and now - last_reply < self.config.response_timeout
-        if not connected and self._connected is None and now - self._started_at < self.config.response_timeout:
-            return
-        if connected != self._connected:
-            if connected:
-                self._record_event("Roboterantworten werden empfangen.")
-            elif last_reply is None:
-                self._record_event("Noch kein Roboter verbunden; AutoRef läuft weiter.")
-            else:
-                self.get_logger().warning("Robot replies timed out; continuing to send the match state.")
-                self._record_event("Roboterverbindung unterbrochen; AutoRef läuft weiter.")
-            self._connected = connected
+        expected = {(team, self.config.robot_players[index]) for index, team in self.config.robot_teams.items()}
+        connections = robot_connections(
+            expected, self.adapter.latest_responses, now, self._started_at, self.config.response_timeout
+        )
+        for (team, player), connected in connections.items():
+            if connected is not None and connected != self._robot_connections.get((team, player)):
+                status = "verbunden" if connected else "keine aktuelle Antwort"
+                event = f"Team {team}, Spieler {player}: {status}"
+                self._record_event(event)
+                if not connected:
+                    self.get_logger().warning(event)
+        self._robot_connections = connections
+        if False in connections.values():
+            self._connected = False
+        elif None in connections.values() or not connections:
+            self._connected = None
+        else:
+            self._connected = True
 
     def destroy_node(self):
         if self.dashboard is not None:

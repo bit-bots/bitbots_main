@@ -24,7 +24,7 @@ class TeamState:
     score: int = 0
     penalty_shot: int = 0
     single_shots: int = 0
-    message_budget: int = 0
+    message_budget: int = 12000
 
 
 @dataclass(frozen=True)

@@ -8,6 +8,7 @@ insert one ``<frame>`` per robot so that every robot can be positioned
 individually.
 """
 
+import json
 import tempfile
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -287,6 +288,19 @@ def generate_world_xml(
 
     tree = ET.parse(template_path)
     root = tree.getroot()
+
+    # Keep identities with the generated model so consumers can verify the running world.
+    custom = root.find("custom")
+    if custom is None:
+        custom = ET.SubElement(root, "custom")
+    ET.SubElement(
+        custom,
+        "text",
+        {
+            "name": "simulation_roster",
+            "data": json.dumps([{"index": index, **setting} for index, setting in enumerate(game_settings)]),
+        },
+    )
 
     asset = root.find("asset")
     if asset is None:

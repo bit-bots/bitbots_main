@@ -81,6 +81,13 @@ def generate_domain_bridge_config(robot_domain: int, output_dir: Path) -> Path:
         "to_domain": main_domain,
         "remap": f"{namespace}/joint_command",
     }
+    config["topics"]["team_communication/sent"] = {
+        "type": "std_msgs/msg/String",
+        "from_domain": robot_domain,
+        "to_domain": main_domain,
+        "remap": f"{namespace}/team_communication/sent",
+        "qos": {"reliability": "reliable", "durability": "transient_local", "depth": 1},
+    }
 
     config_path = output_dir / f"robot{robot_domain}_bridge.yaml"
     with open(config_path, "w") as f:

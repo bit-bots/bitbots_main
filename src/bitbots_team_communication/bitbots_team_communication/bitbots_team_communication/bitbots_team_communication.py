@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
+import json
 import socket
 import struct
 import threading
+import uuid
 from typing import Optional
 
 import rclpy
@@ -18,10 +20,11 @@ from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.duration import Duration
 from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
+from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
 from rclpy.time import Time
 from rosgraph_msgs.msg import Clock
 from soccer_vision_3d_msgs.msg import Robot, RobotArray
-from std_msgs.msg import Float32, Header
+from std_msgs.msg import Float32, Header, String
 from tf2_geometry_msgs import PointStamped, PoseStamped
 from tf2_ros import TransformException
 
@@ -144,6 +147,15 @@ class TeamCommunication:
 
     def create_publishers(self):
         self.team_data_publisher = self.node.create_publisher(TeamData, self.topics["team_data_topic"], qos_profile=1)
+        self._sent_messages = 0
+        self._send_session = uuid.uuid4().hex
+        self._send_statistics_publisher = None
+        if self.node.get_parameter("use_sim_time").value:
+            self._send_statistics_publisher = self.node.create_publisher(
+                String,
+                "team_communication/sent",
+                QoSProfile(depth=1, reliability=ReliabilityPolicy.RELIABLE, durability=DurabilityPolicy.TRANSIENT_LOCAL),
+            )
 
     def create_subscribers(self):
         self.node.create_subscription(
@@ -310,7 +322,18 @@ class TeamCommunication:
             )
         else:
             self.logger.debug(f"Sending msg with size {message_size} bytes")
-            self.socket_communication.send_message(proto_msg)
+            self.socket_communication.send_message(proto_msg, on_sent=self._report_sent_message)
+
+    def _report_sent_message(self):
+        self._sent_messages += 1
+        if self._send_statistics_publisher is not None:
+            report = {
+                "team_id": self.team_id,
+                "player_id": self.player_id,
+                "session": self._send_session,
+                "sent": self._sent_messages,
+            }
+            self._send_statistics_publisher.publish(String(data=json.dumps(report)))
 
     def create_empty_message(self, now: Time) -> Proto.Message:
         message = Proto.Message()
@@ -335,7 +358,12 @@ class TeamCommunication:
         return is_own_message or is_message_from_oposite_team
 
     def is_robot_allowed_to_send_message(self) -> bool:
-        return self.gamestate is not None and not self.gamestate.penalized and not self.gamestate.message_budget < 40
+        minimum_budget = 1 if self.node.get_parameter("use_sim_time").value else 40
+        return (
+            self.gamestate is not None
+            and not self.gamestate.penalized
+            and self.gamestate.message_budget >= minimum_budget
+        )
 
     def get_current_time(self) -> Time:
         return self.node.get_clock().now()

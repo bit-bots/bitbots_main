@@ -51,6 +51,13 @@ def format_snapshot(snapshot: dict) -> tuple[str, str, str, str, tuple[str, str,
 
     connected = snapshot["robot_connected"]
     connection = "Warte auf Antwort" if connected is None else "Verbunden" if connected else "Keine aktuelle Antwort"
+    robots = snapshot.get("robot_connections", [])
+    format_connections(snapshot)
+    if robots:
+        connection = f"{sum(robot['connected'] is True for robot in robots)} / {len(robots)} aktuell"
+    roster_status = snapshot.get("roster_status", "")
+    if roster_status.startswith("Aufstellung ungültig:"):
+        roster_status = "Aufstellung ungültig · siehe Ereignisse"
     simulation = snapshot["simulation_time_ns"]
     details = (
         f"Unterbrochen: {'Ja' if state['stopped'] else 'Nein'}\n"
@@ -58,7 +65,8 @@ def format_snapshot(snapshot: dict) -> tuple[str, str, str, str, tuple[str, str,
         f"Vorbereitungszeit: {state['secondary_time']} s",
         f"Anstoß / Fortsetzung: {team(state['kicking_team'])}\n"
         f"Letzter Ballkontakt: {team(snapshot['last_touch_team_id'])}\n"
-        f"Roboter: {connection}",
+        f"Roboter: {connection}\n"
+        f"{roster_status}",
         f"Simulation: {'Noch keine Daten' if simulation is None else f'{simulation / 1e9:.2f} s'}\n"
         f"Standardsituation: {state['set_play'].removeprefix('SET_PLAY_')}\n"
         f"Spielphase: {state['game_phase'].removeprefix('GAME_PHASE_')}",
@@ -70,13 +78,23 @@ def format_snapshot(snapshot: dict) -> tuple[str, str, str, str, tuple[str, str,
     if not isinstance(snapshot["published_at"], (int, float)) or not math.isfinite(snapshot["published_at"]):
         raise ValueError("published_at must be a timestamp")
     return (
-        f"Home · {team(home['team_number'])}\n{home['score']}\n{home['field_player_color']}",
-        f"Away · {team(away['team_number'])}\n{away['score']}\n{away['field_player_color']}",
+        f"Home · {team(home['team_number'])}\n{home['score']}\n{home['field_player_color']}\n"
+        f"Nachrichten übrig: {home['message_budget']}",
+        f"Away · {team(away['team_number'])}\n{away['score']}\n{away['field_player_color']}\n"
+        f"Nachrichten übrig: {away['message_budget']}",
         phase,
         clock,
         details,
         events,
     )
+
+
+def format_connections(snapshot: dict) -> str:
+    teams: dict[int, list[str]] = {}
+    for robot in snapshot.get("robot_connections", []):
+        status = "wartet" if robot["connected"] is None else "OK" if robot["connected"] else "fehlt"
+        teams.setdefault(robot["team_id"], []).append(f"Spieler {robot['player_id']}: {status}")
+    return "\n".join(f"Team {team}: " + " · ".join(players) for team, players in sorted(teams.items()))
 
 
 def run_window(node: DashboardSubscriber) -> None:
@@ -86,12 +104,12 @@ def run_window(node: DashboardSubscriber) -> None:
     import matplotlib.pyplot as plt
 
     with plt.rc_context({"toolbar": "None", "text.usetex": False, "text.parse_math": False}):
-        figure = plt.figure(figsize=(12, 8), layout="constrained", facecolor="#f4f6f8")
+        figure = plt.figure(figsize=(12, 10), layout="constrained", facecolor="#f4f6f8")
         figure.canvas.manager.set_window_title("Bit-Bots AutoRef — Nur Anzeige")
         handler_id = getattr(figure.canvas.manager, "key_press_handler_id", None)
         if handler_id is not None:
             figure.canvas.mpl_disconnect(handler_id)
-        grid = figure.add_gridspec(3, 3, height_ratios=(1.2, 1, 2))
+        grid = figure.add_gridspec(4, 3, height_ratios=(1.5, 1.1, 1, 2))
         figure.suptitle("Bit-Bots AutoRef · Nur Anzeige", fontsize=18, fontweight="bold")
 
         def panel(position):
@@ -100,13 +118,16 @@ def run_window(node: DashboardSubscriber) -> None:
             return axis
 
         home_axis, center_axis, away_axis = (panel(grid[0, index]) for index in range(3))
-        home = home_axis.text(0.5, 0.8, "Home\n–", ha="center", va="top", fontsize=22, linespacing=1.5)
-        away = away_axis.text(0.5, 0.8, "Away\n–", ha="center", va="top", fontsize=22, linespacing=1.5)
+        home = home_axis.text(0.5, 0.9, "Home\n–", ha="center", va="top", fontsize=18, linespacing=1.4)
+        away = away_axis.text(0.5, 0.9, "Away\n–", ha="center", va="top", fontsize=18, linespacing=1.4)
         phase = center_axis.text(0.5, 0.9, "–", ha="center", fontsize=17, color="#08734f")
         clock = center_axis.text(0.5, 0.4, "–:–", ha="center", fontsize=44, fontweight="bold")
         status = center_axis.text(0.5, 0.07, "Warte auf AutoRef …", ha="center", fontsize=10, color="#805c17")
         details = [panel(grid[1, index]).text(0, 0.85, "", va="top", fontsize=10, linespacing=2) for index in range(3)]
-        events_axis = panel(grid[2, :])
+        connections_axis = panel(grid[2, :])
+        connections_axis.set_title("GameController-Rückkanal pro Roboter", loc="left", fontsize=12)
+        connections = connections_axis.text(0, 0.9, "Warte auf Antworten", va="top", fontsize=10, linespacing=1.6)
+        events_axis = panel(grid[3, :])
         events_axis.set_title("AutoRef-Entscheidungen und Ereignisse · neueste zuerst", loc="left", fontsize=12)
         events = events_axis.text(0, 1, "Noch keine Ereignisse", va="top", fontsize=10, linespacing=1.6, clip_on=True)
 
@@ -128,7 +149,13 @@ def run_window(node: DashboardSubscriber) -> None:
             phase.set_text(phase_text)
             clock.set_text(clock_text)
             for artist, content in zip(details, detail_text, strict=True):
-                artist.set_text(content)
+                artist.set_text("\n".join("\n".join(wrap(line, width=42)) for line in content.split("\n")))
+            connection_width = max(30, int(connections_axis.bbox.width / 7.5))
+            connections.set_text(
+                "\n".join(
+                    "\n".join(wrap(line, width=connection_width)) for line in format_connections(data).split("\n")
+                )
+            )
             now = time.monotonic()
             stale = now - node.received_at > 2 or time.time() - data["published_at"] > 2
             advancing = data["simulation_time_ns"] is not None and now - node.simulation_changed_at < 1.5

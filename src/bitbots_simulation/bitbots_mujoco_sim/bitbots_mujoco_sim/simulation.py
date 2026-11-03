@@ -1,5 +1,7 @@
+import json
 import re
 import time
+import xml.etree.ElementTree as ET
 from collections.abc import Callable
 from pathlib import Path
 from threading import Lock
@@ -14,7 +16,7 @@ from rclpy.qos import DurabilityPolicy, HistoryPolicy, QoSProfile, ReliabilityPo
 from rclpy.time import Time
 from rosgraph_msgs.msg import Clock
 from sensor_msgs.msg import CameraInfo, Image, Imu, JointState
-from std_msgs.msg import Float32
+from std_msgs.msg import Float32, String
 from std_srvs.srv import Empty
 from transforms3d.euler import euler2quat, quat2euler
 from transforms3d.quaternions import qmult
@@ -100,6 +102,23 @@ class Simulation(Node):
             )
             for idx in self._find_robot_indices()
         ]
+
+        self.roster_publisher = self.create_publisher(
+            String,
+            "/simulation/roster",
+            QoSProfile(depth=1, reliability=ReliabilityPolicy.RELIABLE, durability=DurabilityPolicy.TRANSIENT_LOCAL),
+        )
+        roster_text = ET.parse(world_file).getroot().find("./custom/text[@name='simulation_roster']")
+        if roster_text is None:
+            self.get_logger().error("World has no simulation roster; regenerate it before using AutoRef.")
+        else:
+            roster = json.loads(roster_text.attrib["data"])
+            domains = {robot.robot.index: robot.domain for robot in self.robots}
+            if {entry["index"] for entry in roster} != set(domains) or len(roster) != len(domains):
+                raise ValueError("World roster does not match its robot bodies")
+            for entry in roster:
+                entry["domain"] = domains[entry["index"]]
+            self.roster_publisher.publish(String(data=json.dumps(roster)))
 
         self._apply_home_keyframe()
 
