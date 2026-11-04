@@ -268,6 +268,9 @@ The training maps the intensity x to the target ball speed 2 / (1 - x) m/s.
 The node uses the inverse of this map and clips the result to ``command.max_kick_intensity``.
 A strength of 2 m/s or less gives the intensity 0.
 
+If the node did not receive a ball estimate since it started, it rejects the kick goal and writes a warning to the log.
+Thus the policy does not run and the node sends no joint goals for this goal.
+
 The policy runs while the kick goal is active and the robot state allows a kick.
 The policy has no "kick done" signal. The goal ends at its timeout.
 The node stops the kick if the ball estimate is too old or its covariance is too large.

@@ -75,7 +75,7 @@ class PiplusAmpKickNode(RLNode):
         self._joint_handler = JointHandler(self)
         self._robot_state_handler = RobotStateHandler(self)
         self._ball_handler = BallHandler(self, self._tf_buffer)
-        self._kick_handler = AmpKickHandler(self, self._tf_buffer)
+        self._kick_handler = AmpKickHandler(self, self._tf_buffer, self._ball_handler.has_received_ball)
 
         self._observation_history = HistoryBuffer(self.get_parameter("obs.history_length").value)
         self._last_ball_position = None

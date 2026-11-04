@@ -53,6 +53,10 @@ class BallHandler(Handler):
         # is_available() tells if the ball is known.
         return True
 
+    def has_received_ball(self) -> bool:
+        """Returns True if the node received at least one ball estimate since it started."""
+        return self._ball is not None
+
     def is_available(self) -> bool:
         """Returns True if the ball estimate is recent and its covariance is small."""
         if self._ball is None:

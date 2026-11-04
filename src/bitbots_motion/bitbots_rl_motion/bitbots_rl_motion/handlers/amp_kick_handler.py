@@ -1,4 +1,5 @@
 import math
+from collections.abc import Callable
 from typing import Optional
 
 import numpy as np
@@ -29,11 +30,15 @@ class AmpKickHandler(Handler):
         it to the kick intensity in [0, 1] with the inverse of the training map.
       * The kick stays active until the timeout of the goal. The policy has no
         "kick done" signal.
+      * The handler rejects a goal if the node did not receive a ball estimate
+        since it started. Thus the policy never starts without any ball.
     """
 
-    def __init__(self, node, tf_buffer: Buffer):
+    def __init__(self, node, tf_buffer: Buffer, ball_received: Callable[[], bool]):
         self._node = node
         self._tf_buffer = tf_buffer
+        # Returns True if the node received at least one ball estimate
+        self._ball_received = ball_received
 
         self._default_timeout = float(node.get_parameter("command.kick_timeout").value)
         self._max_intensity = float(node.get_parameter("command.max_kick_intensity").value)
@@ -102,6 +107,9 @@ class AmpKickHandler(Handler):
     def _goal_callback(self, goal_request) -> GoalResponse:
         if self._active:
             self._node.get_logger().warning("A kick is already active. Reject the new kick goal.")
+            return GoalResponse.REJECT
+        if not self._ball_received():
+            self._node.get_logger().warning("Kick goal rejected because no ball estimate was received yet.")
             return GoalResponse.REJECT
         return GoalResponse.ACCEPT
 
