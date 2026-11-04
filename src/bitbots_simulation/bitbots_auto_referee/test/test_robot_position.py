@@ -30,12 +30,17 @@ def sample(time, positions, ball=(0.0, 0.0, 0.1)):
     )
 
 
-def checker(teams):
+def checker(teams, set_play_min_distance=None):
     commands = Mock()
     result = Future()
     result.set_result(TeleportResult(True, "placed"))
     commands.teleport_robot.return_value = result
-    return RuleChecker(teams, teleport_commands=commands, field=FieldGeometry(home_defends_negative_x=False)), commands
+    return RuleChecker(
+        teams,
+        teleport_commands=commands,
+        field=FieldGeometry(home_defends_negative_x=False),
+        set_play_min_distance=set_play_min_distance,
+    ), commands
 
 
 def test_set_allows_only_one_kicker_touching_circle():
@@ -96,3 +101,33 @@ def test_reset_does_not_turn_position_jump_into_retreat():
     state = rules.check_rules(state, sample(0, {0: (1, 0, 0.4)}))
     state = rules.check_rules(state, sample(1, {0: (1, 0, 0.4)}))
     assert state.teams[1].players[0].penalty == "PENALTY_ILLEGAL_POSITIONING"
+
+
+def test_set_play_distance_is_configurable_and_uses_body_bounds():
+    for required, expected in ((0.8, "PENALTY_NONE"), (1.0, "PENALTY_ILLEGAL_POSITIONING")):
+        rules, _ = checker({0: 2}, set_play_min_distance=required)
+        state = match(state="STATE_PLAYING", stopped=False, set_play="SET_PLAY_THROW_IN")
+        for time in (0, 1):
+            state = rules.check_rules(state, sample(time, {0: (1, 0, 0.4)}))
+        assert state.teams[1].players[0].penalty == expected
+
+
+def test_distance_update_restarts_position_grace_period():
+    rules, _ = checker({0: 2})
+    state = match(state="STATE_PLAYING", stopped=False, set_play="SET_PLAY_THROW_IN")
+    state = rules.check_rules(state, sample(0, {0: (1, 0, 0.4)}))
+    rules.robot_position_rules.configure_set_play_distance(2.0)
+    for time in (0.5, 1):
+        state = rules.check_rules(state, sample(time, {0: (1, 0, 0.4)}))
+    assert state.teams[1].players[0].penalty == "PENALTY_NONE"
+    state = rules.check_rules(state, sample(1.5, {0: (1, 0, 0.4)}))
+    assert state.teams[1].players[0].penalty == "PENALTY_ILLEGAL_POSITIONING"
+
+
+def test_set_play_distance_does_not_restrict_attacking_team():
+    rules, _ = checker({0: 1})
+    rules.robot_position_rules.configure_set_play_distance(2.0)
+    state = match(state="STATE_PLAYING", stopped=False, set_play="SET_PLAY_THROW_IN")
+    for time in (0, 1):
+        state = rules.check_rules(state, sample(time, {0: (0.5, 0, 0.4)}))
+    assert state.teams[0].players[0].penalty == "PENALTY_NONE"

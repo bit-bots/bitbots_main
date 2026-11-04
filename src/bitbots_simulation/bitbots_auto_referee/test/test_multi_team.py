@@ -101,7 +101,7 @@ def test_shared_packet_produces_individual_robot_states_for_both_teams():
 @pytest.mark.parametrize("side", [-1, 1])
 def test_simultaneous_penalties_have_separate_slots_in_own_half(first_half, side):
     cfg = config()
-    state = replace(MatchState.initial(cfg), first_half=first_half)
+    state = replace(MatchState.initial(cfg), state="STATE_PLAYING", stopped=False, first_half=first_half)
     teams = {0: cfg.home_team_id, 1: cfg.home_team_id, 2: cfg.away_team_id, 3: cfg.away_team_id}
     players = {0: 1, 1: 2, 2: 1, 3: 2}
     teleport = Mock()

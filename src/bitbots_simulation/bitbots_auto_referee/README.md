@@ -101,6 +101,7 @@ Team message budgets initially remain empty until a rule engine manages them.
 | `robot_team_mapping` | JSON object mapping simulator robot indices to `home` or `away` |
 | `robot_player_mapping` | Optional simulator-index to protocol player-number overrides |
 | `penalty_area_length` | Penalty area depth used for position rules |
+| `set_play_min_distance` | Live-adjustable defender body-to-ball distance during set plays, in metres |
 | `home_color`, `away_color` | Distinct field-player jersey colors |
 | `home_goalkeeper_color`, `away_goalkeeper_color` | Independently selected goalkeeper colors |
 | `broadcast` | Enable delivery to all receivers sharing the GameController port |
@@ -108,7 +109,7 @@ Team message budgets initially remain empty until a rule engine manages them.
 | `bind_host`, `return_port` | Local interface and return packet port |
 | `send_rate`, `response_timeout` | Wall-clock heartbeat and connection timeout |
 | `use_sim_time` | Simulator clock for the opening sequence and referee decisions |
-| `ui_enabled` | Launch the native read-only application alongside the referee |
+| `ui_enabled` | Launch the native application with live referee settings alongside the referee |
 
 Match and network settings are startup-only ROS parameters. Restart the process
 to change them. Starting the AutoRef automatically prepares and starts play, which
@@ -122,7 +123,27 @@ PLAYING is reached, the opening sequence stops modifying the match state.
 The playing clock always uses the simulation timestamps in the observation
 stream, even if the opening sequence uses wall time.
 
-## Native read-only application
+READY may finish early when all configured, unpenalized robots have remained
+legally positioned for SET and stationary for the stability interval defined in
+`rules/ready.py`. The same whole-body half-field and single-kicker checks are
+used for this decision and SET penalties. Position and yaw anchors detect slow
+drift; root and body-joint speed limits reuse `rules/motion.py`. Head motion alone
+does not prevent completion. Significant movement, rotation, illegal positions,
+active-player changes, robot teleports and simulation resets restart the check.
+Missing robot observations, body bounds or motion/heading data prevent early
+completion. Penalized sideline players are excluded. The normal READY timeout
+still applies when the stability condition cannot be confirmed, including when
+no active players are available. The early transition applies to opening, goal
+and neutral-restart preparation and preserves the complete SET interval. It is
+logged to both console and dashboard.
+
+No new penalties are issued during INITIAL; robot placement and movement in this
+phase are exempt and do not accumulate later violation timers. Already penalized
+players cannot receive another penalty, extend their penalty or trigger a pushing
+foul while waiting at the sideline. Existing owned penalty timers still expire
+normally; after release, the normal rules and their grace periods apply again.
+
+## Native application and live referee settings
 
 The launch file starts `auto_referee_ui` in its own process. Like the positioning
 capsule's `debug_positioning.py`, it uses Matplotlib with a native Qt window.
@@ -137,12 +158,29 @@ are indicated as older events outside the view. A bounded history is retained
 by the referee and included in each snapshot. Ordinary clock ticks update the
 display without flooding that history.
 
-There are no match controls, sliders or plot toolbar. Closing the window ends
+The settings panel edits `pushing_sustained_force_threshold` and
+`pushing_force_threshold` in newtons, plus `set_play_min_distance` in metres.
+Higher force thresholds make pushing detection less sensitive. A higher minimum
+distance requires defenders to stay farther from the ball. The single-contact threshold still requires visible destabilization;
+it is a force threshold, not an integrated impulse. The panel displays the active
+values from the referee. Press **Übernehmen** to submit all values atomically
+through the referee's ROS parameter service. Values must be finite and positive,
+and the sustained threshold must not exceed the single-contact threshold.
+Rejected updates leave all active values unchanged; the panel displays errors
+and disables submission when the referee is unavailable. Accepted changes apply
+to subsequent simulation observations. Changing pushing thresholds discards pending pushing episodes, so
+contact evidence collected under different thresholds is not mixed. Changing the
+set-play distance restarts position grace periods without resetting pushing evidence. Existing
+penalties and match state remain in effect. Changes last until the referee
+restarts; launch arguments provide the startup values. Other tuning parameters
+remain startup-only.
+
+There are no match controls or plot toolbar. Closing the window ends
 only the UI process; the referee continues. The application subscribes to the
 relative ROS topic `dashboard`, which resolves to `/auto_referee/dashboard` under
 the supplied launch file. Full snapshots include state and event history so a
 newly opened window immediately receives the latest retained snapshot. Only the
-referee publishes this topic; the UI never commands robots or changes match state.
+referee publishes this topic; the UI sends only runtime parameter updates.
 
 For headless operation, launch with `ui_enabled:=false`. The referee keeps
 publishing snapshots, so the window can be opened separately later:
@@ -427,12 +465,17 @@ to the defending team after an attacking touch. Throw-ins use the crossing's
 nearest touchline point; corners and goal kicks use the corresponding field or
 goal-area corner. Unknown last-touch teams are reported without inventing a restart.
 
-The match is stopped while waiting for ball placement acknowledgement and its
-corresponding simulation observation. A placement failure leaves it stopped and
+After the outside-decision delay, the match first enters STOP. The stopped
+interval defined by `RESTART_STOP_NS` in `rules/check_rules.py` must elapse in
+simulation time before a ball teleport is submitted. The match remains stopped
+while waiting for ball placement acknowledgement and its corresponding simulation
+observation. A placement failure leaves it stopped and
 records an event. After successful placement, set plays remain PLAYING with
 `stopped=false`, the awarded `kicking_team`, and a simulation-driven `secondary_time`.
 The set play clears on expiry or on a new ball contact by the awarded team after
-acknowledged placement. Opponent contacts and teleport contacts do not end it.
+acknowledged placement. Opponent contacts and teleport contacts do not end it. Contacts still present
+when placement is acknowledged remain suppressed until separation, including when
+the service acknowledgement arrives after the teleport observation.
 Further boundary crossings are still detected during a set play. Goals and set
 plays are recorded in the native dashboard's decision history.
 
@@ -509,8 +552,9 @@ If several candidates enter together, the closest torso to the center is selecte
 with simulator index as tie breaker; the selection remains until that robot leaves
 the circle or is no longer eligible. Other attacking robots in the circle are illegal.
 
-During an active, non-stopped PLAYING set play, defenders must keep the center-circle
-diameter as distance between their body bounds and the ball center. Moving away,
+During an active, non-stopped PLAYING set play, defenders must keep `set_play_min_distance`
+between their body bounds and the ball center. This positive, finite distance is
+independent of center-circle geometry and can be changed live in the GUI. Moving away,
 or moving tangentially without appreciable inward progress, is exempt. Standing
 still and approaching are violations after a short continuous grace interval.
 Robot displacement is measured in world coordinates so ball movement alone does
@@ -519,7 +563,7 @@ the opponent penalty area, including the markings; this requirement remains even
 while moving away from the ball. SET positioning also uses a continuous grace
 interval to avoid penalties on a single observation.
 
-Leaving-the-field detection runs in every phase once the complete bounds are
+Leaving-the-field detection runs outside INITIAL once the complete bounds are
 beyond `LEAVING_MARGIN` from the outer field markings. At corners it uses planar
 distance to the field rectangle. A teleport observation itself is exempt; an
 illegal position persisting afterward is evaluated normally.
@@ -602,6 +646,10 @@ victim, reason and peak force; current pair forces are also exposed in
 `rule_checker.pushing_rules.contact_forces`. The complete force and approach
 measurements are carried in `/simulation/step` for tuning even without a penalty.
 
+Pushing decisions explicitly distinguish `anhaltender Kontakt` from
+`zu intensiver Einzelkontakt mit Destabilisierung` in both console output and
+the GameController scoreboard event history.
+
 All tuning arguments are declared and validated in `config.py` and passed through
 by the launch script:
 
@@ -625,12 +673,25 @@ These defaults are initial tuning values, not calibrated referee thresholds.
 `RuleChecker.award_direct_free_kick(state, team_id, x, y)` and
 `award_indirect_free_kick(state, team_id, x, y)` award a restart during active
 PLAYING and return the updated match snapshot. Callers must apply that returned
-state. Both use the supplied incident location without relocating it to a field
-marking, set `kicking_team`, and initialize `secondary_time` to the shared set-play
-duration. They stop play while awaiting acknowledged ball placement, then resume
+state. Both use the supplied incident location as the intended ball position,
+set `kicking_team`, and initialize `secondary_time` to the shared set-play duration.
+They immediately stop play and wait for `RESTART_STOP_NS` in `rules/check_rules.py`
+before requesting placement. The playing clock and set-play countdown remain
+paused during STOP and while awaiting acknowledged ball placement, then resume
 PLAYING and count down. The awarded team's first new ball contact ends `set_play`
 and `secondary_time` as for the other set plays. Invalid teams/coordinates or an
 outstanding placement are rejected. Double-touch detection uses this interface to award the opponent an indirect free kick at the ball position.
+
+Ball placement for free kicks, throw-ins, corners, goal kicks and goal restarts
+uses `rules/ball_placement.py`. It checks the most recent robot body bounds with
+clearance for the ball radius and placement margin. Missing or invalid bounds use
+a conservative radius around the observed robot root. An occupied target is
+replaced by a nearby free candidate whose center remains inside the field.
+The search extent, spacing and clearance are defined in that module. If no nearby
+candidate is free, STOP remains active and subsequent observations retry the
+search without submitting an unsafe teleport. Adjusted targets and blocked or
+failed placements are logged to the console and dashboard. This avoids placing
+restart balls into robots both after fouls and after ball exits.
 
 Pushing during active play awards a direct free kick to the victim's team in
 addition to penalizing the actor. The simulator reports the strongest contact's

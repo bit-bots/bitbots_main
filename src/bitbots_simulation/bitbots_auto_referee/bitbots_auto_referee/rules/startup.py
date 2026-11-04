@@ -11,6 +11,8 @@ STARTUP_PHASES = (
     ("STATE_SET", 5),
 )
 
+PHASE_SECONDS = dict(STARTUP_PHASES)
+
 
 class StartupSequence:
     """Advance once to PLAYING; restart unfinished preparation on a clock reset."""
@@ -19,6 +21,13 @@ class StartupSequence:
         self._started_at: int | None = None
         self._last_time: int | None = None
         self.finished = False
+
+    def finish_ready(self, now_ns: int) -> None:
+        """Skip the remaining READY time while preserving the complete SET interval."""
+        if not self.finished and self._started_at is not None:
+            before_set = PHASE_SECONDS["STATE_INITIAL"] + PHASE_SECONDS["STATE_READY"]
+            self._started_at = now_ns - before_set * NANOSECONDS_PER_SECOND
+            self._last_time = now_ns
 
     def advance(self, state: MatchState, now_ns: int) -> MatchState:
         """Use elapsed time since the first clock sample, preserving other match fields."""

@@ -1,4 +1,4 @@
-"""Native read-only Matplotlib application, kept separate from the referee process."""
+"""Native scoreboard and live referee settings in a separate UI process."""
 
 import json
 import math
@@ -103,14 +103,17 @@ def run_window(node: DashboardSubscriber) -> None:
     matplotlib.use("Qt5Agg")
     import matplotlib.pyplot as plt
 
+    from bitbots_auto_referee.ui.settings import RefereeSettings
+
     with plt.rc_context({"toolbar": "None", "text.usetex": False, "text.parse_math": False}):
         figure = plt.figure(figsize=(12, 10), layout="constrained", facecolor="#f4f6f8")
-        figure.canvas.manager.set_window_title("Bit-Bots AutoRef — Nur Anzeige")
+        figure.canvas.manager.set_window_title("Bit-Bots AutoRef")
+        settings = RefereeSettings(node, figure.canvas.manager.window)
         handler_id = getattr(figure.canvas.manager, "key_press_handler_id", None)
         if handler_id is not None:
             figure.canvas.mpl_disconnect(handler_id)
         grid = figure.add_gridspec(4, 3, height_ratios=(1.5, 1.1, 1, 2))
-        figure.suptitle("Bit-Bots AutoRef · Nur Anzeige", fontsize=18, fontweight="bold")
+        figure.suptitle("Bit-Bots AutoRef", fontsize=18, fontweight="bold")
 
         def panel(position):
             axis = figure.add_subplot(position)
@@ -140,6 +143,10 @@ def run_window(node: DashboardSubscriber) -> None:
             except ExternalShutdownException:
                 plt.close(figure)
                 return
+            stale = node.received_at is None or time.monotonic() - node.received_at > 2
+            if node.snapshot is not None:
+                stale = stale or time.time() - node.snapshot["published_at"] > 2
+            settings.refresh(node.snapshot, stale)
             if node.snapshot is None or node.received_at is None or node.simulation_changed_at is None:
                 return
             data = node.snapshot

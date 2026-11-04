@@ -43,6 +43,7 @@ class Dashboard:
         connected: bool | None,
         robot_connections: dict[tuple[int, int], bool | None] | None = None,
         roster_status: str = "",
+        runtime_parameters: dict[str, float] | None = None,
     ) -> None:
         snapshot = {
             "match": asdict(state),
@@ -54,6 +55,7 @@ class Dashboard:
                 for (team, player), status in sorted((robot_connections or {}).items())
             ],
             "roster_status": roster_status,
+            "runtime_parameters": dict(runtime_parameters or {}),
             "events": list(self._events),
             "published_at": time.time(),
         }

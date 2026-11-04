@@ -62,6 +62,7 @@ PARAMETERS = {
     "robot_player_mapping": ParameterSpec(
         "{}", "Optional JSON robot-index to player-number overrides; otherwise ordered within each team."
     ),
+    "set_play_min_distance": ParameterSpec(1.5, "Minimum defender body-to-ball distance in metres during set plays."),
     "center_circle_radius": ParameterSpec(0.75, "Center circle radius to the marking center in metres."),
     "penalty_area_width": ParameterSpec(4.0, "Penalty area width in metres."),
     "penalty_area_length": ParameterSpec(2.0, "Penalty area depth in metres."),
@@ -88,9 +89,16 @@ PARAMETERS = {
     "home_defends_negative_x": ParameterSpec(
         True, "Home defends negative X in the first half; sides swap at halftime."
     ),
-    "ui_enabled": ParameterSpec(True, "Launch the native read-only AutoRef window."),
+    "ui_enabled": ParameterSpec(True, "Launch the native AutoRef window with live referee settings."),
     "use_sim_time": ParameterSpec(True, "Use the simulator's clock for the opening sequence and referee decisions."),
 }
+
+
+LIVE_PARAMETERS = (
+    "pushing_sustained_force_threshold",
+    "pushing_force_threshold",
+    "set_play_min_distance",
+)
 
 
 @dataclass(frozen=True)
@@ -115,6 +123,7 @@ class RefereeConfig:
     home_goalkeeper: int
     away_goalkeeper: int
     robot_player_mapping: str
+    set_play_min_distance: float
     center_circle_radius: float
     penalty_area_width: float
     penalty_area_length: float
@@ -244,6 +253,7 @@ class RefereeConfig:
             "penalty_area_length",
             "penalty_area_width",
             "center_circle_radius",
+            "set_play_min_distance",
         ):
             if not math.isfinite(values[name]) or values[name] <= 0:
                 raise ValueError(f"{name} must be finite and positive")

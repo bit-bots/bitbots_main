@@ -5,7 +5,7 @@ from dataclasses import replace
 
 from bitbots_auto_referee.core.observations import SimulationObservation
 from bitbots_auto_referee.core.state import MatchState
-from bitbots_auto_referee.rules.startup import NANOSECONDS_PER_SECOND, STARTUP_PHASES
+from bitbots_auto_referee.rules.startup import NANOSECONDS_PER_SECOND, PHASE_SECONDS, STARTUP_PHASES
 
 GLOBAL_STUCK_NS = 30 * NANOSECONDS_PER_SECOND
 LOCAL_STUCK_NS = 10 * NANOSECONDS_PER_SECOND
@@ -36,15 +36,7 @@ class GameFlowRules:
         self._restart_failed = False
 
     def _eligible(self, state, robot):
-        team_id = self.penalties.robot_teams.get(robot)
-        number = self.penalties.robot_players.get(robot)
-        return any(
-            team.team_number == team_id
-            and number is not None
-            and 1 <= number <= len(team.players)
-            and team.players[number - 1].penalty == "PENALTY_NONE"
-            for team in state.teams
-        )
+        return self.penalties.eligible(state, robot)
 
     def _reset_play(self):
         self._anchor = None
@@ -126,6 +118,11 @@ class GameFlowRules:
             self.event(f"Globaler Neustart angehalten: {error}")
         return replace(state, stopped=True, kicking_team=255, set_play="SET_PLAY_NONE", secondary_time=0)
 
+    def finish_ready(self, now_ns: int) -> None:
+        """Keep the full SET interval after an early end to neutral-restart READY."""
+        if self._restart_at is not None:
+            self._restart_at = now_ns - PHASE_SECONDS["STATE_READY"] * NANOSECONDS_PER_SECOND
+
     def _advance_restart(self, state, observation):
         if self._restart_failed:
             return replace(state, stopped=True)
@@ -181,6 +178,10 @@ class GameFlowRules:
                 # Keep existing sideline spawns; project in-field starts to their nearest touchline.
                 side_y = math.copysign(max(abs(y), self.field.field_width / 2), y)
                 self.initial_poses.setdefault(robot, (x, side_y, yaw))
+        if state.state == "STATE_INITIAL":
+            self._reset_play()
+            self._fallen.clear()
+            return state
         if restart_on_reset:
             return self._begin_restart(state, observation)
         if self._placements is not None or self._restart_at is not None:

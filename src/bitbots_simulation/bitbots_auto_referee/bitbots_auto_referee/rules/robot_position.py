@@ -16,26 +16,27 @@ def distance(bounds: RobotBounds, x: float, y: float) -> float:
 
 
 class RobotPositionRules:
-    def __init__(self, robot_teams, robot_players, field, penalties):
+    def __init__(self, robot_teams, robot_players, field, penalties, set_play_min_distance=None):
         self.robot_teams = robot_teams
         self.robot_players = robot_players
         self.field = field
         self.penalties = penalties
+        self.set_play_min_distance = (
+            2 * field.center_circle_radius if set_play_min_distance is None else set_play_min_distance
+        )
         self._previous = None
         self._context = None
         self._restricted_since = {}
         self._kicker = None
 
+    def configure_set_play_distance(self, distance: float) -> None:
+        """Restart position grace periods when the required set-play distance changes."""
+        if distance != self.set_play_min_distance:
+            self.set_play_min_distance = distance
+            self._restricted_since.clear()
+
     def _eligible(self, state, robot):
-        team_id = self.robot_teams.get(robot)
-        number = self.robot_players.get(robot)
-        return any(
-            team.team_number == team_id
-            and number is not None
-            and 1 <= number <= len(team.players)
-            and team.players[number - 1].penalty == "PENALTY_NONE"
-            for team in state.teams
-        )
+        return self.penalties.eligible(state, robot)
 
     def _own_negative(self, state, team_id):
         home_negative = self.field.home_defends_negative_x == state.first_half
@@ -59,6 +60,55 @@ class RobotPositionRules:
         # Tangential progress around the ball is allowed; inward progress is not.
         return math.hypot(vx, vy) > ESCAPE_SPEED and outward >= -INWARD_TOLERANCE
 
+    @staticmethod
+    def _bounds(observation):
+        return {
+            robot: box
+            for robot, box in observation.robot_bounds.items()
+            if robot in observation.robot_positions
+            and all(math.isfinite(value) for value in vars(box).values())
+            and box.min_x <= box.max_x
+            and box.min_y <= box.max_y
+        }
+
+    def _select_kicker(self, state, observation, bounds):
+        circle = self.field.center_circle_radius + self.field.line_width / 2
+        candidates = [
+            robot
+            for robot, box in bounds.items()
+            if self.robot_teams.get(robot) == state.kicking_team
+            and self._eligible(state, robot)
+            and distance(box, 0, 0) <= circle
+        ]
+        if self._kicker in candidates:
+            return self._kicker
+        return (
+            min(candidates, key=lambda robot: (math.hypot(*observation.robot_positions[robot][:2]), robot))
+            if candidates
+            else None
+        )
+
+    def _illegal_in_set(self, state, robot, box, kicker):
+        half_x, half_y = self.field.field_length / 2, self.field.field_width / 2
+        team_id = self.robot_teams[robot]
+        own_half = box.max_x <= 0 if self._own_negative(state, team_id) else box.min_x >= 0
+        on_field = box.min_x >= -half_x and box.max_x <= half_x and box.min_y >= -half_y and box.max_y <= half_y
+        circle = self.field.center_circle_radius + self.field.line_width / 2
+        if team_id == state.kicking_team and distance(box, 0, 0) <= circle:
+            return robot != kicker or not on_field
+        return not own_half or not on_field
+
+    def legal_set_robots(self, state, observation) -> set[int] | None:
+        """Require complete, legal SET positions for all configured unpenalized robots."""
+        robots = {robot for robot in self.robot_teams if self._eligible(state, robot)}
+        bounds = self._bounds(observation)
+        if not robots or not robots <= bounds.keys() or observation.robot_positions.keys() - self.robot_teams.keys():
+            return None
+        kicker = self._select_kicker(state, observation, bounds)
+        if any(self._illegal_in_set(state, robot, bounds[robot], kicker) for robot in robots):
+            return None
+        return robots
+
     def check(self, state: MatchState, observation: SimulationObservation) -> MatchState:
         context = (state.state, state.stopped, state.set_play, state.kicking_team, state.first_half)
         reset = self._previous is not None and (
@@ -68,28 +118,13 @@ class RobotPositionRules:
             self._restricted_since.clear()
             self._kicker = None
         self._context = context
-        bounds = {
-            robot: box
-            for robot, box in observation.robot_bounds.items()
-            if robot in observation.robot_positions
-            and all(math.isfinite(value) for value in vars(box).values())
-            and box.min_x <= box.max_x
-            and box.min_y <= box.max_y
-        }
-        circle = self.field.center_circle_radius + self.field.line_width / 2
-        candidates = [
-            robot
-            for robot, box in bounds.items()
-            if self.robot_teams.get(robot) == state.kicking_team
-            and self._eligible(state, robot)
-            and distance(box, 0, 0) <= circle
-        ]
-        if self._kicker not in candidates:
-            self._kicker = (
-                min(candidates, key=lambda robot: (math.hypot(*observation.robot_positions[robot][:2]), robot))
-                if candidates
-                else None
-            )
+        if state.state == "STATE_INITIAL":
+            self._restricted_since.clear()
+            self._kicker = None
+            self._previous = observation
+            return state
+        bounds = self._bounds(observation)
+        self._kicker = self._select_kicker(state, observation, bounds)
         half_x, half_y = self.field.field_length / 2, self.field.field_width / 2
         for robot, box in sorted(bounds.items()):
             if not self._eligible(state, robot):
@@ -109,12 +144,7 @@ class RobotPositionRules:
             team_id = self.robot_teams[robot]
             illegal = False
             if state.state == "STATE_SET":
-                own_half = box.max_x <= 0 if self._own_negative(state, team_id) else box.min_x >= 0
-                on_field = box.min_x >= -half_x and box.max_x <= half_x and box.min_y >= -half_y and box.max_y <= half_y
-                if team_id == state.kicking_team and distance(box, 0, 0) <= circle:
-                    illegal = robot != self._kicker or not on_field
-                else:
-                    illegal = not own_half or not on_field
+                illegal = self._illegal_in_set(state, robot, box, self._kicker)
             elif (
                 state.state == "STATE_PLAYING"
                 and not state.stopped
@@ -123,7 +153,7 @@ class RobotPositionRules:
             ):
                 if observation.ball_position is not None:
                     bx, by, _ = observation.ball_position
-                    illegal = distance(box, bx, by) < 2 * self.field.center_circle_radius and not self._escaping(
+                    illegal = distance(box, bx, by) < self.set_play_min_distance and not self._escaping(
                         robot, observation
                     )
                 if state.set_play == "SET_PLAY_GOAL_KICK":

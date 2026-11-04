@@ -45,11 +45,12 @@ class MotionRules:
         now = observation.time_ns
         reset = self._last_time is not None and (now < self._last_time or observation.step_number < self._last_step)
         self._last_time, self._last_step = now, observation.step_number
-        mode = (
-            "PENALTY_MOTION_IN_STOP"
-            if state.stopped
-            else ("PENALTY_MOTION_IN_SET" if state.state == "STATE_SET" else None)
-        )
+        mode = None
+        if state.state != "STATE_INITIAL":
+            if state.stopped:
+                mode = "PENALTY_MOTION_IN_STOP"
+            elif state.state == "STATE_SET":
+                mode = "PENALTY_MOTION_IN_SET"
         if reset or mode != self._mode:
             self._grace.clear()
             self._moving_since.clear()
@@ -84,7 +85,12 @@ class MotionRules:
             if robot not in observation.robot_positions:
                 self._grace.pop(robot, None)
                 self._moving_since.pop(robot, None)
+        current = replace(state, teams=tuple(teams))
         for robot in observation.robot_positions:
+            if not self.eligible(current, robot):
+                self._grace.pop(robot, None)
+                self._moving_since.pop(robot, None)
+                continue
             self._grace.setdefault(robot, now + GRACE_NS)
             if robot in observation.teleported_robots:
                 self._grace[robot] = now + GRACE_NS
@@ -132,8 +138,24 @@ class MotionRules:
                 self._relocate(robot, team_id, state, observation)
         return replace(state, teams=tuple(teams)) if tuple(teams) != state.teams else state
 
+    def eligible(self, state: MatchState, robot: int) -> bool:
+        """Only unpenalized roster players outside INITIAL can receive new penalties."""
+        if state.state == "STATE_INITIAL":
+            return False
+        team_id = self.robot_teams.get(robot)
+        number = self.robot_players.get(robot)
+        return any(
+            team.team_number == team_id
+            and number is not None
+            and 1 <= number <= len(team.players)
+            and team.players[number - 1].penalty == "PENALTY_NONE"
+            for team in state.teams
+        )
+
     def penalize(self, state: MatchState, observation: SimulationObservation, robot: int, penalty: str) -> MatchState:
         """Share penalty ownership and expiry with the position rules; never replace an existing penalty."""
+        if not self.eligible(state, robot):
+            return state
         team_id = self.robot_teams.get(robot)
         number = self.robot_players.get(robot)
         for index, team in enumerate(state.teams):

@@ -5,7 +5,7 @@ import unittest
 from dataclasses import replace
 from unittest.mock import Mock
 
-from bitbots_auto_referee.config import PARAMETERS, RefereeConfig
+from bitbots_auto_referee.config import LIVE_PARAMETERS, PARAMETERS, RefereeConfig
 from bitbots_auto_referee.core.state import MatchState
 from bitbots_auto_referee.ui.application import DashboardSubscriber, format_connections, format_snapshot
 from bitbots_auto_referee.ui.dashboard import Dashboard
@@ -89,3 +89,10 @@ class DashboardTest(unittest.TestCase):
         connections = format_connections(data)
         self.assertIn(f"Team {home.team_number}: Spieler 1: OK", connections)
         self.assertIn(f"Team {away.team_number}: Spieler 1: fehlt", connections)
+
+
+    def test_snapshot_includes_active_runtime_parameters(self):
+        values = {name: PARAMETERS[name].default for name in LIVE_PARAMETERS}
+        self.dashboard.update(self.state, None, None, None, runtime_parameters=values)
+        message = self.node.create_publisher.return_value.publish.call_args.args[0]
+        self.assertEqual(json.loads(message.data)["runtime_parameters"], values)

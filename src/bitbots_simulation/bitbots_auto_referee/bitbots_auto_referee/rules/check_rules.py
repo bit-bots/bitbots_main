@@ -8,13 +8,17 @@ from dataclasses import replace
 from bitbots_auto_referee.core.observations import Position, SimulationObservation
 from bitbots_auto_referee.core.state import MatchState
 from bitbots_auto_referee.core.teleport import TeleportCommands, TeleportResult
+from bitbots_auto_referee.rules.ball_placement import free_ball_position
 from bitbots_auto_referee.rules.double_touch import DoubleTouchConfig, DoubleTouchRules
 from bitbots_auto_referee.rules.game_flow import GameFlowRules
 from bitbots_auto_referee.rules.motion import MotionRules
 from bitbots_auto_referee.rules.outside import OUTSIDE_DELAY_NS, SET_PLAY_SECONDS, FieldGeometry, OutsideDecision
 from bitbots_auto_referee.rules.pushing import PushingConfig, PushingRules
+from bitbots_auto_referee.rules.ready import ReadyRules
 from bitbots_auto_referee.rules.robot_position import RobotPositionRules
-from bitbots_auto_referee.rules.startup import NANOSECONDS_PER_SECOND, STARTUP_PHASES
+from bitbots_auto_referee.rules.startup import NANOSECONDS_PER_SECOND, PHASE_SECONDS, STARTUP_PHASES
+
+RESTART_STOP_NS = 3_000_000_000
 
 
 class RuleChecker:
@@ -29,6 +33,7 @@ class RuleChecker:
         robot_players: dict[int, int] | None = None,
         pushing_config: PushingConfig | None = None,
         double_touch_config: DoubleTouchConfig | None = None,
+        set_play_min_distance: float | None = None,
     ):
         self._teleport_commands = teleport_commands
         self._event_callback = event_callback
@@ -51,6 +56,9 @@ class RuleChecker:
         self._previous_ball_position: Position | None = None
         self._pending_outside: OutsideDecision | None = None
         self._placement: Future[TeleportResult] | None = None
+        self._restart_stop_at: int | None = None
+        self._placement_blocked = False
+        self._observation: SimulationObservation | None = None
         self._restart_at: int | None = None
         self._restart_is_goal = False
         if robot_players is None:
@@ -62,7 +70,10 @@ class RuleChecker:
             self.robot_teams, robot_players, self.field, self._event, double_touch_config
         )
         self.motion_rules = MotionRules(self.robot_teams, robot_players, self.field, self.teleport_robot, self._event)
-        self.robot_position_rules = RobotPositionRules(self.robot_teams, robot_players, self.field, self.motion_rules)
+        self.robot_position_rules = RobotPositionRules(
+            self.robot_teams, robot_players, self.field, self.motion_rules, set_play_min_distance
+        )
+        self.ready_rules = ReadyRules(self.robot_position_rules)
         self._placement_failed = False
         self.pushing_rules = PushingRules(self.motion_rules, self._event, pushing_config)
         self.game_flow_rules = GameFlowRules(
@@ -104,6 +115,7 @@ class RuleChecker:
             self.last_touch_team_id = None
             self._reset_outside()
         self._previous_ball_position = self.ball_position
+        self._observation = observation
         self.robot_positions = dict(observation.robot_positions)
         self.ball_position = observation.ball_position
         self.simulation_time_ns = observation.time_ns
@@ -137,7 +149,7 @@ class RuleChecker:
 
         contact_teams = {self.robot_teams.get(index) for index in new_contacts}
         if observation.ball_teleported:
-            if self._placement is None and not self._placement_failed:
+            if self._pending_outside is None and self._placement is None and not self._placement_failed:
                 self._pending_outside = None
                 self._clear_indirect()
                 self.double_touch_rules.clear()
@@ -178,7 +190,14 @@ class RuleChecker:
         if game_state.kicking_team == 255 and game_state != before_flow:
             self._clear_indirect()
             self.double_touch_rules.clear()
-        return self.pushing_check(game_state, observation)
+        game_state = self.pushing_check(game_state, observation)
+        if self.ready_rules.check(game_state, observation):
+            if self._restart_at is not None and self._restart_is_goal:
+                self._restart_at = observation.time_ns - PHASE_SECONDS["STATE_READY"] * NANOSECONDS_PER_SECOND
+            self.game_flow_rules.finish_ready(observation.time_ns)
+            game_state = replace(game_state, state="STATE_SET", stopped=False, secondary_time=PHASE_SECONDS["STATE_SET"])
+            self._event("READY vorzeitig beendet: alle aktiven Roboter legal aufgestellt und stabil; SET.")
+        return game_state
 
     def pushing_check(self, game_state: MatchState, observation: SimulationObservation) -> MatchState:
         game_state = self.pushing_rules.check(game_state, observation)
@@ -211,7 +230,7 @@ class RuleChecker:
         self._restart_at = None
         self._clear_indirect()
         self.double_touch_rules.clear()
-        # Foul restarts start immediately; the outside-ball decision delay does not apply.
+        # Capture the foul immediately; ball placement follows the stopped interval.
         self._pending_outside = OutsideDecision(
             kind, team_id, (float(x), float(y)), self.simulation_time_ns - OUTSIDE_DELAY_NS
         )
@@ -245,6 +264,8 @@ class RuleChecker:
         self.double_touch_rules.clear()
         self._pending_outside = None
         self._placement = None
+        self._restart_stop_at = None
+        self._placement_blocked = False
         self._restart_at = None
         self._placement_failed = False
         self._previous_ball_position = None
@@ -308,7 +329,7 @@ class RuleChecker:
         assert self.simulation_time_ns is not None
         if decision is None or self.simulation_time_ns - decision.detected_at < OUTSIDE_DELAY_NS:
             return game_state
-        if self._placement is None and not self._placement_failed:
+        if self._restart_stop_at is None:
             if game_state.state != "STATE_PLAYING" or game_state.stopped:
                 self._pending_outside = None
                 return game_state
@@ -338,9 +359,24 @@ class RuleChecker:
                     stopped=True,
                 )
             self._clock_was_running = False
-            self._event(f"Entscheidung: {decision.kind}, Team {decision.team_id}")
+            self._restart_stop_at = self.simulation_time_ns
+            self._event(f"Entscheidung: {decision.kind}, Team {decision.team_id}; STOP vor Ballplatzierung.")
+            return game_state
+        if self.simulation_time_ns - self._restart_stop_at < RESTART_STOP_NS:
+            return game_state
+        if self._placement is None and not self._placement_failed:
+            assert self._observation is not None
+            position = free_ball_position(decision.position, self._observation, self.field)
+            if position is None:
+                if not self._placement_blocked:
+                    self._event("Ballplatzierung blockiert: kein freier Platz in Zielnähe; Spiel bleibt angehalten.")
+                self._placement_blocked = True
+                return game_state
+            self._placement_blocked = False
+            if position != decision.position:
+                self._event(f"Ballziel blockiert oder außerhalb: Platzierung bei {position} statt {decision.position}.")
             try:
-                self._placement = self.teleport_ball(*decision.position, 0.0)
+                self._placement = self.teleport_ball(*position, 0.0)
             except Exception as error:
                 self._placement_failed = True
                 self._event(f"Ballplatzierung fehlgeschlagen; Spiel bleibt angehalten: {error}")
@@ -358,6 +394,7 @@ class RuleChecker:
         if self.step_number < result.applied_step:
             return game_state
         self._placement = None
+        self._restart_stop_at = None
         self._pending_outside = None
         self._clear_indirect()
         if decision.kind != "GOAL":
@@ -366,7 +403,8 @@ class RuleChecker:
             self._indirect_team = decision.team_id
         self._restart_at = self.simulation_time_ns
         self.last_touch_team_id = None
-        self._touching_ball = frozenset()
+        # Placement contacts cannot execute a restart until the robot releases the ball.
+        self._suppressed_ball_contacts |= self._touching_ball
         self._last_check_ball_outside = self.ballOutside()
         updated = self._advance_restart(game_state)
         self._clock_was_running = updated.state == "STATE_PLAYING" and not updated.stopped

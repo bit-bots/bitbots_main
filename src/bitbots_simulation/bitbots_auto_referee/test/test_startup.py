@@ -60,3 +60,17 @@ class StartupTest(unittest.TestCase):
         playing = self.sequence.advance(self.state, self.origin + 35_000_000_000)
         finished = replace(playing, state="STATE_FINISHED", stopped=True)
         self.assertIs(self.sequence.advance(finished, self.origin + 40_000_000_000), finished)
+
+
+    def test_early_ready_finish_preserves_set_duration_and_clock_reset(self):
+        ready = self.sequence.advance(self.state, self.origin + 5_000_000_000)
+        self.sequence.finish_ready(self.origin + 10_000_000_000)
+        early_set = self.sequence.advance(ready, self.origin + 10_000_000_000)
+        self.assertEqual(early_set.state, "STATE_SET")
+        self.assertEqual(early_set.secondary_time, 5)
+        self.assertEqual(self.sequence.advance(early_set, self.origin + 14_999_999_999).state, "STATE_SET")
+        self.assertEqual(self.sequence.advance(early_set, self.origin + 15_000_000_000).state, "STATE_PLAYING")
+        other = StartupSequence()
+        other.advance(self.state, self.origin)
+        other.finish_ready(self.origin + 10_000_000_000)
+        self.assertEqual(other.advance(ready, 0).state, "STATE_INITIAL")

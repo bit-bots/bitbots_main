@@ -117,3 +117,43 @@ def test_teammate_contacts_do_not_award_penalties_or_free_kicks():
     assert checker.pushing_rules.fouls == []
     commands.teleport_robot.assert_not_called()
     commands.teleport_ball.assert_not_called()
+
+
+def test_pushing_events_identify_the_trigger():
+    for sustained, reason in (
+        (True, "anhaltender Kontakt"),
+        (False, "zu intensiver Einzelkontakt mit Destabilisierung"),
+    ):
+        state, checker, _ = setup()
+        events = []
+        checker._event_callback = events.append
+        state = checker.check_rules(state, sample(0))
+        contact = RobotContact(0, 1, 3 if sustained else 30, 0.2, 0)
+        state = checker.check_rules(state, sample(0.1, (contact,)))
+        state = checker.check_rules(
+            state,
+            sample(5.1, (contact,)) if sustained else sample(0.2, victim=replace(UP, upright=0.5)),
+        )
+        assert penalty(state) == "PENALTY_PUSHING"
+        assert any(f"Auslöser: {reason}" in event for event in events)
+
+
+def test_live_update_restarts_sustained_contact_timing():
+    state, checker, _ = setup()
+    contact = RobotContact(0, 1, 3, 0.2, 0)
+    state = checker.check_rules(state, sample(0, (contact,)))
+    state = checker.check_rules(state, sample(4, (contact,)))
+    checker.pushing_rules.configure(PushingConfig(sustained_force_threshold=2.5))
+    state = checker.check_rules(state, sample(5, (contact,)))
+    assert penalty(state) == "PENALTY_NONE"
+    state = checker.check_rules(state, sample(10, (contact,)))
+    assert penalty(state) == "PENALTY_PUSHING"
+
+
+def test_live_update_discards_pending_single_push():
+    state, checker, _ = setup()
+    state = checker.check_rules(state, sample(0))
+    state = checker.check_rules(state, sample(0.1, (RobotContact(0, 1, 30, 0.2, 0),)))
+    checker.pushing_rules.configure(PushingConfig(force_threshold=40.0))
+    state = checker.check_rules(state, sample(0.2, victim=replace(UP, upright=0.5)))
+    assert penalty(state) == "PENALTY_NONE"

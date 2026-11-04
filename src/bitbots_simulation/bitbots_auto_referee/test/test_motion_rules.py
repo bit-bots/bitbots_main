@@ -68,7 +68,7 @@ def test_stop_includes_head_and_teleports_only_once():
     future.set_result(TeleportResult(True, "placed"))
     commands.teleport_robot.return_value = future
     checker = RuleChecker({0: 1}, teleport_commands=commands, robot_players={0: 2})
-    state = initial(stopped=True)
+    state = initial(state="STATE_PLAYING", stopped=True)
     moving = replace(STILL, head_joint_speed=1.0)
     for time in (0, 1, 1.25, 2):
         state = checker.check_rules(state, sample(time, moving))

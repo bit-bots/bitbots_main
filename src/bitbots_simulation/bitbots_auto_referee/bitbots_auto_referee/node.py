@@ -2,10 +2,11 @@
 
 import json
 import time
+from dataclasses import replace
 from functools import partial
 
 import rclpy
-from rcl_interfaces.msg import ParameterDescriptor
+from rcl_interfaces.msg import ParameterDescriptor, SetParametersResult
 from rclpy.clock import Clock, ClockType
 from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
@@ -17,7 +18,7 @@ from bitbots_auto_referee.adapters.game_controller import GameControllerUDPAdapt
 from bitbots_auto_referee.adapters.simulation.commands import SimulationCommands
 from bitbots_auto_referee.adapters.simulation.observations import decode_observation
 from bitbots_auto_referee.adapters.simulation.roster import validate_roster
-from bitbots_auto_referee.config import PARAMETERS, RefereeConfig
+from bitbots_auto_referee.config import LIVE_PARAMETERS, PARAMETERS, RefereeConfig
 from bitbots_auto_referee.core.communication import MessageBudget, robot_connections
 from bitbots_auto_referee.core.state import MatchState
 from bitbots_auto_referee.rules.check_rules import RuleChecker
@@ -38,7 +39,9 @@ class AutoReferee(Node):
             for name, spec in PARAMETERS.items():
                 if name != "use_sim_time":
                     self.declare_parameter(
-                        name, spec.default, ParameterDescriptor(description=spec.description, read_only=True)
+                        name,
+                        spec.default,
+                        ParameterDescriptor(description=spec.description, read_only=name not in LIVE_PARAMETERS),
                     )
             self.config = RefereeConfig.from_parameters({name: self.get_parameter(name).value for name in PARAMETERS})
             self.adapter = GameControllerUDPAdapter(
@@ -67,7 +70,10 @@ class AutoReferee(Node):
                 robot_players=self.config.robot_players,
                 pushing_config=PushingConfig.from_config(self.config),
                 double_touch_config=DoubleTouchConfig.from_config(self.config),
+                set_play_min_distance=self.config.set_play_min_distance,
             )
+            self.add_on_set_parameters_callback(self._validate_live_parameters)
+            self.add_post_set_parameters_callback(self._apply_live_parameters)
             self.dashboard = Dashboard(self)
             self._record_event("AutoRef gestartet: INITIAL")
             self._refresh_dashboard()
@@ -101,12 +107,42 @@ class AutoReferee(Node):
             self.destroy_node()
             raise
 
+    def _validate_live_parameters(self, parameters) -> SetParametersResult:
+        values = {name: self.get_parameter(name).value for name in PARAMETERS}
+        values.update({parameter.name: parameter.value for parameter in parameters})
+        try:
+            RefereeConfig.from_parameters(values)
+        except (ValueError, TypeError, KeyError) as error:
+            return SetParametersResult(successful=False, reason=str(error))
+        return SetParametersResult(successful=True)
+
+    def _apply_live_parameters(self, parameters) -> None:
+        changes = {parameter.name: parameter.value for parameter in parameters if parameter.name in LIVE_PARAMETERS}
+        if not changes or all(getattr(self.config, name) == value for name, value in changes.items()):
+            return
+        changes = {name: value for name, value in changes.items() if getattr(self.config, name) != value}
+        self.config = replace(self.config, **changes)
+        if any(name.startswith("pushing_") for name in changes):
+            self.rule_checker.pushing_rules.configure(PushingConfig.from_config(self.config))
+            self._record_event(
+                "Pushing-Schwellwerte geändert: "
+                f"anhaltender Kontakt {self.config.pushing_sustained_force_threshold:g} N; "
+                f"Einzelkontakt {self.config.pushing_force_threshold:g} N."
+            )
+        if "set_play_min_distance" in changes:
+            self.rule_checker.robot_position_rules.configure_set_play_distance(self.config.set_play_min_distance)
+            self._record_event(f"Set-Play-Mindestabstand geändert: {self.config.set_play_min_distance:g} m.")
+        self._refresh_dashboard()
+
     def _on_simulation_step(self, message: SimulationState) -> None:
         """Evaluate rules in every phase whenever the simulator completes a step."""
         if self.adapter is None or not self._roster_valid:
             return
         previous = self.adapter.state
         updated = self.rule_checker.check_rules(previous, decode_observation(message))
+        if previous.state == "STATE_READY" and updated.state == "STATE_SET" and not self._startup.finished:
+            clock = self.get_clock() if self.get_parameter("use_sim_time").value else self._network_clock
+            self._startup.finish_ready(clock.now().nanoseconds)
         unmapped = self.rule_checker.unmapped_robot_indices
         if unmapped != self._unmapped_robot_indices:
             if unmapped:
@@ -151,6 +187,7 @@ class AutoReferee(Node):
                 self._connected,
                 self._robot_connections,
                 self._roster_status,
+                {name: getattr(self.config, name) for name in LIVE_PARAMETERS},
             )
 
     def _on_roster(self, message: String) -> None:

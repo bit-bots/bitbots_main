@@ -64,16 +64,19 @@ def test_goal_delay_acknowledgement_and_ready_set_playing():
     assert match.teams[1].score == 0
     commands.teleport_ball.assert_not_called()
     match = checker.check_rules(match, sample(3, (5.0, 0.0, 0.1)))
+    assert match.stopped and match.teams[1].score == 1
+    commands.teleport_ball.assert_not_called()
+    match = checker.check_rules(match, sample(6, (5.0, 0.0, 0.1)))
     assert match.teams[1].score == 1 and match.stopped and match.kicking_team == 1
     commands.teleport_ball.assert_called_once_with(0.0, 0.0, 0.0)
-    result.set_result(TeleportResult(True, "placed", applied_step=4000))
-    match = checker.check_rules(match, sample(3.5, (5.0, 0.0, 0.1)))
+    result.set_result(TeleportResult(True, "placed", applied_step=7000))
+    match = checker.check_rules(match, sample(6.5, (5.0, 0.0, 0.1)))
     assert match.stopped
-    match = checker.check_rules(match, sample(4, (0.0, 0.0, 0.1), ball_teleported=True))
+    match = checker.check_rules(match, sample(7, (0.0, 0.0, 0.1), ball_teleported=True))
     assert match.state == "STATE_READY"
-    match = checker.check_rules(match, sample(29, (0.0, 0.0, 0.1)))
+    match = checker.check_rules(match, sample(32, (0.0, 0.0, 0.1)))
     assert match.state == "STATE_SET"
-    match = checker.check_rules(match, sample(34, (0.0, 0.0, 0.1)))
+    match = checker.check_rules(match, sample(37, (0.0, 0.0, 0.1)))
     assert match.state == "STATE_PLAYING" and not match.stopped
     assert match.teams[1].score == 1
 
@@ -85,7 +88,7 @@ def test_failed_placement_does_not_repeat_score_or_command():
     commands.teleport_ball.return_value = result
     checker = RuleChecker({}, teleport_commands=commands, field=FieldGeometry(home_defends_negative_x=False))
     match = checker.check_rules(state(), sample(0, (4.0, 0.0, 0.1)))
-    for seconds in (1, 3, 4, 10):
+    for seconds in (1, 3, 4, 6, 10):
         match = checker.check_rules(match, sample(seconds, (5.0, 0.0, 0.1)))
     assert match.stopped and match.teams[1].score == 1
     assert commands.teleport_ball.call_count == 1
@@ -95,7 +98,7 @@ def test_external_teleport_does_not_score():
     checker = RuleChecker({}, field=FieldGeometry(home_defends_negative_x=False))
     match = checker.check_rules(state(), sample(0, (0.0, 0.0, 0.1)))
     match = checker.check_rules(match, sample(1, (5.0, 0.0, 0.1), ball_teleported=True))
-    match = checker.check_rules(match, sample(4, (5.0, 0.0, 0.1)))
+    match = checker.check_rules(match, sample(7, (5.0, 0.0, 0.1)))
     assert match.teams[1].score == 0
 
 
@@ -108,20 +111,25 @@ def test_set_play_counts_down_and_rearms_for_next_exit():
     match = checker.check_rules(state(), sample(0, (0.0, 3.0, 0.1)))
     match = checker.check_rules(match, sample(1, (0.0, 4.0, 0.1)))
     match = checker.check_rules(match, sample(3, (0.0, 4.0, 0.1)))
+    assert match.stopped
+    commands.teleport_ball.assert_not_called()
+    match = checker.check_rules(match, sample(6, (0.0, 4.0, 0.1)))
     assert match.stopped and match.secondary_time == 45
-    result.set_result(TeleportResult(True, "placed", applied_step=4000))
-    match = checker.check_rules(match, sample(4, (0.0, 3.0, 0.1), ball_teleported=True))
+    result.set_result(TeleportResult(True, "placed", applied_step=7000))
+    match = checker.check_rules(match, sample(7, (0.0, 3.0, 0.1), ball_teleported=True))
     assert match.set_play == "SET_PLAY_THROW_IN" and match.kicking_team == 2 and not match.stopped
     remaining = match.secs_remaining
-    match = checker.check_rules(match, sample(5, (0.0, 3.0, 0.1)))
+    match = checker.check_rules(match, sample(8, (0.0, 3.0, 0.1)))
     assert match.secondary_time == 44
     assert match.secs_remaining == remaining - 1
-    match = checker.check_rules(match, sample(49, (0.0, 3.0, 0.1)))
+    match = checker.check_rules(match, sample(52, (0.0, 3.0, 0.1)))
     assert match.set_play == "SET_PLAY_NONE" and match.secondary_time == 0
     checker.last_touch_team_id = 2
-    match = checker.check_rules(match, sample(50, (0.0, 4.0, 0.1)))
-    match = checker.check_rules(match, sample(52, (0.0, 4.0, 0.1)))
-    assert match.kicking_team == 1 and commands.teleport_ball.call_count == 2
+    match = checker.check_rules(match, sample(53, (0.0, 4.0, 0.1)))
+    match = checker.check_rules(match, sample(55, (0.0, 4.0, 0.1)))
+    assert match.kicking_team == 1 and match.stopped
+    match = checker.check_rules(match, sample(58, (0.0, 4.0, 0.1)))
+    assert commands.teleport_ball.call_count == 2
 
 
 def test_default_home_side_and_explicit_override():
@@ -164,9 +172,32 @@ def test_delayed_service_response_resumes_after_teleport_observation():
     match = checker.check_rules(state(), sample(0, (0.0, 3.0, 0.1)))
     match = checker.check_rules(match, sample(1, (0.0, 4.0, 0.1)))
     match = checker.check_rules(match, sample(3, (0.0, 4.0, 0.1)))
-    match = checker.check_rules(match, sample(4, (0.0, 3.0, 0.1), ball_teleported=True))
     assert match.stopped
-    result.set_result(TeleportResult(True, "placed", applied_step=4000))
-    match = checker.check_rules(match, sample(5, (0.0, 3.0, 0.1)))
+    commands.teleport_ball.assert_not_called()
+    match = checker.check_rules(match, sample(6, (0.0, 4.0, 0.1)))
+    match = checker.check_rules(match, sample(7, (0.0, 3.0, 0.1), ball_teleported=True))
+    assert match.stopped
+    result.set_result(TeleportResult(True, "placed", applied_step=7000))
+    match = checker.check_rules(match, sample(8, (0.0, 3.0, 0.1)))
     assert match.state == "STATE_PLAYING" and not match.stopped
     assert commands.teleport_ball.call_count == 1
+
+
+def test_throw_in_avoids_robot_at_the_target():
+    commands = Mock()
+    completed = Future()
+    completed.set_result(TeleportResult(True, "placed"))
+    commands.teleport_ball.return_value = completed
+    checker = RuleChecker({0: 1}, teleport_commands=commands)
+    checker.last_touch_team_id = 1
+    match = checker.check_rules(state(), sample(0, (0, 3, 0.1)))
+    match = checker.check_rules(match, sample(1, (0, 4, 0.1)))
+    match = checker.check_rules(match, sample(3, (0, 4, 0.1)))
+    assert match.stopped
+    commands.teleport_ball.assert_not_called()
+    observation = replace(sample(6, (0, 4, 0.1)), robot_positions={0: (0, 3, 0.4)})
+    match = checker.check_rules(match, observation)
+    x, y, _ = commands.teleport_ball.call_args.args
+    assert (x, y) != (0, 3)
+    assert abs(x) <= checker.field.field_length / 2 and abs(y) <= checker.field.field_width / 2
+    assert not match.stopped and match.set_play == "SET_PLAY_THROW_IN"

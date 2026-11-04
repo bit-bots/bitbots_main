@@ -56,15 +56,15 @@ class PushingRules:
         self._episodes = {}
         self.contact_forces: dict[tuple[int, int], float] = {}
 
+    def configure(self, config: PushingConfig) -> None:
+        """Begin fresh contact evaluations when thresholds change during play."""
+        if config != self.config:
+            self.config = config
+            self._episodes.clear()
+            self._previous = None
+
     def _eligible(self, state, robot):
-        number = self.penalties.robot_players.get(robot)
-        return any(
-            team.team_number == self.penalties.robot_teams.get(robot)
-            and number is not None
-            and 1 <= number <= len(team.players)
-            and team.players[number - 1].penalty == "PENALTY_NONE"
-            for team in state.teams
-        )
+        return self.penalties.eligible(state, robot)
 
     def _opponents(self, pair):
         return self.penalties.robot_teams.get(pair[0]) != self.penalties.robot_teams.get(pair[1])
@@ -95,6 +95,11 @@ class PushingRules:
 
     def check(self, state: MatchState, observation: SimulationObservation) -> MatchState:
         self.fouls = []
+        if state.state == "STATE_INITIAL":
+            self._episodes.clear()
+            self._previous = None
+            self.contact_forces.clear()
+            return state
         previous = self._previous
         reset = previous is not None and (
             observation.time_ns < previous.time_ns or observation.step_number < previous.step_number
@@ -215,10 +220,11 @@ class PushingRules:
             )
             sustained = episode.sustained_since is not None and now - episode.sustained_since >= SUSTAINED_NS
             if destabilized or sustained:
+                reason = "zu intensiver Einzelkontakt mit Destabilisierung" if destabilized else "anhaltender Kontakt"
                 self.event(
                     f"Pushing: Roboter {episode.actor} gegen {episode.victim}; "
                     f"Spitzenkraft {episode.peak_force:.2f} N; "
-                    f"{'Destabilisierung' if destabilized else 'anhaltender Kontakt'}."
+                    f"Auslöser: {reason}."
                 )
                 updated = self.penalties.penalize(state, observation, episode.actor, "PENALTY_PUSHING")
                 if updated != state:
