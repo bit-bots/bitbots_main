@@ -8,8 +8,6 @@ from dataclasses import replace
 from unittest.mock import Mock, patch
 
 import pytest
-from builtin_interfaces.msg import Time
-
 from bitbots_auto_referee.adapters.game_controller import GameControllerUDPAdapter, encode_game_state
 from bitbots_auto_referee.config import PARAMETERS, RefereeConfig
 from bitbots_auto_referee.core.observations import SimulationObservation
@@ -17,6 +15,7 @@ from bitbots_auto_referee.core.state import MatchState, PlayerState
 from bitbots_auto_referee.core.teleport import TeleportResult
 from bitbots_auto_referee.rules.motion import MotionRules
 from bitbots_auto_referee.rules.outside import FieldGeometry
+from builtin_interfaces.msg import Time
 from game_controller_hsl.data import GameControlDataStruct
 from game_controller_hsl.receiver import GameStateReceiver
 
@@ -110,9 +109,7 @@ def test_simultaneous_penalties_have_separate_slots_in_own_half(first_half, side
     completed.set_result(TeleportResult(True, "placed"))
     teleport.return_value = completed
     rules = MotionRules(teams, players, FieldGeometry.from_config(cfg), teleport, Mock())
-    observation = SimulationObservation(
-        0, 0, (0, 0, 0.1), {robot: (0, side, 0.4) for robot in teams}, frozenset()
-    )
+    observation = SimulationObservation(0, 0, (0, 0, 0.1), {robot: (0, side, 0.4) for robot in teams}, frozenset())
     for robot in teams:
         state = rules.penalize(state, observation, robot, "PENALTY_PUSHING")
     positions = [call.args[1:3] for call in teleport.call_args_list]

@@ -80,4 +80,6 @@ def test_step_captures_after_teleports_and_before_integration():
     assert args[1].sec == 1 and args[1].nanosec == 250_000_000
     assert args[2:] == (6, {0}, False)
     assert kwargs["state"] is state
-    simulation.referee_step_publisher.publish.assert_called_once_with(simulation.referee_observations.build.return_value)
+    simulation.referee_step_publisher.publish.assert_called_once_with(
+        simulation.referee_observations.build.return_value
+    )

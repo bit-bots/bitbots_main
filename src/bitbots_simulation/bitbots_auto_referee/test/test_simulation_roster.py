@@ -4,13 +4,12 @@ import json
 from unittest.mock import Mock
 
 import pytest
-from std_msgs.msg import String
-
 from bitbots_auto_referee.adapters.simulation.roster import validate_roster
 from bitbots_auto_referee.config import PARAMETERS, RefereeConfig
 from bitbots_auto_referee.core.communication import MessageBudget
 from bitbots_auto_referee.core.state import MatchState
 from bitbots_auto_referee.node import AutoReferee
+from std_msgs.msg import String
 
 
 def config(setup):

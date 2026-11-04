@@ -154,7 +154,9 @@ class TeamCommunication:
             self._send_statistics_publisher = self.node.create_publisher(
                 String,
                 "team_communication/sent",
-                QoSProfile(depth=1, reliability=ReliabilityPolicy.RELIABLE, durability=DurabilityPolicy.TRANSIENT_LOCAL),
+                QoSProfile(
+                    depth=1, reliability=ReliabilityPolicy.RELIABLE, durability=DurabilityPolicy.TRANSIENT_LOCAL
+                ),
             )
 
     def create_subscribers(self):

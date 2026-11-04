@@ -3,7 +3,6 @@
 from types import SimpleNamespace
 
 import pytest
-
 from bitbots_auto_referee.adapters.game_controller import encode_game_state
 from bitbots_auto_referee.config import PARAMETERS, RefereeConfig
 from bitbots_auto_referee.core.communication import MessageBudget, robot_connections

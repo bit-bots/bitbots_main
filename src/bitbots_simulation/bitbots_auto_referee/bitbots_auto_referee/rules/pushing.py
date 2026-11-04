@@ -186,12 +186,16 @@ class PushingRules:
                 episode.strong_at = now
             active.add(pair)
         for pair, episode in list(self._episodes.items()):
-            if not self._opponents(pair) or any(
-                robot not in observation.robot_positions
-                or robot in observation.teleported_robots
-                or not self._eligible(state, robot)
-                for robot in pair
-            ) or self._ball_duel(pair, observation):
+            if (
+                not self._opponents(pair)
+                or any(
+                    robot not in observation.robot_positions
+                    or robot in observation.teleported_robots
+                    or not self._eligible(state, robot)
+                    for robot in pair
+                )
+                or self._ball_duel(pair, observation)
+            ):
                 del self._episodes[pair]
                 continue
             if pair not in active:

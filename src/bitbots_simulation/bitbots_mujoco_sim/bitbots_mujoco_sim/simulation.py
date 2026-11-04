@@ -416,10 +416,7 @@ class Simulation(Node):
         free joint of its kinematic root (a robot's floating base, or the ball
         itself) and drag that whole articulated system as a rigid unit.
         """
-        robot_keys = {
-            self._free_joint_key_for_body(robot_sim.robot.base_body_id)
-            for robot_sim in self.robots
-        }
+        robot_keys = {self._free_joint_key_for_body(robot_sim.robot.base_body_id) for robot_sim in self.robots}
         robot_keys.discard(None)
         for mesh_group in scene._mesh_groups:
             body_ids = mesh_group.body_ids

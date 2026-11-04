@@ -118,9 +118,8 @@ class RuleChecker:
             if observation.ball_position is not None
             else frozenset()
         )
-        self._suppressed_ball_contacts = (
-            self._suppressed_ball_contacts.intersection(touching)
-            | touching.intersection(observation.teleported_robots)
+        self._suppressed_ball_contacts = self._suppressed_ball_contacts.intersection(touching) | touching.intersection(
+            observation.teleported_robots
         )
         new_contacts = touching - self._touching_ball - self._suppressed_ball_contacts
         if observation.ball_teleported:
