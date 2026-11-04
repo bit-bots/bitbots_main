@@ -34,8 +34,8 @@ class Simulation(Node):
         self.declare_parameter("web", False)
         self.declare_parameter("sim_gamestate", True)
         self.declare_parameter("num_robots", "")
-        self.declare_parameter("message_budget", 65535)
-        self.declare_parameter("team_comm_budget_port", 12000)
+        self.declare_parameter("message_budget", 12000)
+        self.declare_parameter("team_comm_budget_port", 4000)
 
         # These default value are oriented on some real world data in standstill.
         # They are a bit worse than what was observed there.
@@ -250,10 +250,11 @@ class Simulation(Node):
         self.early_events.append({"frequency": 1, "handler": self._apply_drag_targets})
 
         def render(scene) -> None:
-            # Default mjviser rendering: push the latest MuJoCo state to the scene.
-            scene.update_from_mjdata(self.data)
-            # Then keep our textured ball overlays in sync with the simulated balls.
-            self._update_ball_overlays(scene)
+            with scene.server.atomic():
+                # Then keep our textured ball overlays in sync with the simulated balls.
+                self._update_ball_overlays(scene)
+                # Default mjviser rendering: push the latest MuJoCo state to the scene.
+                scene.update_from_mjdata(self.data)
 
         sim_gamestate_gui = None
         if self.get_parameter("sim_gamestate").get_parameter_value().bool_value:

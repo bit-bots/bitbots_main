@@ -32,7 +32,7 @@ class SimGame:
 
 _TEAM_COLORS = (GameState.TEAM_BLUE, GameState.TEAM_RED)
 _GOALIE_COLORS = (GameState.TEAM_YELLOW, GameState.TEAM_GREEN)
-_TEAM_COLOR_NAMES = ("Blue", "Red")
+_TEAM_COLOR_NAMES = ("Blue/Yellow", "Red/Green")
 _ACTIVE_STATE_COLOR = (80, 180, 80)
 _TEAM_IDS = (BASE_TEAM_ID, BASE_TEAM_ID + 1)
 _MAX_MESSAGE_BUDGET = 65535
@@ -258,7 +258,6 @@ class SimGameStateGui:
                 button.on_click(_on_game_state)
 
             self._team_score_labels = {}
-            self._budget_status = server.gui.add_markdown("")
             for team_index in range(len(_TEAM_COLOR_NAMES)):
                 team_id = BASE_TEAM_ID + team_index
                 score_label = server.gui.add_markdown("")
@@ -279,11 +278,6 @@ class SimGameStateGui:
             self._refresh_gui()
             self._budget_listener = TeamCommBudgetListener(
                 self._node.get_logger(), self._team_comm_budget_port, self._on_messages_received
-            )
-            self._budget_status.content = (
-                "Team communication packet tracking is active."
-                if self._budget_listener.enabled
-                else "**Team communication packet tracking is disabled; see simulator logs.**"
             )
 
     def _refresh_gui(self) -> None:
