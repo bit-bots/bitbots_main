@@ -1,6 +1,7 @@
 import numpy as np
 import rclpy
 from bitbots_tf_buffer import Buffer
+from rcl_interfaces.msg import ParameterDescriptor
 from rclpy.executors import MultiThreadedExecutor
 
 from bitbots_msgs.msg import JointCommand
@@ -38,6 +39,9 @@ class PiplusAmpKickNode(RLNode):
         self.declare_parameter("ball.timeout", 0.5)
         self.declare_parameter("ball.max_covariance", 2.0)
         self.declare_parameter("ball.position_clip", 10.0)
+        # Scale of the tanh bound of the ball position. Null turns the bound off.
+        # It must agree with the training of the loaded model.
+        self.declare_parameter("ball.pos_tanh_scale", None, ParameterDescriptor(dynamic_typing=True))
 
         self.declare_parameter("command.action_name", "rl_kick")
         self.declare_parameter("command.kick_timeout", 4.0)

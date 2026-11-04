@@ -10,6 +10,7 @@ from rclpy.time import Time
 from tf2_geometry_msgs import PointStamped
 
 from bitbots_rl_motion.handlers import Handler
+from bitbots_rl_motion.piplus_amp_utils import bounded_ball_position, parse_optional_scale
 
 
 class BallHandler(Handler):
@@ -17,7 +18,8 @@ class BallHandler(Handler):
 
     The Pi Plus AMP kick policy observes the 3D ball position in the torso
     frame (full rotation, not only yaw). The training clips each axis to a
-    maximum value, so this handler does the same.
+    maximum value, so this handler does the same. A policy trained with the
+    tanh bound of the ball position also gets this bound (ball.pos_tanh_scale).
     """
 
     def __init__(self, node, tf_buffer: Buffer):
@@ -28,6 +30,11 @@ class BallHandler(Handler):
         self._timeout = float(node.get_parameter("ball.timeout").value)
         self._max_covariance = float(node.get_parameter("ball.max_covariance").value)
         self._position_clip = float(node.get_parameter("ball.position_clip").value)
+        self._tanh_scale = parse_optional_scale(node.get_parameter("ball.pos_tanh_scale").value)
+        if self._tanh_scale is None:
+            self._node.get_logger().info("The ball position is observed without the tanh bound.")
+        else:
+            self._node.get_logger().info(f"The ball position is observed with the tanh bound {self._tanh_scale} m.")
 
         self._ball: Optional[PoseWithCovarianceStamped] = None
 
@@ -74,4 +81,4 @@ class BallHandler(Handler):
             )
             return None
         position = np.array([transformed.point.x, transformed.point.y, transformed.point.z], dtype=np.float32)
-        return np.clip(position, -self._position_clip, self._position_clip)
+        return bounded_ball_position(position, self._position_clip, self._tanh_scale)

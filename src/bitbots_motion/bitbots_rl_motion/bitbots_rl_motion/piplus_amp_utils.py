@@ -7,11 +7,13 @@ complete observation tables.
 """
 
 from collections.abc import Sequence
+from typing import Optional
 
 import numpy as np
 
-# The training sets the stand flag to 1 when the absolute value of each
-# velocity command is less than this value (stand_flag_obs).
+# The training sets the stand flag to 1 and pauses the gait clock when the
+# absolute value of each velocity command is less than this value
+# (stand_flag_obs, GaitPhaseActionCfg.stand_threshold).
 STAND_COMMAND_THRESHOLD = 1e-3
 
 # Ball speed in m/s that the kick training gives to a kick intensity of 0.
@@ -20,10 +22,14 @@ STAND_COMMAND_THRESHOLD = 1e-3
 KICK_MIN_BALL_SPEED = 2.0
 
 
+def is_standing(command: np.ndarray) -> bool:
+    """Returns True if all velocity commands are zero."""
+    return bool(np.max(np.abs(command[:3])) < STAND_COMMAND_THRESHOLD)
+
+
 def stand_flag(command: np.ndarray) -> np.ndarray:
     """Returns [1.0] if all velocity commands are zero, else [0.0]."""
-    standing = bool(np.max(np.abs(command[:3])) < STAND_COMMAND_THRESHOLD)
-    return np.array([1.0 if standing else 0.0], dtype=np.float32)
+    return np.array([1.0 if is_standing(command) else 0.0], dtype=np.float32)
 
 
 def walk_observation(
@@ -81,6 +87,36 @@ def kick_frame(
             kick_intensity,
         ]
     ).astype(np.float32)
+
+
+def parse_optional_scale(value) -> Optional[float]:
+    """Reads an optional positive scale from a ROS parameter value.
+
+    A YAML null arrives as the string "null" in a ROS parameter. None, "null",
+    "none" and an empty string give None (feature off). A number must be
+    positive. Other values are configuration errors.
+    """
+    if value is None or (isinstance(value, str) and value.strip().lower() in ("null", "none", "")):
+        return None
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError(f"Expected a positive number or null, got {value!r}")
+    if value <= 0.0:
+        raise ValueError(f"Expected a positive number or null, got {value!r}")
+    return float(value)
+
+
+def bounded_ball_position(position: np.ndarray, position_clip: float, tanh_scale: Optional[float]) -> np.ndarray:
+    """Applies the bounds of the kick training to the ball position in the anchor frame.
+
+    Each axis is clipped to +/- position_clip. If tanh_scale is not None, each
+    axis then becomes tanh_scale * tanh(x / tanh_scale), as in the kick training
+    with tanh_scale (object_pos_b_noisy_delayed_world). Only a policy that was
+    trained with this transform may get it.
+    """
+    bounded = np.clip(position, -position_clip, position_clip)
+    if tanh_scale is not None:
+        bounded = tanh_scale * np.tanh(bounded / tanh_scale)
+    return bounded.astype(np.float32)
 
 
 def kick_intensity_from_strength(strength: float, max_intensity: float) -> float:

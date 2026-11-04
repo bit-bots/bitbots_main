@@ -14,6 +14,11 @@ class GaitClockHandler(Handler):
 
     The observation of a step uses the phase before the update with the action
     of the same step. This is the same order as in the training.
+
+    When the robot stands (all velocity commands are zero), the clock runs on to
+    the next double support phase (a multiple of 0.5) and stops there. When a
+    non-zero command comes back, the clock runs on from that phase. This is the
+    same logic as GaitPhaseAction.process_actions of the training.
     """
 
     def __init__(self, frequency_min: float, frequency_max: float, control_dt: float, initial_phase: float = 0.0):
@@ -38,10 +43,18 @@ class GaitClockHandler(Handler):
         """Converts the frequency action of the policy to a frequency in Hz."""
         return float(self._frequency_mid + self._frequency_half * np.tanh(frequency_action))
 
-    def advance(self, frequency_action: float) -> None:
-        """Applies the frequency action of the current step and moves the phase forward."""
+    def advance(self, frequency_action: float, stand: bool) -> None:
+        """Applies the frequency action of the current step and moves the phase forward.
+
+        stand must be True if all velocity commands of the current step are zero.
+        """
         self._frequency = self.frequency_from_action(frequency_action)
-        self._phase = (self._phase + self._frequency * self._control_dt) % 1.0
+        advanced = self._phase + self._frequency * self._control_dt
+        if stand:
+            # Next double support phase at or after the current phase
+            next_double_support = np.ceil(self._phase / 0.5) * 0.5
+            advanced = min(advanced, next_double_support)
+        self._phase = float(advanced % 1.0)
 
     def get_phase(self) -> float:
         return self._phase

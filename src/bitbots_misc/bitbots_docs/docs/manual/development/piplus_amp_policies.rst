@@ -54,7 +54,8 @@ Provenance
      - Checkpoint
    * - Walk
      - ``piplus_amp_mjlab`` (branch ``main``), task ``Mjlab-Velocity-Flat-Amp-DA-HighTorque-PiPlus``
-     - ``logs/rsl_rl/piplus_velocity_amp_symmetric/2026-11-01_09-22-24_gait_lowcmd_strict``
+     - ``logs/rsl_rl/piplus_velocity_amp_symmetric/2026-11-04_08-26-04_gait_pause_double_support``
+       (resumed from ``model_22050.pt`` of ``2026-11-03_23-19-04_gait_pause_double_support``)
      - ``model_29999.pt`` (iteration 29999)
    * - Kick
      - ``AMP_mjlab`` (worktree ``AMP_mjlab-kick-noballvel``, branch ``amp-soccer-kick``), task ``PiPlus-AMP-Kick-DA``
@@ -63,6 +64,11 @@ Provenance
 
 Do not use ``model_29999.pt`` of the kick run.
 The kick training became numerically unstable at approximately iteration 29467.
+
+A new kick run (``2026-11-04_08-11-39_kick_sym_huber_coeff01_rest05_tanh``) observes the ball position with a tanh bound
+(see `Ball position bound`_). It is not complete. Its ONNX model is not in the package yet.
+When its model replaces the current model, export it from the final checkpoint and set ``ball.pos_tanh_scale``
+to the value of its training. The current model must not get the tanh bound.
 
 The ONNX files were exported on the CPU.
 The walk model was exported with the ``MLPModel.as_onnx()`` function of the rsl_rl version of the training repository.
@@ -169,18 +175,32 @@ During training, the gait clock runs inside the environment. The node runs the s
 #. The observation of a step contains (sin, cos) of 2 pi times the phase.
 #. The policy gives the frequency action.
 #. The node calculates the frequency as the middle of the frequency range plus half of the range times tanh of the frequency action.
-#. The node adds the frequency times the control period to the phase (modulo 1).
+#. The node adds the frequency times the control period to the phase.
+#. If the robot stands (all three velocity commands are zero), the phase does not go past the next
+   double support phase (the next multiple of 0.5 at or after the current phase).
+#. The node takes the phase modulo 1.
 
-The next observation uses the new phase. This is the same order as in the training.
+The next observation uses the new phase. This is the same order as in the training (``GaitPhaseAction.process_actions``).
+Thus, at a zero command the clock runs on to the next double support phase and stops there.
+When a non-zero command comes back, the clock runs on from that phase.
+The stand flag and the clock pause use the same threshold (``STAND_COMMAND_THRESHOLD`` in ``piplus_amp_utils.py``).
+The node uses the clipped command of the same step for the observation and for the clock.
 At each start of the policy, the phase is set to ``gait.initial_phase`` and the last action is set to zero.
 The training starts each episode with a random phase.
 
 Start and stop
 --------------
 
-The policy runs while the robot state allows walking and the command is not zero.
-The policy was trained to stand still at a zero command (stand flag).
-Thus, the node continues to run the policy for ``command.stand_settle_time`` after the command becomes zero.
+The policy runs in all robot states that allow walking, also at a zero command.
+At a zero command, the stand flag is 1 and the policy stands still, as in the training.
+This is the same behavior as ``walk_node``. ``mjlab_walk_node`` stops at a zero command instead.
+
+The HCM controls the hand-over to other modules:
+when the walk goals stop to move by more than a small threshold for ``standing_transition_delay``,
+the HCM changes the robot state from WALKING to CONTROLLABLE.
+The HCM forwards walk goals only in the states CONTROLLABLE and WALKING.
+In other states (for example KICKING or an animation), the node stops the policy.
+When the node starts the policy again, it resets the last action and the gait clock.
 
 
 Kick policy
@@ -222,7 +242,8 @@ The node uses a ``HistoryBuffer``. After each start of the policy, the first fra
    * - 66 - 68
      - Ball position in the torso frame (x, y, z)
      - 3
-     - ``BallHandler``: ball filter output transformed to ``torso_link``, each axis clipped
+     - ``BallHandler``: ball filter output transformed to ``torso_link``, each axis clipped,
+       optional tanh bound
    * - 69 - 70
      - Kick direction (cos, sin) in the yaw frame of the robot
      - 2
@@ -250,6 +271,17 @@ A strength of 2 m/s or less gives the intensity 0.
 The policy runs while the kick goal is active and the robot state allows a kick.
 The policy has no "kick done" signal. The goal ends at its timeout.
 The node stops the kick if the ball estimate is too old or its covariance is too large.
+
+Ball position bound
+-------------------
+
+Each axis of the ball position is clipped to ``ball.position_clip``.
+If ``ball.pos_tanh_scale`` is a number s, each axis then becomes s * tanh(x / s).
+In the training, this transform comes after the noise, the delay and the transform to the anchor frame
+(``object_pos_b_noisy_delayed_world`` with ``tanh_scale``).
+If ``ball.pos_tanh_scale`` is null, the node does not apply the transform.
+The value must agree with the training of the loaded model.
+The current model was trained without the transform, so its config sets null.
 
 
 Safety clamps
@@ -285,3 +317,6 @@ Known differences and limits
 * The kick training delays the ball position and the kick direction by up to five steps and adds noise to both.
   The real ball filter has its own delay and noise.
 * The training observes the ball center. The node uses the position from the ball filter without a height correction.
+* The HCM changes from WALKING to CONTROLLABLE only when the walk goals stop to move.
+  If the standing policy moves its joints by more than the HCM threshold at each step,
+  the robot state stays WALKING, and a kick can not start. This was not tested.

@@ -8,7 +8,7 @@ from bitbots_rl_motion.handlers.gyro_handler import GyroHandler
 from bitbots_rl_motion.handlers.joint_handler import JointHandler
 from bitbots_rl_motion.handlers.robot_state_handler import RobotStateHandler
 from bitbots_rl_motion.nodes.rl_node import RLNode, create_main
-from bitbots_rl_motion.piplus_amp_utils import ActionLimiter, walk_observation
+from bitbots_rl_motion.piplus_amp_utils import ActionLimiter, is_standing, walk_observation
 
 
 class PiplusAmpWalkNode(RLNode):
@@ -19,6 +19,11 @@ class PiplusAmpWalkNode(RLNode):
     as it did in the training environment. The observation is one frame
     without history. It also contains the full last action (joints and clock)
     and a stand flag that is 1 when the velocity command is zero.
+
+    The policy was trained to stand still at a zero command. Thus, like the
+    walk_node, this node runs the policy in all walkable robot states, also at
+    a zero command. The HCM changes from WALKING to CONTROLLABLE when the joint
+    goals stop to move.
     """
 
     def __init__(self):
@@ -30,7 +35,6 @@ class PiplusAmpWalkNode(RLNode):
         self.declare_parameter("gait.initial_phase", 0.0)
         self.declare_parameter("command.min", [-1.0, -1.0, -1.0])
         self.declare_parameter("command.max", [1.0, 1.0, 1.0])
-        self.declare_parameter("command.stand_settle_time", 1.0)
         number_of_joints = len(self.get_parameter("joints.ordered_relevant_joint_names").value)
         self.declare_parameter("joints.position_limits_lower", [-1e6] * number_of_joints)
         self.declare_parameter("joints.position_limits_upper", [1e6] * number_of_joints)
@@ -40,8 +44,8 @@ class PiplusAmpWalkNode(RLNode):
         self._number_of_joints = number_of_joints
         self._command_min = np.array(self.get_parameter("command.min").value, dtype=np.float32)
         self._command_max = np.array(self.get_parameter("command.max").value, dtype=np.float32)
-        self._stand_settle_time = float(self.get_parameter("command.stand_settle_time").value)
-        self._last_moving_command_time = None
+        # Command of the current step. The gait clock uses it after the inference.
+        self._current_command = np.zeros(3, dtype=np.float32)
 
         self._action_limiter = ActionLimiter(
             self.get_parameter("joints.position_limits_lower").value,
@@ -79,13 +83,14 @@ class PiplusAmpWalkNode(RLNode):
 
     # observations
     def obs(self):
+        self._current_command = self._get_command()
         return walk_observation(
             self._gyro_handler.get_gyro(),
             self._gravity_handler.get_gravity(),
             self._joint_handler.get_angle_data(),
             self._joint_handler.get_velocity_data(),
             self._previous_action.get_previous_action(),
-            self._get_command(),
+            self._current_command,
             self._gait_clock.get_obs(),
         )
 
@@ -113,18 +118,8 @@ class PiplusAmpWalkNode(RLNode):
 
     # states in which the policy executes
     def allowed_states(self):
-        if not self._robot_state_handler.is_walkable():
-            return False
-        now = self.get_clock().now()
-        if np.any(self._command_handler.get_command() != 0.0):
-            self._last_moving_command_time = now
-            return True
-        # The policy was trained to stand still at a zero command. Let it run for
-        # a short time after the command becomes zero, so that the robot can
-        # finish its step and settle in the stand pose.
-        if self._last_moving_command_time is None:
-            return False
-        return (now - self._last_moving_command_time).nanoseconds / 1e9 < self._stand_settle_time
+        # Also at a zero command: the policy stands still with the stand flag set
+        return self._robot_state_handler.is_walkable()
 
     def initialize_observation(self):
         # The training resets the last action (joints and clock) to zero
@@ -133,8 +128,9 @@ class PiplusAmpWalkNode(RLNode):
         self._gait_clock.reset()
 
     def _phase_update_hook(self):
-        # Apply the frequency action of this step after the observation of this step
-        self._gait_clock.advance(float(self._last_action[self._number_of_joints]))
+        # Apply the frequency action of this step after the observation of this step.
+        # At a zero command, the clock stops at the next double support phase.
+        self._gait_clock.advance(float(self._last_action[self._number_of_joints]), is_standing(self._current_command))
 
 
 main = create_main(PiplusAmpWalkNode)

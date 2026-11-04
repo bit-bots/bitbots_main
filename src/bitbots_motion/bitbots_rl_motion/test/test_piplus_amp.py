@@ -17,8 +17,11 @@ from bitbots_rl_motion.handlers.gait_clock_handler import GaitClockHandler
 from bitbots_rl_motion.history_buffer import HistoryBuffer
 from bitbots_rl_motion.piplus_amp_utils import (
     ActionLimiter,
+    bounded_ball_position,
+    is_standing,
     kick_frame,
     kick_intensity_from_strength,
+    parse_optional_scale,
     soft_joint_limits,
     stand_flag,
     walk_observation,
@@ -241,19 +244,86 @@ def test_gait_clock_advances_and_wraps():
     np.testing.assert_allclose(clock.get_obs(), [0.0, 1.0], atol=1e-6)
     # 1.5 Hz for 0.02 s each step
     for _ in range(10):
-        clock.advance(0.0)
+        clock.advance(0.0, stand=False)
     assert clock.get_phase() == pytest.approx(0.3)
     angle = 2.0 * np.pi * 0.3
     np.testing.assert_allclose(clock.get_obs(), [np.sin(angle), np.cos(angle)], atol=1e-6)
     for _ in range(30):
-        clock.advance(0.0)
+        clock.advance(0.0, stand=False)
     assert 0.0 <= clock.get_phase() < 1.0
     assert clock.get_phase() == pytest.approx(0.2)
     clock.reset()
     assert clock.get_phase() == 0.0
 
 
+@pytest.mark.parametrize(
+    ("start_steps", "expected_stop"),
+    [
+        (10, 0.5),  # phase 0.3 runs on to the double support at 0.5
+        (24, 0.0),  # phase 0.72 runs on to the double support at 1.0, which is 0.0
+    ],
+)
+def test_gait_clock_stops_at_the_next_double_support_when_standing(start_steps: int, expected_stop: float):
+    clock = GaitClockHandler(1.0, 2.0, 0.02, initial_phase=0.0)
+    for _ in range(start_steps):
+        clock.advance(0.0, stand=False)
+    for _ in range(100):
+        clock.advance(0.0, stand=True)
+    assert clock.get_phase() == pytest.approx(expected_stop, abs=1e-9)
+    # A non-zero command starts the clock again from this phase
+    clock.advance(0.0, stand=False)
+    assert clock.get_phase() == pytest.approx(expected_stop + 0.03)
+
+
+def test_gait_clock_standing_step_does_not_pass_the_double_support():
+    # Same arithmetic as GaitPhaseAction.process_actions of the training
+    clock = GaitClockHandler(1.0, 2.0, 0.02, initial_phase=0.49)
+    clock.advance(100.0, stand=True)
+    assert clock.get_phase() == pytest.approx(0.5)
+    clock = GaitClockHandler(1.0, 2.0, 0.02, initial_phase=0.49)
+    clock.advance(100.0, stand=False)
+    assert clock.get_phase() == pytest.approx(0.53)
+    # A phase at a double support stays there
+    clock = GaitClockHandler(1.0, 2.0, 0.02, initial_phase=0.0)
+    clock.advance(0.0, stand=True)
+    assert clock.get_phase() == 0.0
+
+
+def test_stand_threshold_of_the_clock_and_the_flag_agree():
+    for command in (np.zeros(3), np.array([5e-4, 0.0, -5e-4]), np.array([0.0, 2e-3, 0.0])):
+        assert is_standing(command) == bool(stand_flag(command)[0])
+    assert is_standing(np.array([5e-4, 0.0, -5e-4]))
+    assert not is_standing(np.array([0.0, 2e-3, 0.0]))
+
+
 # --- kick command and safety limits
+
+
+def test_ball_tanh_scale_parameter():
+    # A YAML null arrives as the string "null" in a ROS parameter
+    assert parse_optional_scale(None) is None
+    assert parse_optional_scale("null") is None
+    assert parse_optional_scale(3.0) == 3.0
+    for bad in (0.0, -1.0, "3.0", True):
+        with pytest.raises(ValueError):
+            parse_optional_scale(bad)
+
+
+def test_ball_position_tanh_bound():
+    position = np.array([0.1, -2.0, 50.0], dtype=np.float32)
+    # Without the bound only the clip applies
+    np.testing.assert_allclose(bounded_ball_position(position, 10.0, None), [0.1, -2.0, 10.0])
+    bounded = bounded_ball_position(position, 10.0, 3.0)
+    np.testing.assert_allclose(bounded, 3.0 * np.tanh(np.array([0.1, -2.0, 10.0]) / 3.0), rtol=1e-6)
+    # Close to the identity near the robot, odd, and bounded by the scale
+    assert bounded[0] == pytest.approx(0.1, abs=1e-3)
+    np.testing.assert_allclose(bounded_ball_position(-position, 10.0, 3.0), -bounded, rtol=1e-6)
+    assert np.all(np.abs(bounded) < 3.0)
+
+
+def test_shipped_kick_model_has_no_ball_tanh_bound():
+    """The shipped kick model (kick_sym_huber, model_29000) was trained without the tanh bound."""
+    assert parse_optional_scale(load_params("piplus_amp_kick_node")["ball"]["pos_tanh_scale"]) is None
 
 
 def test_kick_intensity_is_the_inverse_of_the_training_map():

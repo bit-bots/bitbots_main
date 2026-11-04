@@ -1,8 +1,9 @@
 # Configuration of the Pi Plus AMP velocity walk policy with a gait clock.
 #
 # Training: repository piplus_amp_mjlab, task Mjlab-Velocity-Flat-Amp-DA-HighTorque-PiPlus,
-# run piplus_velocity_amp_symmetric/2026-11-01_09-22-24_gait_lowcmd_strict, checkpoint
-# model_29999.pt (iteration 29999). The joint order, default pose, gains, action scales,
+# run piplus_velocity_amp_symmetric/2026-11-04_08-26-04_gait_pause_double_support, checkpoint
+# model_29999.pt (iteration 29999, resumed from model_22050.pt of run
+# 2026-11-03_23-19-04_gait_pause_double_support). The joint order, default pose, gains, action scales,
 # joint ranges, gait frequency range, command ranges and control period come from the
 # env.yaml of this run and from the robot model of the training.
 # See the "Pi Plus AMP walk and kick policies" page in bitbots_docs.
@@ -188,14 +189,12 @@ piplus_amp_walk_node:
       frequency_min: 1.0
       frequency_max: 2.0
       # Phase in [0, 1) at each start of the policy. The training starts with a random phase.
+      # At a zero command, the clock stops at the next double support phase (0 or 0.5).
       initial_phase: 0.0
 
     command:
       # The velocity command (vx, vy, wz) is clipped to the range of the training
       min: [-1.0, -1.0, -1.0]
       max: [1.2, 1.0, 1.0]
-      # Time in seconds that the policy continues to run after the command becomes zero.
-      # The policy was trained to stand still at a zero command (stand flag).
-      stand_settle_time: 1.0
 
     providers: ["CPUExecutionProvider"]

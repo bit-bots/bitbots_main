@@ -199,6 +199,13 @@ piplus_amp_kick_node:
       max_covariance: 2.0
       # The training clips each axis of the ball position to this value in meters
       position_clip: 10.0
+      # Scale in meters of the tanh bound of the ball position: each axis becomes
+      # s * tanh(x / s) after the clip. Null turns the bound off. The value must agree with
+      # the training of the model. The current model (kick_sym_huber, model_29000) was
+      # trained without the bound, so the value must stay null for it. Runs with the
+      # bound (for example kick_sym_huber_coeff01_rest05_tanh) need the value of their
+      # training (BALL_POS_TANH_SCALE_M).
+      pos_tanh_scale: null
 
     command:
       action_name: rl_kick
