@@ -11,7 +11,9 @@ team_comm:
 
     # Only used in local mode on loopback
     # the team communication will bind to one of these ports and send to the other ports, depending on its bot_id
+    # The first port is reserved for simulator message-budget tracking.
     local_target_ports:
+      - 4000
       - 4001
       - 4002
       - 4003

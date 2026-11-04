@@ -34,6 +34,8 @@ class Simulation(Node):
         self.declare_parameter("web", False)
         self.declare_parameter("sim_gamestate", True)
         self.declare_parameter("num_robots", "")
+        self.declare_parameter("message_budget", 65535)
+        self.declare_parameter("team_comm_budget_port", 12000)
 
         # These default value are oriented on some real world data in standstill.
         # They are a bit worse than what was observed there.
@@ -272,7 +274,11 @@ class Simulation(Node):
         self._add_field_textures(viewer.scene.server)
         self._add_ball_textures(viewer.scene.server)
         self._add_body_drag(viewer.scene)
-        viewer.run()
+        try:
+            viewer.run()
+        finally:
+            if sim_gamestate_gui is not None:
+                sim_gamestate_gui.close()
 
     def _create_sim_gamestate_gui(self):
         from bitbots_mujoco_sim.sim_gamestate_gui import SimGameStateGui
@@ -295,8 +301,14 @@ class Simulation(Node):
             self.get_logger().error("The world contains no robots; simulated GAME_STATE is disabled")
             return None
 
+        message_budget = self.get_parameter("message_budget").get_parameter_value().integer_value
+        if not 0 <= message_budget <= 65535:
+            self.get_logger().error("message_budget must be between 0 and 65535; simulated GAME_STATE is disabled")
+            return None
+        team_comm_budget_port = self.get_parameter("team_comm_budget_port").get_parameter_value().integer_value
+
         robot_topics = [f"{robot.namespace}/gamestate" if self.use_namespace else "gamestate" for robot in self.robots]
-        return SimGameStateGui(self, game_settings, team_sizes, robot_topics)
+        return SimGameStateGui(self, game_settings, team_sizes, robot_topics, message_budget, team_comm_budget_port)
 
     def _add_field_textures(self, server) -> None:
         """Render textured plane geoms (e.g. the soccer field) as flat images in viser.

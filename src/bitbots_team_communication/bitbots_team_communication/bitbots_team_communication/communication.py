@@ -23,7 +23,9 @@ class SocketCommunication:
             # local mode on loopback device, bind to port depending on bot id and team id
             local_target_ports: list[int] = node.get_parameter("local_target_ports").value
             self.target_ports = [port + 10 * team_id for port in local_target_ports]
-            self.receive_port = self.target_ports[robot_id - 1]
+            # Slot zero is reserved for simulator message-budget tracking; robot IDs start at one.
+            assert 0 < robot_id < len(self.target_ports), f"Robot ID {robot_id} has no local communication port"
+            self.receive_port = self.target_ports[robot_id]
         else:
             target_port: int = node.get_parameter("target_port").value
             receive_port: int = node.get_parameter("receive_port").value
