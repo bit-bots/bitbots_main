@@ -1,0 +1,40 @@
+/**:
+  ros__parameters:
+    topics:
+      depth_image: /zed/zed_node/depth/depth_registered
+      camera_info: /zed/zed_node/depth/camera_info
+      occupancy_grid: /obstacle_grid
+
+    frames:
+      base_frame: base_footprint   # grid is published in this frame
+
+    tf_timeout: 0.2               # s, wait for TF at image timestamp
+
+    depth:
+      min_range: 0.3              # m
+      max_range: 8.0              # m, ZED noise grows ~quadratically
+      pixel_stride: 4             # use every n-th pixel (speed vs. detail)
+
+    ground:
+      mode: ransac                # "ransac" = fit plane, "tf" = assume z=0
+      candidate_band: 0.20        # m, only points |z|<band are used for the fit
+      ransac_iterations: 100
+      ransac_inlier_threshold: 0.03   # m
+      ransac_min_inliers: 300
+      ransac_max_points: 5000
+      max_tilt_deg: 10.0          # reject planes tilted more than this
+      tolerance: 0.06             # m, |height| < tol -> ground (free evidence)
+      min_area: 0.002             # m^2 observed ground to mark cell free
+
+    obstacle:
+      min_height: 0.08            # m above ground plane
+      max_height: 1.5             # m (robot height; ignores overhangs above)
+      min_area: 0.004             # m^2 observed surface (after smoothing)
+
+    grid:
+      resolution: 0.05            # m/cell
+      x_min: -1.0                 # m, in base frame
+      x_max: 8.0
+      y_min: -4.0
+      y_max: 4.0
+      smoothing_sigma: 0.05       # m, Gaussian smoothing of area map
