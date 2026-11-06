@@ -1,7 +1,10 @@
+#include <bitbots_vision/onnx_layernorm_decomposition.hpp>
 #include <bitbots_vision/rfdetr_processing.hpp>
 #include <bitbots_vision/tensorrt_handler.hpp>
+#include <cstring>
 #include <filesystem>
 #include <fstream>
+#include <iterator>
 #include <rclcpp/logging.hpp>
 #include <stdexcept>
 
@@ -67,9 +70,9 @@ void TensorRtHandler::build_or_load_engine(const std::string& model_path) {
     throw std::runtime_error("ONNX model file not found: " + onnx_path);
   }
 
-  const bool cache_is_fresh = std::filesystem::exists(engine_cache_path) &&
-                              std::filesystem::last_write_time(engine_cache_path) >=
-                                  std::filesystem::last_write_time(onnx_path);
+  const bool cache_is_fresh =
+      std::filesystem::exists(engine_cache_path) &&
+      std::filesystem::last_write_time(engine_cache_path) >= std::filesystem::last_write_time(onnx_path);
 
   if (cache_is_fresh) {
     RCLCPP_INFO(logger_, "Loading cached TensorRT engine: %s", engine_cache_path.c_str());
@@ -100,8 +103,7 @@ void TensorRtHandler::build_or_load_engine(const std::string& model_path) {
       throw std::runtime_error("Failed to create TensorRT builder");
     }
 
-    const auto explicit_batch =
-        1U << static_cast<uint32_t>(nvinfer1::NetworkDefinitionCreationFlag::kEXPLICIT_BATCH);
+    const auto explicit_batch = 1U << static_cast<uint32_t>(nvinfer1::NetworkDefinitionCreationFlag::kEXPLICIT_BATCH);
     std::unique_ptr<nvinfer1::INetworkDefinition, TrtDeleter> network(builder->createNetworkV2(explicit_batch));
     if (!network) {
       throw std::runtime_error("Failed to create TensorRT network definition");
@@ -111,7 +113,20 @@ void TensorRtHandler::build_or_load_engine(const std::string& model_path) {
     if (!parser) {
       throw std::runtime_error("Failed to create ONNX parser");
     }
-    if (!parser->parseFromFile(onnx_path.c_str(), static_cast<int>(nvinfer1::ILogger::Severity::kWARNING))) {
+    // TensorRT < 8.6 has no importer for the opset-17 LayerNormalization op,
+    // so it is decomposed into primitive ops before parsing.
+    std::ifstream onnx_file(onnx_path, std::ios::binary);
+    const std::string onnx_bytes((std::istreambuf_iterator<char>(onnx_file)), std::istreambuf_iterator<char>());
+    if (!onnx_file.good() && !onnx_file.eof()) {
+      throw std::runtime_error("Failed to read ONNX model file: " + onnx_path);
+    }
+    const auto decomposition = onnx_rewrite::decompose_layer_normalization(onnx_bytes);
+    if (decomposition.num_decomposed > 0 || decomposition.num_skipped > 0) {
+      RCLCPP_INFO(logger_, "Decomposed %d LayerNormalization node(s) into primitive ops (%d left unchanged)",
+                  decomposition.num_decomposed, decomposition.num_skipped);
+    }
+
+    if (!parser->parse(decomposition.model.data(), decomposition.model.size(), onnx_path.c_str())) {
       for (int32_t i = 0; i < parser->getNbErrors(); ++i) {
         RCLCPP_ERROR(logger_, "ONNX parse error: %s", parser->getError(i)->desc());
       }
@@ -127,6 +142,27 @@ void TensorRtHandler::build_or_load_engine(const std::string& model_path) {
     if (builder->platformHasFastFp16()) {
       config->setFlag(nvinfer1::BuilderFlag::kFP16);
       RCLCPP_INFO(logger_, "TensorRT: platform supports fast FP16, enabling FP16 mode");
+      // The variance computation of decomposed LayerNormalizations can
+      // overflow in FP16, so keep those layers in FP32.
+      int fp32_layers = 0;
+      for (int32_t i = 0; i < network->getNbLayers(); ++i) {
+        nvinfer1::ILayer* layer = network->getLayer(i);
+        // Constants keep their type, and ONNX Cast nodes are imported as
+        // identity layers whose output type *is* the cast, so both are skipped.
+        if (std::strstr(layer->getName(), onnx_rewrite::kDecomposedNodeTag) == nullptr ||
+            layer->getType() == nvinfer1::LayerType::kCONSTANT || layer->getType() == nvinfer1::LayerType::kIDENTITY) {
+          continue;
+        }
+        layer->setPrecision(nvinfer1::DataType::kFLOAT);
+        for (int32_t o = 0; o < layer->getNbOutputs(); ++o) {
+          layer->setOutputType(o, nvinfer1::DataType::kFLOAT);
+        }
+        ++fp32_layers;
+      }
+      if (fp32_layers > 0) {
+        config->setFlag(nvinfer1::BuilderFlag::kPREFER_PRECISION_CONSTRAINTS);
+        RCLCPP_INFO(logger_, "TensorRT: keeping %d decomposed LayerNormalization layer(s) in FP32", fp32_layers);
+      }
     } else {
       RCLCPP_WARN(logger_, "TensorRT: platform has no fast FP16 support, building FP32-only engine");
     }
@@ -261,8 +297,8 @@ void TensorRtHandler::preprocess(const cv::Mat& bgr_image) {
 // ---------------------------------------------------------------------------
 
 void TensorRtHandler::run_inference() {
-  check_cuda(cudaMemcpyAsync(d_input_, input_data_.data(), input_data_.size() * sizeof(float),
-                             cudaMemcpyHostToDevice, stream_),
+  check_cuda(cudaMemcpyAsync(d_input_, input_data_.data(), input_data_.size() * sizeof(float), cudaMemcpyHostToDevice,
+                             stream_),
              "cudaMemcpyAsync(input H2D)");
 
   std::vector<void*> bindings(static_cast<size_t>(engine_->getNbBindings()), nullptr);
@@ -279,11 +315,11 @@ void TensorRtHandler::run_inference() {
 
   std::vector<float> dets_host(static_cast<size_t>(num_dets_ * 4));
   std::vector<float> labels_host(static_cast<size_t>(num_dets_ * num_classes_));
-  check_cuda(cudaMemcpyAsync(dets_host.data(), d_dets_, dets_host.size() * sizeof(float), cudaMemcpyDeviceToHost,
+  check_cuda(
+      cudaMemcpyAsync(dets_host.data(), d_dets_, dets_host.size() * sizeof(float), cudaMemcpyDeviceToHost, stream_),
+      "cudaMemcpyAsync(dets D2H)");
+  check_cuda(cudaMemcpyAsync(labels_host.data(), d_labels_, labels_host.size() * sizeof(float), cudaMemcpyDeviceToHost,
                              stream_),
-             "cudaMemcpyAsync(dets D2H)");
-  check_cuda(cudaMemcpyAsync(labels_host.data(), d_labels_, labels_host.size() * sizeof(float),
-                             cudaMemcpyDeviceToHost, stream_),
              "cudaMemcpyAsync(labels D2H)");
 
   std::vector<float> line_mask_host;
@@ -300,13 +336,12 @@ void TensorRtHandler::run_inference() {
   // handler -- already unit-tested and numerically verified against the
   // Python reference implementation.
   det_results_ = processing::postprocess_detections_rfdetr(dets_host.data(), labels_host.data(), num_dets_,
-                                                            num_classes_, det_class_names_,
-                                                            cfg_.class_conf_thresholds, cfg_.default_conf_threshold,
-                                                            orig_h_, orig_w_);
+                                                           num_classes_, det_class_names_, cfg_.class_conf_thresholds,
+                                                           cfg_.default_conf_threshold, orig_h_, orig_w_);
 
   if (line_mask_binding_idx_ >= 0) {
     line_mask_result_ = processing::postprocess_line_mask_rfdetr(line_mask_host.data(), line_mask_h_, line_mask_w_,
-                                                                  cfg_.line_mask_threshold, orig_h_, orig_w_);
+                                                                 cfg_.line_mask_threshold, orig_h_, orig_w_);
   }
 }
 

@@ -60,11 +60,18 @@ TensorRT/driver upgrade or a GPU swap. FP16 is enabled automatically whenever th
 (``IBuilder::platformHasFastFp16()``, true on JetPack 5.1.5 Xavier/Orin targets); TensorRT decides per-layer
 whether FP16 or FP32 is used.
 
-This backend was written and code-reviewed without access to TensorRT/CUDA hardware (not available in the dev
-environment) -- it has not been runtime-tested. If it doesn't build or misbehaves on the robot, the error
-messages are logged verbosely (including ONNX parser errors and CUDA error strings) to aid debugging; falling
-back to deleting the TensorRT include/library detection results (or simply not having TensorRT installed)
-always leaves the ONNX Runtime backend as a working fallback.
+**LayerNormalization decomposition**: the RF-DETR export uses ONNX opset 17, where PyTorch emits
+``LayerNormalization`` as a single op. TensorRT only gained an importer for it in TensorRT 8.6, so the
+TensorRT 8.5 parser on JetPack 5 rejects the model. Before parsing, ``TensorRtHandler`` therefore rewrites
+every such node into primitive ops (``onnx_layernorm_decomposition.hpp``/``.cpp``). The rewrite works on the
+protobuf wire format directly, so it needs no ONNX or protobuf library. Like the ONNX op, the decomposition
+computes in float32 (float16 inputs are cast and the result is cast back), and in FP16 engines the
+decomposed layers are kept in FP32 because the variance computation can overflow in FP16.
+``test_onnx_layernorm_decomposition`` checks the rewrite against ONNX Runtime's native op.
+
+If the backend doesn't build or misbehaves on a robot, the error messages are logged verbosely (including
+ONNX parser errors and CUDA error strings) to aid debugging; not having TensorRT installed always leaves the
+ONNX Runtime backend as a working fallback.
 
 **Jetson header collision gotcha**: apt-installed TensorRT on JetPack dumps its headers into
 ``/usr/include/<arch>-linux-gnu`` -- the *same* directory as the system's own glibc headers, which are for a
