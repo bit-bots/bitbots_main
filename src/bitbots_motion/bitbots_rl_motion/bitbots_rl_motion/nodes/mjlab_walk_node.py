@@ -1,0 +1,62 @@
+import numpy as np
+
+from bitbots_msgs.msg import JointCommand
+from bitbots_rl_motion.handlers.command_handler import CommandHandler
+from bitbots_rl_motion.handlers.gravity_handler import GravityHandler
+from bitbots_rl_motion.handlers.gyro_handler import GyroHandler
+from bitbots_rl_motion.handlers.joint_handler import JointHandler
+from bitbots_rl_motion.handlers.robot_state_handler import RobotStateHandler
+from bitbots_rl_motion.nodes.rl_node import RLNode, create_main
+
+
+class MjLabWalkNode(RLNode):
+    def __init__(self):
+        # Configuring self._phase, self._previous_action
+        super().__init__(node_name="mjlab_walk_node")
+
+        # publishers
+        self._joint_command_pub = self.create_publisher(JointCommand, "walking_motor_goals", 10)
+
+        # handlers
+        self._gyro_handler = GyroHandler(self)
+        self._gravity_handler = GravityHandler(self)
+        self._joint_handler = JointHandler(self)
+        self._robot_state_handler = RobotStateHandler(self)
+        self._command_handler = CommandHandler(self)
+
+        # loading model
+        model = self.get_parameter("model").value
+        self.load_model(model)
+
+    # observations
+    def obs(self):
+        observation = np.hstack(
+            [
+                self._gyro_handler.get_gyro(),
+                self._gravity_handler.get_gravity(),
+                self._joint_handler.get_angle_data(),
+                self._joint_handler.get_velocity_data(),
+                self._previous_action.get_previous_action(),
+                self._command_handler.get_command(),
+            ]
+        ).astype(np.float32)
+
+        return observation
+
+    # publisher function
+    def publisher(self, onnx_pred):
+        joint_command = self._joint_handler.get_joint_commands(onnx_pred)
+        self._joint_command_pub.publish(joint_command)
+
+    # states in which the policy executes
+    def allowed_states(self):
+        allowed_to_move = self._robot_state_handler.is_walkable() and np.any(self._command_handler.get_command() != 0.0)
+        return allowed_to_move
+
+    def initialize_observation(self):
+        # No observation history; just start the previous-action feedback term
+        # from zero on each (re)activation.
+        self._previous_action.set_previous_action(np.zeros_like(self._previous_action.get_previous_action()))
+
+
+main = create_main(MjLabWalkNode)

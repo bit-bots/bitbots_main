@@ -1,9 +1,10 @@
 cmake_minimum_required(VERSION 3.8)
 project(bitbots_head_mover)
 
-# Build with release optimizations and debug symbols by default
+# Build with -O2 optimizations and debug symbols by default, without disabling
+# assertions (unlike CMake's built-in RelWithDebInfo, which defines NDEBUG).
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE RelWithDebug)
+  add_compile_options(-O2 -g)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")

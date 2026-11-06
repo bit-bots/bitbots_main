@@ -1,7 +1,7 @@
 import concurrent.futures
 import os
 
-from deploy.misc import Connection, be_quiet, hide_output, print_debug, print_error
+from deploy.misc import Connection, be_quiet, check_ssh_configuration, hide_output, print_debug, print_error
 from deploy.tasks.abstract_task import AbstractTask
 from fabric import Group, GroupResult, Result
 
@@ -40,6 +40,8 @@ class Sync(AbstractTask):
         """
 
         def _sync_single(connection: Connection) -> Result | None:
+            check_ssh_configuration(connection.user, connection.host)
+
             # Construct the rsync command
             cmd = [
                 "rsync",

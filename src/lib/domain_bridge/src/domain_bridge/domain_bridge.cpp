@@ -35,7 +35,13 @@
 #include "rclcpp/generic_subscription.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp/serialization.hpp"
+#include "rclcpp/version.h"
+#if RCLCPP_VERSION_MAJOR >= 25
+#include "rclcpp/typesupport_helpers.hpp"
+#else
+// Humble
 #include "rosbag2_cpp/typesupport_helpers.hpp"
+#endif
 #include "rosidl_typesupport_cpp/message_type_support.hpp"
 #include "rmw/types.h"
 
@@ -211,8 +217,13 @@ public:
       // Typesupport library already loaded
       return;
     }
-    loaded_typesupports_[type] = rosbag2_cpp::get_typesupport_library(
-      type, "rosidl_typesupport_cpp");
+    loaded_typesupports_[type] =
+#if RCLCPP_VERSION_MAJOR >= 25
+      rclcpp::get_typesupport_library(type, "rosidl_typesupport_cpp");
+#else
+      // Humble
+      rosbag2_cpp::get_typesupport_library(type, "rosidl_typesupport_cpp");
+#endif
   }
 
   std::shared_ptr<SerializedPublisher>

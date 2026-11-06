@@ -166,10 +166,12 @@ void AudioPlayerNode::write_data(const std::vector<T> &input_data, int channels,
   }
 
   // Make sure chunk size is correct for frames (not samples)
-  if (data.size() < chunk * this->channels_) {
+  const size_t required_samples =
+      static_cast<size_t>(chunk) * static_cast<size_t>(this->channels_);
+  if (data.size() < required_samples) {
     RCLCPP_WARN(this->get_logger(),
-                "Insufficient data (%ld) for requested chunk size (%d).",
-                data.size(), chunk * this->channels_);
+                "Insufficient data (%zu) for requested chunk size (%zu).",
+                data.size(), required_samples);
     return;
   }
 

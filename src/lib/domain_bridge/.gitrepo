@@ -1,12 +1,13 @@
 ; DO NOT EDIT (unless you know what you are doing)
 ;
 ; This subdirectory is a git "subrepo", and this file is maintained by the
-; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+; git-include command (compatible with git-subrepo).
+; See https://github.com/flova/git-include
 ;
 [subrepo]
 	remote = git@github.com:ros2/domain_bridge.git
 	branch = main
-	commit = c2523e1d03d9c3e5e83b3e7e56503784feabf8f2
+	commit = 75cdfae6d920a6b62284c22413344b42d06f14f2
 	parent = 4f07f363a9e37c07f6e466dc8fb048ec4ea3a9a6
 	method = merge
-	cmdver = 0.4.9
+	cmdver = git-include/0.1.0-alpha.3

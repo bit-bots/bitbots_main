@@ -148,25 +148,38 @@ class HeadMover {
     RCLCPP_DEBUG(node_->get_logger(), "Received goal request");
 
     // Bring the goal point into the planning frame
-    geometry_msgs::msg::PointStamped new_point;
+    geometry_msgs::msg::PointStamped rel_head_yaw_point;
     try {
-      new_point = tf_buffer_->transform(goal->look_at_position, "base_footprint", tf2::durationFromSec(0.9));
+      rel_head_yaw_point = tf_buffer_->transform(goal->look_at_position, "head_yaw_link", tf2::durationFromSec(0.9));
     } catch (tf2::TransformException& ex) {
       RCLCPP_ERROR(node_->get_logger(), "Could not transform goal point: %s", ex.what());
       return rclcpp_action::GoalResponse::REJECT;
     }
 
+    geometry_msgs::msg::PointStamped rel_head_pitch_point;
+    try {
+      rel_head_pitch_point =
+          tf_buffer_->transform(goal->look_at_position, "head_pitch_link", tf2::durationFromSec(0.9));
+    } catch (tf2::TransformException& ex) {
+      RCLCPP_ERROR(node_->get_logger(), "Could not transform goal point: %s", ex.what());
+      return rclcpp_action::GoalResponse::REJECT;
+    }
+
+    // RCLCPP_DEBUG(node_->get_logger(), "yaw point, pitch point" << head_yaw_point.point << " " <<
+    // head_pitch_point.point);
+
     // Get the motor goals that are needed to look at the point
-    std::pair<double, double> yaw_pitch = get_motor_goals_from_point(new_point.point);
+    double goal_yaw = 0.0;
+    double goal_pitch = 0.0;
+    get_motor_goals_from_point(rel_head_yaw_point.point, rel_head_pitch_point.point, goal_yaw, goal_pitch);
 
     // Check whether the goal is in range yaw and pitch wise
-    bool goal_not_in_range = check_head_collision(yaw_pitch.first, yaw_pitch.second);
+    bool goal_not_in_range = check_head_collision(goal_yaw, goal_pitch);
 
     // Check whether the action goal is valid and can be executed
     // cppcheck-suppress knownConditionTrueFalse
-    if (action_running_ || goal_not_in_range ||
-        !(params_.max_yaw[0] < yaw_pitch.first && yaw_pitch.first < params_.max_yaw[1]) ||
-        !(params_.max_pitch[0] < yaw_pitch.second && yaw_pitch.second < params_.max_pitch[1])) {
+    if (action_running_ || goal_not_in_range || !(params_.max_yaw[0] < goal_yaw && goal_yaw < params_.max_yaw[1]) ||
+        !(params_.max_pitch[0] < goal_pitch && goal_pitch < params_.max_pitch[1])) {
       return rclcpp_action::GoalResponse::REJECT;
     }
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
@@ -278,7 +291,7 @@ class HeadMover {
 
     // Clip the target yaw and pitch position at the maximum yaw and pitch values as defined in the parameters
     if (clip) {
-      std::tie(yaw_position, pitch_position) = pre_clip(yaw_position, pitch_position);
+      pre_clip(yaw_position, pitch_position);
     }
 
     // Resolve collisions if necessary
@@ -304,10 +317,9 @@ class HeadMover {
    * @brief Applies clipping to the yaw and pitch values based on the loaded config parameters
    *
    */
-  std::pair<double, double> pre_clip(double yaw, double pitch) {
-    double new_yaw = std::clamp(yaw, params_.max_yaw[0], params_.max_yaw[1]);
-    double new_pitch = std::clamp(pitch, params_.max_pitch[0], params_.max_pitch[1]);
-    return {new_yaw, new_pitch};
+  void pre_clip(double& yaw, double& pitch) {
+    yaw = std::clamp(yaw, params_.max_yaw[0], params_.max_yaw[1]);
+    pitch = std::clamp(pitch, params_.max_pitch[0], params_.max_pitch[1]);
   }
 
   /**
@@ -357,9 +369,12 @@ class HeadMover {
    * @brief Checks if the head collides with the body at a given yaw and pitch position
    */
   bool check_head_collision(double yaw, double pitch) {
-    // TODO we do not have a collision model for the pi plus head yet, so we need to implement this function properly
-    RCLCPP_ERROR_STREAM(node_->get_logger(), "Collision checking for the pi plus head is not implemented yet");
-    return false;
+    // Checks whether head position is higher than torso.
+    if (params_.max_pitch[0] < pitch && pitch < params_.max_pitch[1] && params_.max_yaw[0] < yaw &&
+        yaw < params_.max_yaw[1]) {
+      return false;
+    }
+    return true;
   }
 
   /**
@@ -396,10 +411,9 @@ class HeadMover {
   /**
    * @brief Returns the current position of the head motors
    */
-  std::pair<double, double> get_head_position() {
-    double head_yaw = 0.0;
-    double head_pitch = 0.0;
-
+  void get_head_position(double& head_yaw, double& head_pitch) {
+    head_yaw = 0.0;
+    head_pitch = 0.0;
     // Iterate over all joints and find the head yaw and pitch joints
     for (size_t i = 0; i < current_joint_state_->name.size(); i++) {
       if (current_joint_state_->name[i] == "head_yaw_joint") {
@@ -408,7 +422,6 @@ class HeadMover {
         head_pitch = current_joint_state_->position[i];
       }
     }
-    return {head_yaw, head_pitch};
   }
 
   /**
@@ -523,11 +536,25 @@ class HeadMover {
   /**
    * @brief Calculates the motor goals that are needed to look at a given point using the inverse kinematics
    */
-  std::pair<double, double> get_motor_goals_from_point(geometry_msgs::msg::Point point) {
-    // Try to calculate the inverse kinematics
-    // TODO we do not have inverse kinematics for the pi plus setup yet, so we need to implement this function properly
-    RCLCPP_ERROR_STREAM(node_->get_logger(), "Inverse kinematics for the pi plus head is not implemented yet");
-    return {0.0, 0.0};
+  void get_motor_goals_from_point(geometry_msgs::msg::Point head_yaw_point, geometry_msgs::msg::Point head_pitch_point,
+                                  double& head_yaw, double& head_pitch) {
+    double yaw_x = head_yaw_point.x;
+    double yaw_y = head_yaw_point.y;
+
+    double rel_head_yaw = atan2(yaw_y, yaw_x);
+
+    double pitch_x = head_pitch_point.x;
+    double pitch_y = head_pitch_point.y;
+    double pitch_z = head_pitch_point.z;
+
+    double rel_head_pitch = -atan2(pitch_z, sqrt(pitch_x * pitch_x + pitch_y * pitch_y));
+
+    double current_yaw = 0.0;
+    double current_pitch = 0.0;
+    get_head_position(current_yaw, current_pitch);
+
+    head_yaw = rel_head_yaw + current_yaw;
+    head_pitch = rel_head_pitch + current_pitch;
   }
 
   /**
@@ -536,20 +563,25 @@ class HeadMover {
   bool look_at(geometry_msgs::msg::PointStamped point, double min_yaw_delta = 0.02, double min_pitch_delta = 0.02) {
     try {
       // Transform the point into the planning frame
-      geometry_msgs::msg::PointStamped new_point =
-          tf_buffer_->transform(point, "base_footprint", tf2::durationFromSec(0.9));
+      geometry_msgs::msg::PointStamped rel_head_yaw_point =
+          tf_buffer_->transform(point, "head_yaw_link", tf2::durationFromSec(0.9));
+
+      geometry_msgs::msg::PointStamped rel_head_pitch_point =
+          tf_buffer_->transform(point, "head_pitch_link", tf2::durationFromSec(0.9));
 
       // Get the motor goals that are needed to look at the point from the inverse kinematics
-      std::pair<double, double> yaw_pitch = get_motor_goals_from_point(new_point.point);
+      double goal_yaw = 0.0;
+      double goal_pitch = 0.0;
+      get_motor_goals_from_point(rel_head_yaw_point.point, rel_head_pitch_point.point, goal_yaw, goal_pitch);
       // Get the current head position
-      std::pair<double, double> current_yaw_pitch = get_head_position();
+      double current_yaw = 0.0;
+      double current_pitch = 0.0;
+      get_head_position(current_yaw, current_pitch);
 
       // Check if we reached the goal position
-      if (std::abs(yaw_pitch.first - current_yaw_pitch.first) > min_yaw_delta ||
-          std::abs(yaw_pitch.second - current_yaw_pitch.second) > min_pitch_delta) {
+      if (std::abs(goal_yaw - current_yaw) > min_yaw_delta || std::abs(goal_pitch - current_pitch) > min_pitch_delta) {
         // Send the motor goals to the head motors
-        send_motor_goals(yaw_pitch.first, yaw_pitch.second, true, params_.look_at.yaw_speed,
-                         params_.look_at.pitch_speed);
+        send_motor_goals(goal_yaw, goal_pitch, true, params_.look_at.yaw_speed, params_.look_at.pitch_speed);
         // Return false as we did not reach the goal position yet
         return false;
       }
@@ -607,7 +639,9 @@ class HeadMover {
     // Prepend a transition segment from the current head position to the first waypoint
     // of the pattern, so we don't jump there abruptly when the head mode changes.
     // Its duration is based on the distance and the configured transition speed.
-    auto [current_yaw, current_pitch] = get_head_position();
+    double current_yaw = 0.0;
+    double current_pitch = 0.0;
+    get_head_position(current_yaw, current_pitch);
     double transition_distance =
         std::sqrt(std::pow(pts_rad[0].first - current_yaw, 2) + std::pow(pts_rad[0].second - current_pitch, 2));
     transition_duration_ = transition_distance / params_.transition_speed;
@@ -654,7 +688,7 @@ class HeadMover {
 
     double goal_yaw = yaw_spline_.pos(t);
     double goal_pitch = pitch_spline_.pos(t);
-    std::tie(goal_yaw, goal_pitch) = pre_clip(goal_yaw, goal_pitch);
+    pre_clip(goal_yaw, goal_pitch);
 
     double yaw_vel = std::abs(yaw_spline_.vel(t));
     double pitch_vel = std::abs(pitch_spline_.vel(t));

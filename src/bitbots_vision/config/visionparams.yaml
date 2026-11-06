@@ -9,17 +9,11 @@ bitbots_vision:
       debug_image: "debug_image"
 
     model:
-      # Model directory: must contain onnx/rfdetr.onnx and model_config.yaml.
-      # RF-DETR isn't packaged as a conda model yet, so for now this must be a
-      # local absolute path (auto-resolution via $CONDA_PREFIX/$PIXI_PREFIX
-      # only applies once such a package exists).
-      path: "/path/to/rfdetr_model_dir"
+      # Model directory: must contain onnx/rfdetr.onnx and model_config.yaml
+      # For deployed models just use the name of the models conda package as the path.
+      path: "2026_07_02_flo_yoeo_rf_detr_wm_torso_extension"
 
     rfdetr:
-      # RF-DETR is NMS-free, so its raw output includes many overlapping
-      # low-confidence duplicate boxes per real object; per-class thresholds
-      # (rather than one shared value) filter these down to confident,
-      # well-localized detections.
       ball_conf_threshold: 0.98
       robot_conf_threshold: 0.9
       goalpost_conf_threshold: 0.98

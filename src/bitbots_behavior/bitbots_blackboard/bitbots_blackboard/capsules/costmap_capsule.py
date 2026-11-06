@@ -61,6 +61,7 @@ class CostmapCapsule(AbstractBlackboardCapsule):
         """
         # Init a new obstacle costmap
         obstacle_map = np.zeros_like(self.costmap)
+
         # Iterate over all robots
         robot: Robot
         for robot in msg.robots:
@@ -69,6 +70,7 @@ class CostmapCapsule(AbstractBlackboardCapsule):
             # TODO inflate
             # Draw obstacle with smoothing independent weight on obstacle costmap
             obstacle_map[idx_x, idx_y] = self.obstacle_cost * self.obstacle_costmap_smoothing_sigma
+
         # Smooth obstacle map
         obstacle_map = gaussian_filter(obstacle_map, self.obstacle_costmap_smoothing_sigma)
         # Get pass offsets

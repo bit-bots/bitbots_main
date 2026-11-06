@@ -14,7 +14,7 @@ setup(
         ("share/" + package_name + "/config", glob.glob("config/*.yaml")),
         ("share/" + package_name + "/launch", glob.glob("launch/*.launch")),
     ],
-    scripts=["scripts/teleop_keyboard.py"],
+    scripts=["scripts/teleop_keyboard.py", "scripts/kick_teleop.py"],
     install_requires=[
         "launch",
         "setuptools",

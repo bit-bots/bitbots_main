@@ -48,7 +48,7 @@ class SecondBallTouchAllowed(AbstractDecisionElement):
             self.latch = False
             self.latch_start_time = None
             return "YES"
-        elif self.latch and duration_since_latch > 20.0:  # Latch for x seconds
+        elif self.latch and duration_since_latch > 8.0:  # Latch for x seconds
             self.latch = False
             self.latch_start_time = None
             return "YES"

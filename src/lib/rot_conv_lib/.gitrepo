@@ -1,12 +1,13 @@
 ; DO NOT EDIT (unless you know what you are doing)
 ;
 ; This subdirectory is a git "subrepo", and this file is maintained by the
-; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+; git-include command (compatible with git-subrepo).
+; See https://github.com/flova/git-include
 ;
 [subrepo]
-	remote = https://github.com/bit-bots/rot_conv_lib.git
+	remote = git@github.com:bit-bots/rot_conv_lib.git
 	branch = master
-	commit = b38b899cbf848cd52d0e54489f141e252792e1fe
-	parent = 353742867517359c5377501d4a60a16471debb9f
+	commit = 55b059a5e4fa5a10a4dcb0dfec0de38f4a81fbb8
+	parent = 9eb1c0c46abd9f32aaeb8c3f5423e8ec9600b972
 	method = merge
-	cmdver = 0.4.9
+	cmdver = git-include/0.1.0-alpha.3

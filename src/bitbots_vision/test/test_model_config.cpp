@@ -99,7 +99,9 @@ detection:
 // Error handling
 // ---------------------------------------------------------------------------
 
-TEST(ModelConfig, ThrowsOnMissingFile) { EXPECT_THROW(ModelConfig::load_from("/nonexistent/path"), std::runtime_error); }
+TEST(ModelConfig, ThrowsOnMissingFile) {
+  EXPECT_THROW(ModelConfig::load_from("/nonexistent/path"), std::runtime_error);
+}
 
 TEST(ModelConfig, ThrowsOnMissingDetectionClasses) {
   const std::string yaml = R"(

@@ -11,10 +11,15 @@ from rclpy.time import Time
 from rosgraph_msgs.msg import Clock
 from sensor_msgs.msg import CameraInfo, Image, Imu, JointState
 from std_msgs.msg import Float32
+from std_srvs.srv import Empty
+from transforms3d.euler import euler2quat, quat2euler
+from transforms3d.quaternions import qmult
 
 from bitbots_msgs.msg import JointCommand
-from bitbots_msgs.srv import SimulatorPush
+from bitbots_msgs.srv import MoveBall, SimulatorPush
 from bitbots_mujoco_sim.robot import Robot
+
+BALL_JOINT_NAME = "ball-root"
 
 
 class Simulation(Node):
@@ -88,6 +93,8 @@ class Simulation(Node):
             for idx in self._find_robot_indices()
         ]
 
+        self._apply_home_keyframe()
+
         self.time = 0.0
         self.time_message = Time(seconds=0, nanoseconds=0).to_msg()
         self.timestep = self.model.opt.timestep
@@ -97,6 +104,13 @@ class Simulation(Node):
         self.measured_rtf = 1.0
         self.clock_publisher = self.create_publisher(Clock, "clock", 1)
         self.create_subscription(Float32, "real_time_factor", self.real_time_factor_callback, 1)
+
+        # The ball is a free-floating body shared by all robots, so its reset lives on the
+        # simulation node rather than per-robot. Use a global topic so the teleop keyboard
+        # script reaches it regardless of any node namespace.
+        self.ball_joint_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_JOINT, BALL_JOINT_NAME)
+        self.create_service(Empty, "/reset_ball", self.reset_ball_callback)
+        self.create_service(MoveBall, "/move_ball", self.move_ball_callback)
 
         self.imu_frame_id = self.get_parameter("imu_frame").get_parameter_value().string_value
         self.camera_optical_frame_id = self.get_parameter("camera_optical_frame").get_parameter_value().string_value
@@ -108,6 +122,47 @@ class Simulation(Node):
             {"frequency": 4, "handler": lambda: self.publish(lambda robot: robot.publish_imu_event())},
             {"frequency": 32, "handler": lambda: self.publish(lambda robot: robot.publish_camera_event())},
         ]
+
+    def _apply_home_keyframe(self) -> None:
+        """Apply the 'home' keyframe joint values to all robots, leaving freejoints untouched.
+
+        The keyframe is defined in pi_plus.xml. Since attached sub-model keyframes are not
+        merged into the compiled world model, we load the robot model separately to read them.
+        """
+        robot_model_path = str(Path(self.package_path) / "xml" / "pi_plus.xml")
+        robot_model = mujoco.MjModel.from_xml_path(robot_model_path)
+        key_id = mujoco.mj_name2id(robot_model, mujoco.mjtObj.mjOBJ_KEY, "home")
+        if key_id < 0:
+            return
+
+        # Build a map from bare joint name → keyframe qpos value using the standalone robot model
+        home_qpos: dict[str, float] = {}
+        home_z: float | None = None
+        for i in range(robot_model.njnt):
+            jnt = robot_model.joint(i)
+            if jnt.type == mujoco.mjtJoint.mjJNT_FREE:
+                # qpos layout for freejoint: [x, y, z, qw, qx, qy, qz] — grab z (offset 2)
+                home_z = float(robot_model.key_qpos[key_id, jnt.qposadr[0] + 2])
+                continue
+            home_qpos[jnt.name] = robot_model.key_qpos[key_id, jnt.qposadr[0]]
+
+        for robot_sim in self.robots:
+            # Set z spawn height from keyframe while preserving x/y placement and orientation
+            if home_z is not None:
+                freejoint_name = f"robot_floating_base_joint_{robot_sim.robot.index}"
+                freejoint_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_JOINT, freejoint_name)
+                if freejoint_id >= 0:
+                    self.data.qpos[self.model.joint(freejoint_id).qposadr[0] + 2] = home_z
+
+            for joint in robot_sim.robot.joints:
+                # joint.ros_name is the bare name (e.g. "r_hip_pitch_joint") matching the robot model
+                value = home_qpos.get(joint.ros_name)
+                if value is None:
+                    continue
+                self.data.qpos[joint.joint_instance.qposadr[0]] = value
+                # For position actuators ctrl is the target position — same as the initial qpos
+                self.data.ctrl[joint.actuator_instance.id] = value
+        mujoco.mj_forward(self.model, self.data)
 
     def _generate_default_world(self) -> str:
         template_path = Path(self.package_path) / "xml" / "kid_field.xml"
@@ -178,6 +233,15 @@ class Simulation(Node):
         print("Starting web simulation viewer (mjviser)...")
         # Holds the textured ball overlays, populated by _add_ball_textures below.
         self._ball_overlays: list[tuple[object, int]] = []
+        # Active x-y drag targets, keyed by (qpos_adr, qvel_adr) of a free joint.
+        # Each maps to the world-frame (x, y) the joint should be pinned to while
+        # the user drags its overlay. Applied inside the sim loop by _apply_drag_targets.
+        self._drag_targets: dict[tuple[int, int], np.ndarray] = {}
+        # Full free-joint poses for robots rotated in place with Shift + drag.
+        self._rotation_targets: dict[tuple[int, int], np.ndarray] = {}
+        # Pin dragged bodies to their target every step so they follow the cursor
+        # instead of racing with mj_step (mirrors the reset/move_ball early events).
+        self.early_events.append({"frequency": 1, "handler": self._apply_drag_targets})
 
         def render(scene) -> None:
             # Default mjviser rendering: push the latest MuJoCo state to the scene.
@@ -193,6 +257,7 @@ class Simulation(Node):
         )
         self._add_field_textures(viewer.scene.server)
         self._add_ball_textures(viewer.scene.server)
+        self._add_body_drag(viewer.scene)
         viewer.run()
 
     def _add_field_textures(self, server) -> None:
@@ -230,7 +295,7 @@ class Simulation(Node):
                 2 * half_x,
                 2 * half_y,
                 # Lift slightly above the plane to avoid z-fighting with the grid.
-                position=(float(pos[0]), float(pos[1]), float(pos[2]) + 0.001),
+                position=(float(pos[0]), float(pos[1]), float(pos[2]) + 0.01),
                 cast_shadow=False,
             )
 
@@ -281,6 +346,146 @@ class Simulation(Node):
             geom_name = self.model.geom(geom_id).name or f"sphere_{geom_id}"
             handle = server.scene.add_mesh_trimesh(f"/ball_textures/{geom_name}", mesh)
             self._ball_overlays.append((handle, geom_id))
+            self._make_ball_draggable(handle, geom_id)
+
+    def _make_ball_draggable(self, handle, geom_id: int) -> None:
+        """Let the user drag a textured ball overlay in the world x-y plane."""
+        # The ball body carries its own free joint, so resolve directly from the geom.
+        body_id = int(self.model.geom_bodyid[geom_id])
+        self._register_free_joint_drag(handle, lambda _event, _b=body_id: self._free_joint_key_for_body(_b))
+
+    def _add_body_drag(self, scene) -> None:
+        """Drag dynamic bodies in x-y, or Shift-drag robots to rotate in place.
+
+        mjviser renders each moving body as a batched mesh handle grouped by shared
+        geometry (``scene._mesh_groups``); dragging one instance reports which body
+        was grabbed via ``event.instance_index``. We resolve that body up to the
+        free joint of its kinematic root (a robot's floating base, or the ball
+        itself) and drag that whole articulated system as a rigid unit.
+        """
+        robot_keys = {
+            self._free_joint_key_for_body(self.model.body(f"robot_base_link_{robot_sim.robot.index}").id)
+            for robot_sim in self.robots
+        }
+        robot_keys.discard(None)
+        for mesh_group in scene._mesh_groups:
+            body_ids = mesh_group.body_ids
+
+            def resolve(event, _body_ids=body_ids) -> tuple[int, int] | None:
+                idx = event.instance_index or 0
+                # Instances are laid out env-major; a single-env sim keeps idx in range,
+                # but modulo keeps us safe if the batched layout ever spans envs.
+                body_id = int(_body_ids[idx % len(_body_ids)])
+                return self._free_joint_key_for_body(body_id)
+
+            self._register_free_joint_drag(mesh_group.handle, resolve, rotation_keys=robot_keys)
+
+    def _free_joint_key_for_body(self, body_id: int) -> tuple[int, int] | None:
+        """Return (qpos_adr, qvel_adr) of the nearest free joint at or above a body.
+
+        Walks up the kinematic tree so grabbing any link of a robot resolves to the
+        floating base that actually moves the whole robot. Returns None for bodies
+        that have no free joint in their ancestry (e.g. world-fixed geometry).
+        """
+        bid = int(body_id)
+        while bid > 0:
+            jnt_adr = int(self.model.body_jntadr[bid])
+            for j in range(jnt_adr, jnt_adr + int(self.model.body_jntnum[bid])):
+                if int(self.model.jnt_type[j]) == int(mujoco.mjtJoint.mjJNT_FREE):
+                    return int(self.model.jnt_qposadr[j]), int(self.model.jnt_dofadr[j])
+            bid = int(self.model.body_parentid[bid])
+        return None
+
+    def _register_free_joint_drag(
+        self,
+        handle,
+        resolve_key: Callable[[object], tuple[int, int] | None],
+        *,
+        rotation_keys: set[tuple[int, int]] | None = None,
+    ) -> None:
+        """Wire left-drag to translation and Shift-left-drag to robot rotation.
+
+        Follows viser's scene_node_drag example: a left-drag fires start/update/end
+        events, and we map the cursor motion onto the ground plane by taking only its
+        x-y component. ``resolve_key`` maps a drag-start event to the target free
+        joint's (qpos_adr, qvel_adr). The joint is pinned to the cursor inside the sim
+        loop (see _apply_drag_targets) so it tracks without racing with mj_step;
+        vertical cursor motion is ignored, keeping the object on the ground.
+        For joints in ``rotation_keys``, Shift-drag instead holds the initial
+        position and tilt while turning the robot's heading toward the x-y drag
+        direction. Modifier changes end the old segment and start a new one.
+        """
+        # Per-drag state, frozen at "start" and read on every "update"/"end".
+        state: dict[str, object] = {}
+
+        @handle.on_drag
+        async def _(event) -> None:
+            if event.phase == "start":
+                key = resolve_key(event)
+                if key is None:
+                    return
+                state["key"] = key
+                # start_position and end_position share the same (camera-tracking)
+                # frame, so their x-y difference is a pure ground-plane displacement.
+                state["grab_xy"] = np.array(event.start_position[:2], dtype=float)
+                state["obj_xy"] = self.data.qpos[key[0] : key[0] + 2].copy()
+            elif event.phase == "update":
+                if "key" not in state:
+                    return
+                delta_xy = np.array(event.end_position[:2], dtype=float) - state["grab_xy"]
+                self._drag_targets[state["key"]] = state["obj_xy"] + delta_xy
+            elif event.phase == "end":
+                if "key" in state:
+                    self._drag_targets.pop(state["key"], None)
+                state.clear()
+
+        if not rotation_keys:
+            return
+
+        rotation_state: dict[str, object] = {}
+
+        @handle.on_drag("left", modifier="shift")
+        async def _(event) -> None:
+            if event.phase == "start":
+                key = resolve_key(event)
+                if key not in rotation_keys:
+                    return
+                rotation_state["key"] = key
+                rotation_state["grab_xy"] = np.array(event.start_position[:2], dtype=float)
+                pose = self.data.qpos[key[0] : key[0] + 7].copy()
+                rotation_state["pose"] = pose
+                # MuJoCo free-joint quaternions use (w, x, y, z); forward is +x.
+                _, _, rotation_state["yaw"] = quat2euler(pose[3:7])
+                self._rotation_targets[key] = pose.copy()
+            elif event.phase == "update":
+                if "key" not in rotation_state:
+                    return
+                delta_xy = np.array(event.end_position[:2], dtype=float) - rotation_state["grab_xy"]
+                # A zero-length drag has no heading: keep the last orientation.
+                if np.linalg.norm(delta_xy) < 1e-6:
+                    return
+                yaw = np.arctan2(delta_xy[1], delta_xy[0])
+                delta_yaw = yaw - rotation_state["yaw"]
+                delta_quat = euler2quat(0, 0, delta_yaw)
+                pose = rotation_state["pose"].copy()
+                # Left-multiply by a world-z rotation, preserving roll and pitch.
+                pose[3:7] = qmult(delta_quat, pose[3:7])
+                self._rotation_targets[rotation_state["key"]] = pose
+            elif event.phase == "end":
+                if "key" in rotation_state:
+                    self._rotation_targets.pop(rotation_state["key"], None)
+                rotation_state.clear()
+
+    def _apply_drag_targets(self) -> None:
+        """Pin dragged joints to their x-y targets or their rotation poses."""
+        # Snapshot: drag callbacks run on viser's thread and may add/remove keys.
+        for (qpos_adr, qvel_adr), xy in list(self._drag_targets.items()):
+            self.data.qpos[qpos_adr : qpos_adr + 2] = xy
+            # Zero the joint's velocity so the dragged body does not drift or topple.
+            self.data.qvel[qvel_adr : qvel_adr + 6] = 0.0
+        for (qpos_adr, qvel_adr), pose in list(self._rotation_targets.items()):
+            self.data.qpos[qpos_adr : qpos_adr + 7] = pose
+            self.data.qvel[qvel_adr : qvel_adr + 6] = 0.0
 
     def _update_ball_overlays(self, scene) -> None:
         """Move each textured ball overlay to follow its geom's current pose."""
@@ -355,6 +560,47 @@ class Simulation(Node):
 
     def real_time_factor_callback(self, msg: Float32) -> None:
         self.real_time_factor = msg.data / 0.94  # add a small buffer to try to achieve the requested RTF
+
+    def reset_ball_callback(self, request: Empty.Request, response: Empty.Response) -> Empty.Response:
+        """Reset the ball to its initial pose and zero its velocity."""
+        if self.ball_joint_id < 0:
+            self.get_logger().warn(f"No '{BALL_JOINT_NAME}' joint in the world; cannot reset ball.")
+            return response
+
+        qpos_adr = int(self.model.jnt_qposadr[self.ball_joint_id])
+        qvel_adr = int(self.model.jnt_dofadr[self.ball_joint_id])
+
+        def reset() -> None:
+            # A free joint has 7 position (3 translation + 4 quaternion) and 6 velocity values.
+            self.data.qpos[qpos_adr : qpos_adr + 7] = self.model.qpos0[qpos_adr : qpos_adr + 7]
+            self.data.qvel[qvel_adr : qvel_adr + 6] = 0.0
+            self.early_events.remove(reset_event)
+
+        # Run the state write inside the simulation loop so it does not race with mj_step.
+        reset_event = {"frequency": 1, "handler": reset}
+        self.early_events.append(reset_event)
+        return response
+
+    def move_ball_callback(self, request: MoveBall.Request, response: MoveBall.Response) -> MoveBall.Response:
+        """Move the ball by a relative offset (world frame) and zero its velocity."""
+        if self.ball_joint_id < 0:
+            self.get_logger().warn(f"No '{BALL_JOINT_NAME}' joint in the world; cannot move ball.")
+            return response
+
+        qpos_adr = int(self.model.jnt_qposadr[self.ball_joint_id])
+        qvel_adr = int(self.model.jnt_dofadr[self.ball_joint_id])
+        offset = np.array([request.offset.x, request.offset.y, request.offset.z], dtype=float)
+
+        def move() -> None:
+            # The first 3 free-joint qpos entries are the world-frame translation.
+            self.data.qpos[qpos_adr : qpos_adr + 3] += offset
+            self.data.qvel[qvel_adr : qvel_adr + 6] = 0.0
+            self.early_events.remove(move_event)
+
+        # Run the state write inside the simulation loop so it does not race with mj_step.
+        move_event = {"frequency": 1, "handler": move}
+        self.early_events.append(move_event)
+        return response
 
     def publish_clock_event(self) -> None:
         clock_msg = Clock()

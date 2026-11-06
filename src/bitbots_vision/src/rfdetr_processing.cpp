@@ -99,8 +99,8 @@ std::unordered_map<std::string, std::vector<Candidate>> postprocess_detections_r
 // postprocess_line_mask_rfdetr
 // ---------------------------------------------------------------------------
 
-cv::Mat postprocess_line_mask_rfdetr(const float* line_mask_logits, int mask_h, int mask_w, float threshold,
-                                    int orig_h, int orig_w) {
+cv::Mat postprocess_line_mask_rfdetr(const float* line_mask_logits, int mask_h, int mask_w, float threshold, int orig_h,
+                                     int orig_w) {
   cv::Mat logits_mat(mask_h, mask_w, CV_32FC1, const_cast<float*>(line_mask_logits));
 
   cv::Mat exp_neg;

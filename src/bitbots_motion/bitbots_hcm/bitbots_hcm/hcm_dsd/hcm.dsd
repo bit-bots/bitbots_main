@@ -6,9 +6,7 @@
 
 -->HCM
 $StartHCM
-    START_UP --> $Simulation
-        YES --> @RobotStateStartup, @PlayAnimationInit, @PlayAnimationWalkReady
-        NO --> #INIT_PATTERN
+    START_UP --> #INIT_PATTERN
     RUNNING --> $CheckBattery
         LOW --> @CancelGoals, @StopWalking, @Speak + text:Battery_low_so_please_power_me_off_gracefully, @Wait + time:10 + r:false
         OKAY --> $CheckMotors
@@ -17,40 +15,30 @@ $StartHCM
             OVERHEAT --> #EMERGENCY_FALL
             PROBLEM --> @RobotStateHardwareProblem, @WaitForMotors
             TURN_ON --> #INIT_PATTERN
-            OKAY --> $RecordAnimation
-                RECORD_ACTIVE --> @RobotStateRecord, @Wait
-                FREE --> $TeachingMode
-                    TEACH --> @RobotStateRecord, @SetTorque + stiff:false, @Wait
-                    HOLD --> @SetTorque + stiff:true, @Wait
-                    FINISHED --> @SetTorque + stiff:true + r:false, @RobotStateControllable, @PlayAnimationWalkReady
-                    OFF --> $Stop
-                        STOPPED --> @RobotStatePenalty, @CancelGoals, @StopWalking, @PlayAnimationWalkReady, @Wait
-                        FREE -->$CheckIMU
-                            IMU_NOT_STARTED --> @RobotStateStartup, @WaitForIMUStartup
-                            PROBLEM --> @RobotStateHardwareProblem, @WaitForIMU
-                            OKAY --> $Fallen
-                                FALLEN_FRONT --> $GameControllerStop
-                                    STOPPED --> @RobotStateFallen, @CancelGoals, @StopWalking, @Wait
-                                    FREE --> @RobotStateFallen, @CancelGoals, @StopWalking, @RobotStateGettingUp, @Complain, @PlayAnimationStandupFront
-                                FALLEN_BACK --> $GameControllerStop
-                                    STOPPED --> @RobotStateFallen, @CancelGoals, @StopWalking, @Wait
-                                    FREE --> @RobotStateFallen, @CancelGoals, @StopWalking, @RobotStateGettingUp, @Complain, @PlayAnimationStandupBack
-                                FALLEN_RIGHT --> $GameControllerStop
-                                    STOPPED --> @RobotStateFallen, @CancelGoals, @StopWalking, @Wait
-                                    FREE --> @RobotStateFallen, @CancelGoals, @StopWalking, @PlayAnimationWalkReady
-                                FALLEN_LEFT --> $GameControllerStop
-                                    STOPPED --> @RobotStateFallen, @CancelGoals, @StopWalking, @Wait
-                                    FREE --> @RobotStateFallen, @CancelGoals, @StopWalking, @PlayAnimationWalkReady
-                                NOT_FALLEN --> $Falling
-                                    FALLING_LEFT --> @RobotStateFalling, @CancelGoals, @StopWalking, @PlayAnimationFalling, @Wait
-                                    FALLING_RIGHT --> @RobotStateFalling, @CancelGoals, @StopWalking, @PlayAnimationFalling, @Wait
-                                    FALLING_FRONT --> @RobotStateFalling, @CancelGoals, @StopWalking, @PlayAnimationFalling, @Wait
-                                    FALLING_BACK --> @RobotStateFalling, @CancelGoals, @StopWalking, @PlayAnimationFalling, @Wait
-                                    NOT_FALLING --> $PlayingExternalAnimation
-                                        ANIMATION_RUNNING --> @StopWalking, @RobotStateAnimationRunning, @Wait
-                                        ANIMATION_SERVER_TIMEOUT --> @CancelAnimation
-                                        FREE --> $RecentWalkingGoals
-                                            STAY_WALKING --> @RobotStateWalking, @Wait
-                                            NOT_WALKING --> $RecentKickGoals
-                                                KICKING --> @RobotStateKicking, @Wait
-                                                NOT_KICKING --> @RobotStateControllable, @Wait
+            OKAY --> $ForceSitting
+                SITTING --> @RobotStateMotorOff, @CancelGoals, @StopWalking, @PlayAnimationSit + r:false, @SetTorque + stiff:false, @Wait
+                NORMAL --> $RecordAnimation
+                    RECORD_ACTIVE --> @RobotStateRecord, @Wait
+                    FREE --> $TeachingMode
+                        TEACH --> @RobotStateRecord, @SetTorque + stiff:false, @Wait
+                        HOLD --> @SetTorque + stiff:true, @Wait
+                        FINISHED --> @SetTorque + stiff:true + r:false, @RobotStateControllable, @PlayAnimationWalkReady
+                        OFF --> $Stop
+                            STOPPED --> @RobotStatePenalty, @CancelGoals, @StopWalking, @PlayAnimationWalkReady, @Wait
+                            FREE -->$CheckIMU
+                                IMU_NOT_STARTED --> @RobotStateStartup, @WaitForIMUStartup
+                                PROBLEM --> @RobotStateHardwareProblem, @WaitForIMU
+                                OKAY --> $Fallen
+                                    NOT_FALLEN --> $Falling
+                                        NOT_FALLING --> $PlayingExternalAnimation
+                                            ANIMATION_RUNNING --> @StopWalking, @RobotStateAnimationRunning, @Wait
+                                            ANIMATION_SERVER_TIMEOUT --> @CancelAnimation
+                                            FREE --> $RecentWalkingGoals
+                                                STAY_WALKING --> @RobotStateWalking, @Wait
+                                                NOT_WALKING --> $RecentKickGoals
+                                                    KICKING --> @RobotStateKicking, @Wait
+                                                    NOT_KICKING --> @RobotStateControllable, @Wait
+                                        ELSE --> @RobotStateFalling, @CancelGoals, @StopWalking, @PlayAnimationFalling, @Wait
+                                    ELSE --> $GameControllerStop
+                                        STOPPED --> @RobotStateFallen, @CancelGoals, @StopWalking, @Wait
+                                        FREE --> @RobotStateFallen + r:false, @CancelGoals + r:false, @StopWalking + r:false, @RobotStateGettingUp + r:false, @Complain + r:false, @Wait + time:1.5 + r:false

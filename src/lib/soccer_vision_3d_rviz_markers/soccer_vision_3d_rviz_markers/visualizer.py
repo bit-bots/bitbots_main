@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import rclpy
+from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 
 from soccer_vision_3d_msgs.msg import (
@@ -89,13 +90,17 @@ def main(args=None):
     rclpy.init(args=args)
 
     node = SoccerVision3DMarkers()
+
+    executor = EventsExecutor()
+    executor.add_node(node)
+
     try:
-        rclpy.spin(node)
+        executor.spin()
     except KeyboardInterrupt:
         pass
-
-    node.destroy_node()
-    rclpy.shutdown()
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
 
 
 if __name__ == '__main__':

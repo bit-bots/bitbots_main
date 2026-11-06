@@ -68,7 +68,6 @@ class RfdetrHandler : public RfdetrHandlerInterface {
  private:
   // ----- ONNX Runtime objects -----
   Ort::Env env_;
-  Ort::SessionOptions session_options_;
   std::unique_ptr<Ort::Session> session_;
 
   // ----- Model metadata -----
@@ -99,6 +98,9 @@ class RfdetrHandler : public RfdetrHandlerInterface {
 
   // ----- Helpers -----
   void init_session(const std::string& model_path);
+  // Builds a fresh SessionOptions with execution providers registered in
+  // priority order (TensorRT -> CUDA -> WebGPU), or CPU-only if force_cpu is set.
+  Ort::SessionOptions build_session_options(bool force_cpu) const;
   void preprocess(const cv::Mat& bgr_image);
   void run_inference();
 };
