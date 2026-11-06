@@ -17,8 +17,73 @@ FP16 model exports
 -------------------
 
 RF-DETR ONNX exports are available with either fp32 or fp16 internal weights; both keep the same float32
-input/output tensor contract (only internal weights differ), so no handler code needs to change to use one --
-just place whichever variant's ``.onnx`` file you want at ``<model_dir>/onnx/rfdetr.onnx``.
+input/output tensor contract (only internal weights differ), so no ``RfdetrHandler`` code needs to change to
+use one -- just place whichever variant's ``.onnx`` file you want at ``<model_dir>/onnx/rfdetr.onnx``. (This
+does not apply to ``TensorRtHandler``, which always builds its engine from the fp32 export and lets TensorRT
+decide FP16 usage per layer -- see below.)
+
+Inference backends
+-------------------
+
+Two inference backends implement the same ``RfdetrHandlerInterface``, and ``VisionNode`` uses whichever one
+was compiled in:
+
+* ``RfdetrHandler`` (``rfdetr_handler.hpp``/``.cpp``) -- ONNX Runtime, always built. Execution providers are
+  tried in priority order: TensorRT → CUDA → WebGPU → CPU (always available as fallback). This is the portable
+  backend used on the x86 dev environment and on any robot without a build-time-detected TensorRT install.
+* ``TensorRtHandler`` (``tensorrt_handler.hpp``/``.cpp``) -- native TensorRT (``nvinfer1``/``nvonnxparser``),
+  bypassing ONNX Runtime entirely. Only compiled in, and preferred at runtime, when TensorRT + CUDA are found
+  at build time (see "TensorRT backend" below). Targets JetPack 5.1.5 (TensorRT 8.5.2 / CUDA 11.4), but only
+  uses TensorRT APIs stable since TensorRT 8.0.
+
+Both backends share the same pure, unit-tested pre/postprocessing math in ``rfdetr_processing.hpp``/``.cpp``
+(direct resize + ImageNet normalization in; softmax + per-class confidence threshold + box decoding for
+detections; sigmoid + resize + threshold for the line mask; ``suppress_candidates`` for painting
+detected-object regions out of the line mask) -- only model I/O plumbing differs between them. RF-DETR is
+NMS-free, so neither backend runs NMS.
+
+TensorRT backend
+~~~~~~~~~~~~~~~~~
+
+``CMakeLists.txt`` searches for TensorRT (``NvInfer.h`` / ``libnvinfer.so`` / ``libnvonnxparser.so``) and CUDA
+(``cuda_runtime_api.h`` / ``libcudart.so``) the same way it searches for ONNX Runtime -- a manual
+``find_path``/``find_library``, since neither ships an official CMake config package on JetPack. If found,
+``TensorRtHandler`` is compiled in and ``VisionNode`` prefers it unconditionally; if not (e.g. the x86 dev
+environment), only ``RfdetrHandler`` is built and nothing else about the build changes.
+
+On first construction for a given model directory, ``TensorRtHandler`` builds a TensorRT engine from
+``<model_dir>/onnx/rfdetr.onnx`` and caches it to ``<model_dir>/onnx/rfdetr.trt`` -- this can take several
+minutes on a Jetson. Subsequent runs load the cached engine directly (a few seconds); the cache is rebuilt
+automatically if the ``.onnx`` file is newer than the cached engine. A TensorRT engine is tied to the exact
+GPU + TensorRT version it was built on -- delete the cached ``.trt`` file to force a rebuild after a
+TensorRT/driver upgrade or a GPU swap. FP16 is enabled automatically whenever the platform supports it
+(``IBuilder::platformHasFastFp16()``, true on JetPack 5.1.5 Xavier/Orin targets); TensorRT decides per-layer
+whether FP16 or FP32 is used.
+
+**LayerNormalization decomposition**: the RF-DETR export uses ONNX opset 17, where PyTorch emits
+``LayerNormalization`` as a single op. TensorRT only gained an importer for it in TensorRT 8.6, so the
+TensorRT 8.5 parser on JetPack 5 rejects the model. Before parsing, ``TensorRtHandler`` therefore rewrites
+every such node into primitive ops (``onnx_layernorm_decomposition.hpp``/``.cpp``). The rewrite works on the
+protobuf wire format directly, so it needs no ONNX or protobuf library. Like the ONNX op, the decomposition
+computes in float32 (float16 inputs are cast and the result is cast back), and in FP16 engines the
+decomposed layers are kept in FP32 because the variance computation can overflow in FP16.
+``test_onnx_layernorm_decomposition`` checks the rewrite against ONNX Runtime's native op.
+
+If the backend doesn't build or misbehaves on a robot, the error messages are logged verbosely (including
+ONNX parser errors and CUDA error strings) to aid debugging; not having TensorRT installed always leaves the
+ONNX Runtime backend as a working fallback.
+
+**Jetson header collision gotcha**: apt-installed TensorRT on JetPack dumps its headers into
+``/usr/include/<arch>-linux-gnu`` -- the *same* directory as the system's own glibc headers, which are for a
+different/older glibc than the one the pixi/conda-forge cross-compiler's libstdc++ was built against. The
+TensorRT/CUDA include directories are therefore added via ``target_compile_options(... -idirafter ...)``
+rather than ``target_include_directories()`` (which would emit ``-I``/``-isystem``, both searched *before* the
+compiler's own bundled sysroot). ``-idirafter`` is only consulted as a last resort, after the compiler's
+built-in system directories, so the toolchain's own glibc headers still win for anything that exists in both
+places, and only TensorRT/CUDA-specific headers (found nowhere else) fall through to that directory. Getting
+this wrong manifests as build failures deep inside ``<mutex>``/``<memory>`` (e.g. "'__PTHREAD_SPINS' was not
+declared in this scope") in *any* translation unit in this target, not just ones touching TensorRT -- a
+surprising failure mode if you don't know to look for it.
 
 Model directory layout
 -----------------------
@@ -53,12 +118,9 @@ topic yet.
 Code structure
 --------------
 
-* ``RfdetrHandler`` (``rfdetr_handler.hpp``/``.cpp``) wraps the ONNX Runtime session: execution-provider
-  selection (TensorRT → CUDA → WebGPU → CPU fallback chain), model I/O introspection (outputs are resolved by
-  name -- "dets", "labels", and the optional "line_mask" -- not by position, since the output set/order can
-  vary between model exports), and running inference.
-* ``rfdetr_processing.hpp``/``.cpp`` contains the pure (ONNX-free, unit-tested) pre/postprocessing math: direct
-  resize + ImageNet normalization on the way in; softmax + per-class confidence threshold + box decoding for
-  detections; sigmoid + resize + threshold for the line mask. RF-DETR is NMS-free, so there is no NMS step.
-  Also contains ``suppress_candidates``, which paints detected-object regions out of the line mask.
-* ``VisionNode`` (``vision_node.cpp``) wires the above together and publishes ROS messages.
+* ``RfdetrHandlerInterface`` (``rfdetr_handler_interface.hpp``) is the common interface both backends
+  implement; ``RfdetrConfig`` (``rfdetr_config.hpp``) is the config type shared by both.
+* ``RfdetrHandler`` / ``TensorRtHandler`` -- see "Inference backends" above.
+* ``rfdetr_processing.hpp``/``.cpp`` -- shared pure pre/postprocessing math, see above.
+* ``VisionNode`` (``vision_node.cpp``) wires the above together (choosing the backend via
+  ``#ifdef BITBOTS_VISION_HAS_TENSORRT``) and publishes ROS messages.
