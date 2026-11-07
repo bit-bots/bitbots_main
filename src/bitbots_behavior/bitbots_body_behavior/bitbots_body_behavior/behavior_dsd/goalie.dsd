@@ -23,6 +23,16 @@ $DoOnce
 #Dribble
 @ChangeAction + action:kicking, @CancelPathplanning, @LookAtFront, @DribbleForward
 
+#WalkAndDribble
+$BallClose + distance:%ball_reapproach_dist + angle:%ball_reapproach_angle
+    YES --> $BallKickArea
+        NEAR --> $DoOnce
+            NOT_DONE --> @StoreBallMovementDetectionStartPosition
+            DONE --> #Dribble
+        FAR --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:close
+    NO --> @ChangeAction + action:going_to_ball + r:false, @LookAtFieldFeatures + r:false, @AvoidBallActive + r:false, @GoToBall + target:close + blocking:false + distance:%ball_far_approach_dist
+
+
 #RolePositionWithPause
 $DoOnce
     NOT_DONE --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToRolePosition + blocking:false
@@ -45,10 +55,11 @@ $GoalScoreRecently
 
 
 #GoalieBehavior
-$BallInGoalieZone
-    YES --> #Dribble
-    NO --> @LookAtFieldFeatures @GoToBlockPosition
-
+$BallSeen
+    YES --> $BallInGoalieZone
+        YES --> #WalkAndDribble
+        NO --> @LookAtFieldFeatures, @GoToBlockPosition
+    NO --> @LookAtFieldFeatures, @GoToRolePosition
 
 -->BodyBehavior
 $IsPenalized
@@ -71,6 +82,6 @@ $IsPenalized
         FINISHED --> $CurrentScore
             AHEAD --> @Stand + duration:0.5 + r:false, @PlaySound + file:fanfare.wav, @PlayAnimationCheering + r:false, @LookForward, @Stand
             ELSE --> #Init
-        PLAYING --> #PlayingBehavior
+        PLAYING --> #GoalieBehavior
         STANDBY --> #StandAndLook
         STOPPED --> #DoNothing
