@@ -1,0 +1,6 @@
+bitbots_path_planning:
+  ros__parameters:
+    controller:
+      max_vel_x: 1.5
+      max_vel_y: 1.0
+      max_rotation_vel: 1.5
