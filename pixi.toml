@@ -17,6 +17,18 @@ deploy = {cmd = "scripts/deploy_robots.py", description = "Deploys the current e
 # Default stage `pre-commit` enables ruff auto-formatting, stage `manual` disables ruff auto-formatting, only shows diff
 format = {cmd = "sh -c 'pre-commit run --all-files --hook-stage \"${PRE_COMMIT_STAGE:-pre-commit}\"'", description = "Runs code formatting and linting."}
 
+[tasks.striker]
+cmd = "ros2 launch bitbots_bringup teamplayer.launch sim:=true fieldname:=hsl_kid_cut_own team_id:=6 bot_id:=1 role:=offense position_number:=0"
+description = "Starts the demo configured striker (team=6, id=1, center)"
+
+[tasks.supporter]
+cmd = "ros2 launch bitbots_bringup teamplayer.launch sim:=true fieldname:=hsl_kid_cut_own team_id:=6 bot_id:=2 role:=offense position_number:=1"
+description = "Starts the demo configured supporter (team=6, id=2, left)"
+
+[tasks.goalie]
+cmd = "ros2 launch bitbots_bringup teamplayer.launch sim:=true fieldname:=hsl_kid_cut_opponent team_id:=7 bot_id:=1 role:=goalie behavior_dsd_file:=goalie.dsd"
+description = "Starts the demo configured goalie (team=7, id=1)"
+
 [tasks.build]
 # Skipping ZED-camera related packages as they require a local installation of the ZED SDK.
 # Use broad warnings and treat them as errors for repository code.

@@ -1,16 +1,3 @@
-#SearchBall
-$DoOnce
-    NOT_DONE --> @ChangeAction + action:searching, @LookAtFieldFeatures, @WalkInPlace + duration:1, @TurnLastSeenBallSide + duration:6, @GoToAbsolutePositionFieldFraction + x:0.5 + blocking:false
-    DONE --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:0.5 + latch:true
-        NO --> @LookAtFieldFeatures, @GoToAbsolutePositionFieldFraction + x:0.5
-        YES --> $DoOnce
-            NOT_DONE --> @Turn + duration:15
-            DONE --> $DoOnce
-                NOT_DONE --> @GoToAbsolutePositionFieldFraction + y:1.0 + t:-90 + blocking:false
-                DONE --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:0.2 + latch:true
-                    YES --> @Stand
-                    NO --> @GoToAbsolutePositionFieldFraction + y:1.0 + t:-90
-
 #DoNothing
 @ChangeAction + action:waiting, @LookForward, @Stand
 
@@ -22,6 +9,13 @@ $DoOnce
 
 #Dribble
 @ChangeAction + action:kicking, @CancelPathplanning, @LookAtFront, @DribbleForward
+
+#SearchBall
+$DoOnce
+    NOT_DONE --> @ChangeAction + action:searching, @LookAtFieldFeatures, @WalkInPlace + duration:1, @TurnLastSeenBallSide + duration:6, @GoToRolePosition + blocking:false
+    DONE --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:0.2 + latch:true
+        YES -->  #StandAndLook
+        NO --> @LookAtFieldFeatures, @GoToRolePosition
 
 #WalkAndDribble
 $BallClose + distance:%ball_reapproach_dist + angle:%ball_reapproach_angle
