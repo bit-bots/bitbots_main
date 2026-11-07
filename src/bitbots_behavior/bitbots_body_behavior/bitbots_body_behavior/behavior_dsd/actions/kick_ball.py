@@ -9,7 +9,10 @@ class AbstractKickAction(AbstractActionElement):
     blackboard: BodyBlackboard
 
     def on_pop(self):
-        self.blackboard.world_model.forget_ball()
+        # The action is popped when the kick ended, or when the behavior decides to do
+        # something else (e.g. the ball is too far away or lost). Then the kick must stop.
+        # The ball is not forgotten here, so it can still be tracked and approached again.
+        self.blackboard.kick.stop_rl_kick()
         super().on_pop()
 
 

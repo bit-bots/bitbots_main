@@ -192,6 +192,12 @@ piplus_amp_kick_node:
       topic: ball_position_relative_filtered
       # The policy observes the ball position in this frame (anchor body of the training)
       anchor_frame: torso_link
+      # Frame in which the distance to the ball is measured (on the ground)
+      distance_frame: base_footprint
+      # The node stops a running kick when the ball is farther away than this (m).
+      # The behavior starts kicks below the same distance (rl_kick_max_ball_distance
+      # in the body behavior config), so keep both values equal.
+      max_kick_distance: 1.0
       # A ball estimate older than this time in seconds is not available
       timeout: 0.5
       # A ball estimate with a larger x or y variance is not available.
@@ -209,8 +215,9 @@ piplus_amp_kick_node:
 
     command:
       action_name: rl_kick
-      # Duration in seconds of a kick goal without its own timeout
-      kick_timeout: 4.0
+      # Duration in seconds of a kick goal without its own timeout. A value <= 0 means no time
+      # limit: the kick then runs until the ball is lost or too far away, or the goal is canceled.
+      kick_timeout: 0.0
       # Maximum kick intensity. The strength of a kick goal (target ball speed in m/s)
       # is converted to an intensity in [0, 1] and clipped to this value.
       max_kick_intensity: 1.0

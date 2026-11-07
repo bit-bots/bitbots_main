@@ -28,8 +28,10 @@ class AmpKickHandler(Handler):
         The policy observes it as the unit vector (cos, sin).
       * The goal strength is the target ball speed in m/s. The handler converts
         it to the kick intensity in [0, 1] with the inverse of the training map.
-      * The kick stays active until the timeout of the goal. The policy has no
-        "kick done" signal.
+      * The policy has no "kick done" signal. The kick stays active until the
+        node stops it (ball lost or too far away), the goal is canceled, or the
+        timeout of the goal ends. A timeout <= 0 uses command.kick_timeout, and
+        a kick_timeout <= 0 means no time limit.
       * The handler rejects a goal if the node did not receive a ball estimate
         since it started. Thus the policy never starts without any ball.
     """
@@ -48,6 +50,7 @@ class AmpKickHandler(Handler):
         # The action thread writes these values and the control loop reads them
         self._active = False
         self._abort_requested = False
+        self._abort_reason = ""
         self._kick_intensity = 0.0
         self._kick_dir_odom: Optional[float] = None
         # Last direction in the body frame. Used if a transform lookup fails.
@@ -71,8 +74,10 @@ class AmpKickHandler(Handler):
         """Returns True while a kick goal is active."""
         return self._active
 
-    def request_abort(self) -> None:
+    def request_abort(self, reason: str) -> None:
         """Stops the active kick, e.g. because the ball is lost."""
+        if self._active and not self._abort_requested:
+            self._abort_reason = reason
         self._abort_requested = True
 
     def get_kick_direction(self) -> np.ndarray:
@@ -135,6 +140,7 @@ class AmpKickHandler(Handler):
         self._kick_dir_odom = _wrap_to_pi(anchor_yaw + kick_dir_body)
         self._last_kick_dir_b = kick_dir_body
         self._abort_requested = False
+        self._abort_reason = ""
 
         while not self._node.is_kickable():
             if goal_handle.is_cancel_requested:
@@ -149,12 +155,13 @@ class AmpKickHandler(Handler):
         self._active = True
         self._node.get_logger().info(
             f"Kick started: direction={math.degrees(kick_dir_body):.1f} deg (body), "
-            f"intensity={self._kick_intensity:.2f}, timeout={timeout:.2f} s"
+            f"intensity={self._kick_intensity:.2f}, "
+            + (f"timeout={timeout:.2f} s" if timeout > 0.0 else "no time limit")
         )
 
         feedback = Kick.Feedback()
-        end = self._node.get_clock().now() + Duration(seconds=timeout)
-        while self._node.get_clock().now() < end:
+        end = self._node.get_clock().now() + Duration(seconds=timeout) if timeout > 0.0 else None
+        while end is None or self._node.get_clock().now() < end:
             if goal_handle.is_cancel_requested:
                 self._active = False
                 goal_handle.canceled()
@@ -164,10 +171,15 @@ class AmpKickHandler(Handler):
             if self._abort_requested:
                 self._active = False
                 goal_handle.abort()
-                self._node.get_logger().warning("Kick aborted, because the ball is not available.")
+                self._node.get_logger().info(
+                    f"Kick stopped, because {self._abort_reason or 'the ball is not available'}."
+                )
                 result.result = Kick.Result.ABORTED
                 return result
-            feedback.time_remaining = max(0.0, (end - self._node.get_clock().now()).nanoseconds / 1e9)
+            # Without a time limit, the remaining time is reported as -1
+            feedback.time_remaining = (
+                -1.0 if end is None else max(0.0, (end - self._node.get_clock().now()).nanoseconds / 1e9)
+            )
             goal_handle.publish_feedback(feedback)
             self._node.get_clock().sleep_for(Duration(seconds=0.05))
 

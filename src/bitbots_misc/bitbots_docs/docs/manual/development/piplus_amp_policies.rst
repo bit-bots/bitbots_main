@@ -32,10 +32,10 @@ Components
      - ``configs/piplus_amp_kick_model.yaml``
      - ``models/piplus_amp_kick.onnx``
 
-The launch file ``rl_motion.launch`` starts the nodes with the arguments ``piplus_amp_walk:=true`` and ``piplus_amp_kick:=true``.
-Both arguments are false by default.
-All walk policies publish to ``walking_motor_goals``, and all kick policies serve the ``rl_kick`` action.
-Thus, ``piplus_amp_walk`` disables ``walk_node`` and ``mjlab_walk_node``, and ``piplus_amp_kick`` disables ``kick_ball_node``.
+The launch file ``rl_motion.launch`` starts these nodes as the default walk and kick (arguments ``walk`` and ``kick``),
+in place of the previous ``walk_node`` and ``kick_ball_node``.
+All walk policies publish to ``walking_motor_goals``, and all kick policies serve the ``rl_kick`` action,
+so only one walk policy should be enabled at a time (``walk`` or ``mjlab_walk``).
 
 The walk node uses the same interfaces as ``mjlab_walk_node``: ``cmd_vel``, ``imu/data``, ``joint_states`` and ``robot_state``.
 The kick node uses the same ``rl_kick`` action (``bitbots_msgs/Kick``) as ``kick_ball_node``.
@@ -198,6 +198,8 @@ This is the same behavior as ``walk_node``. ``mjlab_walk_node`` stops at a zero 
 The HCM controls the hand-over to other modules:
 when the walk goals stop to move by more than a small threshold for ``standing_transition_delay``,
 the HCM changes the robot state from WALKING to CONTROLLABLE.
+Recent kick goals take precedence over walk goals, so the first goals of a kick switch the state to KICKING
+even while the robot walks.
 The HCM forwards walk goals only in the states CONTROLLABLE and WALKING.
 In other states (for example KICKING or an animation), the node stops the policy.
 When the node starts the policy again, it resets the last action and the gait clock.
@@ -272,8 +274,18 @@ If the node did not receive a ball estimate since it started, it rejects the kic
 Thus the policy does not run and the node sends no joint goals for this goal.
 
 The policy runs while the kick goal is active and the robot state allows a kick.
-The policy has no "kick done" signal. The goal ends at its timeout.
-The node stops the kick if the ball estimate is too old or its covariance is too large.
+Unlike the other kick policies, the kick may also start while the robot walks, so the robot does not have to
+stand still before kicking. Its first joint goals switch the HCM to KICKING, which pauses the walk.
+The policy has no "kick done" signal. The behavior starts a kick as soon as the ball is closer than
+``rl_kick_max_ball_distance`` (body behavior config), without waiting until the robot is aligned to the ball,
+and the kick runs as long as the ball stays that close:
+
+* The node stops the kick if the ball is farther away than ``ball.max_kick_distance`` (keep it equal to the
+  behavior value), or if the ball estimate is too old or its covariance is too large.
+* The behavior cancels the kick when it decides to do something else, e.g. because the ball is too far away
+  or lost. It does not forget the ball after a kick, so the ball can be tracked and approached again.
+* There is no time limit by default: a goal timeout <= 0 uses ``command.kick_timeout``, and a
+  ``command.kick_timeout`` <= 0 means no time limit.
 
 Ball position bound
 -------------------
@@ -316,10 +328,10 @@ Known differences and limits
   A policy observes the joints relative to its own default pose.
   If the robot is far from this pose when the policy starts, the observation is outside the training data.
 * The walk training removed the passive joint damping of the robot model. The real robot has this damping.
+  The MuJoCo simulation (``bitbots_mujoco_sim``) also runs without passive joint damping, like the training.
 * The training adds observation noise, delays and randomization of the IMU mounting. The nodes do not add noise.
 * The kick training delays the ball position and the kick direction by up to five steps and adds noise to both.
   The real ball filter has its own delay and noise.
 * The training observes the ball center. The node uses the position from the ball filter without a height correction.
-* The HCM changes from WALKING to CONTROLLABLE only when the walk goals stop to move.
-  If the standing policy moves its joints by more than the HCM threshold at each step,
-  the robot state stays WALKING, and a kick can not start. This was not tested.
+* The kick can start from a walking robot. The kick training may not cover starting from a walking gait,
+  so the first moments of the kick can be outside the training data. This was not tested.

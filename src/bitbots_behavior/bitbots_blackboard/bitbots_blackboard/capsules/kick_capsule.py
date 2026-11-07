@@ -35,6 +35,10 @@ class KickCapsule(AbstractBlackboardCapsule):
 
         self._rl_kick_client = ActionClient(self._node, Kick, "rl_kick")
         self._is_currently_kicking = False
+        # Handle of the running RL kick goal, None until the action server accepted it
+        self._rl_kick_goal_handle = None
+        # Set if the kick should be canceled before the action server answered the goal
+        self._rl_kick_cancel_requested = False
 
     def walk_kick(self, target: WalkKickTargets) -> None:
         """
@@ -56,14 +60,32 @@ class KickCapsule(AbstractBlackboardCapsule):
         goal.y = math.sin(direction_rad_robot)
         goal.strength = strength
         goal.timeout = self._timeout
-        self._rl_kick_client.send_goal_async(goal).add_done_callback(
-            lambda future: future.result().get_result_async().add_done_callback(lambda _: self.__done_cb())
-        )
+        self._rl_kick_goal_handle = None
+        self._rl_kick_cancel_requested = False
+        self._rl_kick_client.send_goal_async(goal).add_done_callback(self.__goal_response_cb)
         self.is_currently_kicking = True
         return True
 
+    def __goal_response_cb(self, future):
+        goal_handle = future.result()
+        if not goal_handle.accepted:
+            self.is_currently_kicking = False
+            return
+        self._rl_kick_goal_handle = goal_handle
+        if self._rl_kick_cancel_requested:
+            goal_handle.cancel_goal_async()
+        goal_handle.get_result_async().add_done_callback(lambda _: self.__done_cb())
+
     def __done_cb(self):
         self.is_currently_kicking = False
+        self._rl_kick_goal_handle = None
 
     def stop_rl_kick(self):
-        pass
+        """Cancels the running RL kick, if there is one."""
+        if not self.is_currently_kicking:
+            return
+        if self._rl_kick_goal_handle is None:
+            # The action server did not answer the goal yet. Cancel it as soon as it does.
+            self._rl_kick_cancel_requested = True
+        else:
+            self._rl_kick_goal_handle.cancel_goal_async()

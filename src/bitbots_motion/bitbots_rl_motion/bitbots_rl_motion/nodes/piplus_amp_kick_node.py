@@ -36,6 +36,8 @@ class PiplusAmpKickNode(RLNode):
 
         self.declare_parameter("ball.topic", "ball_position_relative_filtered")
         self.declare_parameter("ball.anchor_frame", "torso_link")
+        self.declare_parameter("ball.distance_frame", "base_footprint")
+        self.declare_parameter("ball.max_kick_distance", 1.0)
         self.declare_parameter("ball.timeout", 0.5)
         self.declare_parameter("ball.max_covariance", 2.0)
         self.declare_parameter("ball.position_clip", 10.0)
@@ -44,7 +46,7 @@ class PiplusAmpKickNode(RLNode):
         self.declare_parameter("ball.pos_tanh_scale", None, ParameterDescriptor(dynamic_typing=True))
 
         self.declare_parameter("command.action_name", "rl_kick")
-        self.declare_parameter("command.kick_timeout", 4.0)
+        self.declare_parameter("command.kick_timeout", 0.0)
         self.declare_parameter("command.max_kick_intensity", 1.0)
         self.declare_parameter("command.odom_frame", "odom")
         self.declare_parameter("command.base_frame", "base_footprint")
@@ -79,23 +81,32 @@ class PiplusAmpKickNode(RLNode):
 
         self._observation_history = HistoryBuffer(self.get_parameter("obs.history_length").value)
         self._last_ball_position = None
+        self._max_kick_distance = float(self.get_parameter("ball.max_kick_distance").value)
 
         # loading model
         model = self.get_parameter("model").value
         self.load_model(model)
 
     def is_kickable(self) -> bool:
-        """Returns True if the robot state allows a kick. The kick action reads this value."""
-        return self._robot_state_handler.is_kickable()
+        """Returns True if the robot state allows a kick. The kick action reads this value.
+
+        Unlike the other kick policies, the kick may also start while the robot walks,
+        so the robot does not have to stand still first. Its first joint goals make the
+        HCM switch to KICKING, which pauses the walk.
+        """
+        return self._robot_state_handler.is_kickable() or self._robot_state_handler.is_walkable()
 
     def _get_ball_position(self) -> np.ndarray:
         position = self._ball_handler.get_position() if self._ball_handler.is_available() else None
         if position is None:
             # A kick without a known ball sends the ball in a random direction
-            self._kick_handler.request_abort()
+            self._kick_handler.request_abort("the ball is not available")
             if self._last_ball_position is None:
                 return np.zeros(3, dtype=np.float32)
             return self._last_ball_position
+        distance = self._ball_handler.get_distance()
+        if distance is not None and distance > self._max_kick_distance:
+            self._kick_handler.request_abort(f"the ball is {distance:.2f} m away")
         self._last_ball_position = position
         return position
 
@@ -133,7 +144,7 @@ class PiplusAmpKickNode(RLNode):
 
     # states in which the policy executes
     def allowed_states(self):
-        return self._robot_state_handler.is_kickable() and self._kick_handler.is_active()
+        return self.is_kickable() and self._kick_handler.is_active()
 
     def initialize_observation(self):
         # Fill the history again from new sensor data and start with a zero last action

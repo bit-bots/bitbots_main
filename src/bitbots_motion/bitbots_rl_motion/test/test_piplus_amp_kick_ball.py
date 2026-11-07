@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Checks that the Pi Plus AMP kick does not start if the node never received a ball estimate.
+"""Checks when the Pi Plus AMP kick starts and stops depending on the ball.
 
 The node runs in this process with fake sensor data. The tests call the
 callbacks directly, so no other ROS node is necessary.
@@ -73,9 +73,9 @@ def run_control_steps(node: PiplusAmpKickNode, steps: int = 3) -> None:
         node._timer_callback()
 
 
-def start_kick(node: PiplusAmpKickNode) -> tuple[threading.Thread, MagicMock, dict]:
+def start_kick(node: PiplusAmpKickNode, timeout: float = 10.0) -> tuple[threading.Thread, MagicMock, dict]:
     goal_handle = MagicMock()
-    goal_handle.request = Kick.Goal(x=1.0, y=0.0, strength=4.0, timeout=10.0)
+    goal_handle.request = Kick.Goal(x=1.0, y=0.0, strength=4.0, timeout=timeout)
     goal_handle.is_cancel_requested = False
     output: dict = {}
 
@@ -118,4 +118,69 @@ def test_kick_starts_with_a_valid_ball(node):
     goal_handle.is_cancel_requested = True
     thread.join(timeout=2.0)
     assert not thread.is_alive()
+    assert output["result"].result == Kick.Result.ABORTED
+
+
+def wait_until_active(node: PiplusAmpKickNode) -> None:
+    deadline = time.monotonic() + 2.0
+    while not node._kick_handler.is_active() and time.monotonic() < deadline:
+        time.sleep(0.001)
+    assert node._kick_handler.is_active()
+
+
+def set_ball_distance(node: PiplusAmpKickNode, distance: float) -> None:
+    # The tests have no transform into the distance frame, so the distance is given directly
+    node._ball_handler.get_distance = lambda: distance  # type: ignore[method-assign]
+
+
+def test_kick_without_time_limit_runs_while_the_ball_is_close(node):
+    set_ball(node)
+    set_ball_distance(node, node.get_parameter("ball.max_kick_distance").value - 0.1)
+    # A goal without its own timeout uses command.kick_timeout, which means no time limit
+    assert node.get_parameter("command.kick_timeout").value <= 0.0
+    thread, goal_handle, output = start_kick(node, timeout=-1.0)
+    wait_until_active(node)
+
+    for _ in range(5):
+        set_ball(node)
+        run_control_steps(node, 1)
+        time.sleep(0.05)
+    assert node._kick_handler.is_active()
+    assert thread.is_alive()
+
+    goal_handle.is_cancel_requested = True
+    thread.join(timeout=2.0)
+    assert not thread.is_alive()
+    assert output["result"].result == Kick.Result.ABORTED
+
+
+def test_kick_stops_when_the_ball_is_too_far_away(node):
+    set_ball(node)
+    set_ball_distance(node, 0.5)
+    thread, goal_handle, output = start_kick(node, timeout=-1.0)
+    wait_until_active(node)
+    run_control_steps(node, 2)
+    assert node._kick_handler.is_active()
+
+    set_ball_distance(node, node.get_parameter("ball.max_kick_distance").value + 0.1)
+    run_control_steps(node, 1)
+    thread.join(timeout=2.0)
+    assert not thread.is_alive()
+    assert not node._kick_handler.is_active()
+    goal_handle.abort.assert_called_once()
+    assert output["result"].result == Kick.Result.ABORTED
+
+
+def test_kick_stops_when_the_ball_is_lost(node):
+    set_ball(node)
+    set_ball_distance(node, 0.5)
+    thread, goal_handle, output = start_kick(node, timeout=-1.0)
+    wait_until_active(node)
+
+    # The ball estimate becomes too old
+    set_ball(node, age_s=node.get_parameter("ball.timeout").value + 1.0)
+    run_control_steps(node, 1)
+    thread.join(timeout=2.0)
+    assert not thread.is_alive()
+    goal_handle.abort.assert_called_once()
     assert output["result"].result == Kick.Result.ABORTED

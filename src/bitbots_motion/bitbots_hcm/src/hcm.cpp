@@ -89,8 +89,11 @@ class HCM_CPP : public rclcpp::Node {
   }
 
   void head_goal_callback(const bitbots_msgs::msg::JointCommand msg) {
+    // Also forwarded while kicking, so the head can track the ball during a kick.
+    // The kick policies do not command the head joints, so the goals do not conflict.
     if (current_state_ == bitbots_msgs::msg::RobotControlState::CONTROLLABLE ||
-        current_state_ == bitbots_msgs::msg::RobotControlState::WALKING) {
+        current_state_ == bitbots_msgs::msg::RobotControlState::WALKING ||
+        current_state_ == bitbots_msgs::msg::RobotControlState::KICKING) {
       pub_controller_command_->publish(msg);
     }
   }

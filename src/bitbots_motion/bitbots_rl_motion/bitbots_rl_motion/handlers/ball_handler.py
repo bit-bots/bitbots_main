@@ -27,6 +27,7 @@ class BallHandler(Handler):
         self._tf_buffer = tf_buffer
 
         self._anchor_frame = str(node.get_parameter("ball.anchor_frame").value)
+        self._distance_frame = str(node.get_parameter("ball.distance_frame").value)
         self._timeout = float(node.get_parameter("ball.timeout").value)
         self._max_covariance = float(node.get_parameter("ball.max_covariance").value)
         self._position_clip = float(node.get_parameter("ball.position_clip").value)
@@ -68,8 +69,8 @@ class BallHandler(Handler):
         covariance = self._ball.pose.covariance
         return bool(covariance[0] < self._max_covariance and covariance[7] < self._max_covariance)
 
-    def get_position(self) -> Optional[np.ndarray]:
-        """Returns the ball position in the anchor frame, or None if the transform fails."""
+    def _position_in(self, frame: str) -> Optional[np.ndarray]:
+        """Returns the unbounded ball position in the given frame, or None if the transform fails."""
         if self._ball is None:
             return None
         point = PointStamped()
@@ -78,11 +79,24 @@ class BallHandler(Handler):
         point.header.stamp = Time().to_msg()
         point.point = self._ball.pose.pose.position
         try:
-            transformed = self._tf_buffer.transform(point, self._anchor_frame, timeout=Duration(seconds=0.1))
+            transformed = self._tf_buffer.transform(point, frame, timeout=Duration(seconds=0.1))
         except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException) as e:
             self._node.get_logger().warning(
-                f"Could not transform the ball into '{self._anchor_frame}': {e}", throttle_duration_sec=1.0
+                f"Could not transform the ball into '{frame}': {e}", throttle_duration_sec=1.0
             )
             return None
-        position = np.array([transformed.point.x, transformed.point.y, transformed.point.z], dtype=np.float32)
+        return np.array([transformed.point.x, transformed.point.y, transformed.point.z], dtype=np.float32)
+
+    def get_position(self) -> Optional[np.ndarray]:
+        """Returns the ball position in the anchor frame, or None if the transform fails."""
+        position = self._position_in(self._anchor_frame)
+        if position is None:
+            return None
         return bounded_ball_position(position, self._position_clip, self._tanh_scale)
+
+    def get_distance(self) -> Optional[float]:
+        """Returns the distance on the ground from the robot to the ball, or None if the transform fails."""
+        position = self._position_in(self._distance_frame)
+        if position is None:
+            return None
+        return float(np.hypot(position[0], position[1]))
