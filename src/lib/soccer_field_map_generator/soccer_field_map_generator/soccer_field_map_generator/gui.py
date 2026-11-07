@@ -252,6 +252,18 @@ class MapGeneratorGUI:
                     'label': 'Distance Decay',
                     'tooltip': 'Exponential decay applied to the distance map',
                 },
+                'grayscale_min': {
+                    'type': int,
+                    'default': 0,
+                    'label': 'Grayscale Min',
+                    'tooltip': 'Output grayscale minimum intensity',
+                },
+                'grayscale_max': {
+                    'type': int,
+                    'default': 255,
+                    'label': 'Grayscale Max',
+                    'tooltip': 'Output grayscale maximum intensity',
+                },
                 'invert': {
                     'type': bool,
                     'default': True,
@@ -398,7 +410,7 @@ class MapGeneratorGUI:
         try:
             generated_map = generate_map_image(self.parameter_input.get_parameters())
             self.display_map(generated_map)
-        except tk.TclError as e:
+        except (tk.TclError, ValueError) as e:
             print(f"Invalid input for map generation. '{e}'")
 
     def display_map(self, image):

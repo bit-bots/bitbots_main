@@ -73,3 +73,9 @@ or this command if you installed the tool using pip:
 ```shell
 python -m soccer_field_map_generator.cli [output_file] [config_file] [options]
 ```
+
+The `grayscale_min` and `grayscale_max` generator parameters control the output
+intensity bounds for binary and distance maps, including inverted maps. Both
+must be integers within the unsigned byte range, with the minimum below the
+maximum. Omitted bounds retain the full unsigned byte range. The GUI exposes
+these parameters and saves them with the generator configuration.

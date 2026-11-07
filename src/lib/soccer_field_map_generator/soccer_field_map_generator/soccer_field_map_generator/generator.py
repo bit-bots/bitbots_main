@@ -75,6 +75,15 @@ def drawDistance(image, decay_factor):
 
 
 def generate_map_image(parameters):
+    grayscale_min = parameters.get('grayscale_min', 0)
+    grayscale_max = parameters.get('grayscale_max', 255)
+    if not (
+        isinstance(grayscale_min, int)
+        and isinstance(grayscale_max, int)
+        and 0 <= grayscale_min < grayscale_max <= 255
+    ):
+        raise ValueError('Grayscale bounds must be integers within uint8 range, with min < max')
+
     target = MapTypes(parameters['map_type'])
     mark_type = MarkTypes(parameters['mark_type'])
     field_feature_style = FieldFeatureStyles(parameters['field_feature_style'])
@@ -664,7 +673,11 @@ def generate_map_image(parameters):
     if invert:
         img = 255 - img
 
-    return img
+    # Scale after inversion so both polarities use the requested bounds.
+    return np.rint(
+        img.astype(np.float64) * (grayscale_max - grayscale_min) / 255
+        + grayscale_min
+    ).astype(np.uint8)
 
 
 def generate_metadata(parameters: dict, image_name: str) -> dict:
