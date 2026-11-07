@@ -49,6 +49,9 @@ body_behavior:
     # Whether the formation assignment includes a supporter role.
     # If false, the supporter's slot is filled by an extra defender instead.
     formation_include_supporter: false
+    # The list of roles to force. The default if there is no supporter
+    # is about ["striker", "goalie", "defender_0", ...]
+    formation_force_roles: ["striker", "supporter"]
 
     # Hysteresis for being considered at role pose
     support_enter_position: 0.1
