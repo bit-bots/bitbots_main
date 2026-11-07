@@ -1,3 +1,5 @@
+#include <onnx-ml.pb.h>  // generated from proto/onnx-ml.proto
+
 #include <bitbots_vision/onnx_float16_conversion.hpp>
 #include <cstdint>
 #include <cstring>
@@ -5,8 +7,6 @@
 #include <string>
 #include <string_view>
 #include <vector>
-
-#include "onnx-ml.pb.h"  // generated from proto/onnx-ml.proto
 
 namespace bitbots_vision::onnx_rewrite {
 
