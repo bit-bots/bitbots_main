@@ -1,9 +1,11 @@
+import re
 import time
 from collections.abc import Callable
 from pathlib import Path
 
 import mujoco
 import numpy as np
+import yaml
 from ament_index_python.packages import get_package_share_directory
 from mujoco import viewer
 from rclpy.node import Node
@@ -18,6 +20,7 @@ from transforms3d.quaternions import qmult
 from bitbots_msgs.msg import JointCommand
 from bitbots_msgs.srv import MoveBall, SimulatorPush
 from bitbots_mujoco_sim.robot import Robot
+from bitbots_mujoco_sim.world import generate_world_xml
 
 BALL_JOINT_NAME = "ball-root"
 
@@ -30,6 +33,7 @@ class Simulation(Node):
         self.declare_parameter("world_file", "")
         self.declare_parameter("use_namespace", True)
         self.declare_parameter("web", False)
+        self.declare_parameter("fieldname", "hsl_kid")
 
         # These default value are oriented on some real world data in standstill.
         # They are a bit worse than what was observed there.
@@ -71,6 +75,7 @@ class Simulation(Node):
         self._rng = np.random.default_rng()
 
         self.model: mujoco.MjModel = mujoco.MjModel.from_xml_path(world_file)
+        self._apply_jersey_overrides()
         self.data: mujoco.MjData = mujoco.MjData(self.model)
         self.robots: list[RobotSimulation] = [
             RobotSimulation(
@@ -123,6 +128,17 @@ class Simulation(Node):
             {"frequency": 32, "handler": lambda: self.publish(lambda robot: robot.publish_camera_event())},
         ]
 
+    def _apply_jersey_overrides(self) -> None:
+        """Replace default robot materials with dynamically generated jersey overrides if present."""
+        for geom_id in range(self.model.ngeom):
+            cur_mat_id = self.model.geom_matid[geom_id]
+            if cur_mat_id >= 0:
+                cur_mat_name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_MATERIAL, cur_mat_id)
+                override_mat_name = f"{cur_mat_name}_override"
+                override_mat_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_MATERIAL, override_mat_name)
+                if override_mat_id != -1:
+                    self.model.geom_matid[geom_id] = override_mat_id
+
     def _apply_home_keyframe(self) -> None:
         """Apply the 'home' keyframe joint values to all robots, leaving freejoints untouched.
 
@@ -149,7 +165,7 @@ class Simulation(Node):
         for robot_sim in self.robots:
             # Set z spawn height from keyframe while preserving x/y placement and orientation
             if home_z is not None:
-                freejoint_name = f"robot_floating_base_joint_{robot_sim.robot.index}"
+                freejoint_name = f"robot_{robot_sim.robot.index}_floating_base_joint"
                 freejoint_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_JOINT, freejoint_name)
                 if freejoint_id >= 0:
                     self.data.qpos[self.model.joint(freejoint_id).qposadr[0] + 2] = home_z
@@ -165,25 +181,22 @@ class Simulation(Node):
         mujoco.mj_forward(self.model, self.data)
 
     def _generate_default_world(self) -> str:
-        template_path = Path(self.package_path) / "xml" / "kid_field.xml"
-        output_path = Path(self.package_path) / "xml" / "generated_world.xml"
-        with open(template_path) as f:
-            template = f.read()
-        world_xml = (
-            template.replace("{{NUM_ROBOTS}}", "1").replace("{{OFFSET}}", "6.0").replace("{{ROBOT_TYPE}}", "piplus")
+        field_name = self.get_parameter("fieldname").get_parameter_value().string_value
+        blackboard_share = get_package_share_directory("bitbots_parameter_blackboard")
+        field_config_path = Path(blackboard_share) / "config" / "fields" / field_name / "config.yaml"
+        with open(field_config_path) as field_config_file:
+            field_config = yaml.safe_load(field_config_file)
+            field_size = field_config["parameter_blackboard"]["ros__parameters"]["field"]["size"]
+
+        return str(
+            generate_world_xml("1", self.package_path, "piplus", field_size["x"], field_size["y"])
         )
-        with open(output_path, "w") as f:
-            f.write(world_xml)
-        return str(output_path)
 
     def _find_robot_indices(self) -> list[int]:
-        """Find all robot instances by looking for bodies named 'robot_base_link_X'."""
+        """Find all robot instances by looking for bodies named 'robot_<index>_base_link'."""
         body_names = [self.model.body(i).name for i in range(self.model.nbody)]
-        return sorted(
-            int(name.split("_")[-1])
-            for name in body_names
-            if name.startswith("robot_base_link_") and name.split("_")[-1].isdigit()
-        )
+        pattern = re.compile(r"^robot_(\d+)_base_link$")
+        return sorted(int(match.group(1)) for name in body_names if (match := pattern.match(name)))
 
     def _key_callback(self, key: int) -> None:
         # Exceptions in this callback completly deadlock the process.
@@ -364,7 +377,7 @@ class Simulation(Node):
         itself) and drag that whole articulated system as a rigid unit.
         """
         robot_keys = {
-            self._free_joint_key_for_body(self.model.body(f"robot_base_link_{robot_sim.robot.index}").id)
+            self._free_joint_key_for_body(self.model.body(f"robot_{robot_sim.robot.index}_base_link").id)
             for robot_sim in self.robots
         }
         robot_keys.discard(None)
