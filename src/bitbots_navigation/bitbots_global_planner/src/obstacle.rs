@@ -198,7 +198,7 @@ mod tests {
     fn path_avoids_polygon_obstacle() {
         // A wall between the start and the goal
         let wall = PolygonObstacle::new(vec![(2.0, -2.0), (2.2, -2.0), (2.2, 2.0), (2.0, 2.0)]);
-        let map = ObstacleMap::new(config(), vec![AnyObstacle::Polygon(wall)]);
+        let map = ObstacleMap::new(config(), vec![AnyObstacle::Polygon(wall)], None);
         let path = map.shortest_path((0.0, 0.0), (4.0, 0.0));
         // The path needs to route around one of the wall ends instead of going straight
         assert!(path.len() > 2);

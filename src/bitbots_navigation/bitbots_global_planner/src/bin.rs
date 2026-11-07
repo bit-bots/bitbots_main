@@ -115,7 +115,7 @@ mod gui {
                 }
 
                 if let (Some(start), Some(goal)) = (self.start, self.goal) {
-                    let omap = ObstacleMap::new(self.config, self.obstacles.clone());
+                    let omap = ObstacleMap::new(self.config, self.obstacles.clone(), None);
                     let time1 = std::time::Instant::now();
                     self.path = omap.shortest_path(start, goal);
                     let time2 = std::time::Instant::now();

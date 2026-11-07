@@ -454,6 +454,18 @@ Visualization Manager:
         Reliability Policy: Reliable
         Value: /visibility_graph
       Value: true
+    - Class: rviz_default_plugins/Marker
+      Enabled: true
+      Name: NavigationBounds
+      Namespaces:
+        navigation_bounds: true
+      Topic:
+        Depth: 1
+        Durability Policy: Transient Local
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /navigation_bounds
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
