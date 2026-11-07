@@ -297,6 +297,19 @@ TEST(DecomposeLayerNormalization, DecomposedNodesCarryTag) {
             std::string::npos);
 }
 
+TEST(IsPrecisionSensitiveLayer, OnlyVariancePathOfDecomposition) {
+  using bitbots_vision::onnx_rewrite::is_precision_sensitive_layer;
+  const std::string base =
+      std::string("enc/norm1/LayerNormalization") + bitbots_vision::onnx_rewrite::kDecomposedNodeTag + "3/";
+  for (const char* name : {"squared", "variance", "variance_eps", "std"}) {
+    EXPECT_TRUE(is_precision_sensitive_layer(base + name)) << name;
+  }
+  for (const char* name : {"mean", "centered", "normalized", "scaled", "biased", "x_float", "y_cast"}) {
+    EXPECT_FALSE(is_precision_sensitive_layer(base + name)) << name;
+  }
+  EXPECT_FALSE(is_precision_sensitive_layer("enc/attention/variance"));
+}
+
 TEST(DecomposeLayerNormalization, PositiveAxisIsLeftUnchanged) {
   const std::string original = build_model({2, 1e-5f, true, false});
   const auto result = decompose_layer_normalization(original);

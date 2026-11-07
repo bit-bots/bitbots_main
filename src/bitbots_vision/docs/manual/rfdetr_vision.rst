@@ -52,11 +52,15 @@ TensorRT backend
 environment), only ``RfdetrHandler`` is built and nothing else about the build changes.
 
 On first construction for a given model directory, ``TensorRtHandler`` builds a TensorRT engine from
-``<model_dir>/onnx/rfdetr.onnx`` and caches it to ``<model_dir>/onnx/rfdetr.trt`` -- this can take several
-minutes on a Jetson. Subsequent runs load the cached engine directly (a few seconds); the cache is rebuilt
-automatically if the ``.onnx`` file is newer than the cached engine. A TensorRT engine is tied to the exact
-GPU + TensorRT version it was built on -- delete the cached ``.trt`` file to force a rebuild after a
-TensorRT/driver upgrade or a GPU swap. FP16 is enabled automatically whenever the platform supports it
+``<model_dir>/onnx/rfdetr.onnx`` and caches it next to it as
+``rfdetr_trt<tensorrt version>_r<build revision>.engine`` -- this can take several minutes on a Jetson.
+Subsequent runs load the cached engine directly (a few seconds); the cache is rebuilt automatically if the
+``.onnx`` file is newer than the cached engine. Because the file name encodes the TensorRT version and the
+engine build revision (``kEngineBuildRevision`` in ``tensorrt_handler.cpp``, to be incremented whenever the
+build settings change), stale engines are never loaded. A TensorRT engine is also tied to the GPU it was built
+on -- delete the cached engine to force a rebuild after a driver upgrade or a GPU swap. After the first frame,
+inference is captured into a CUDA graph and replayed, which avoids the launch overhead of enqueueing every
+layer each frame. FP16 is enabled automatically whenever the platform supports it
 (``IBuilder::platformHasFastFp16()``, true on JetPack 5.1.5 Xavier/Orin targets); TensorRT decides per-layer
 whether FP16 or FP32 is used.
 
@@ -65,8 +69,12 @@ whether FP16 or FP32 is used.
 TensorRT 8.5 parser on JetPack 5 rejects the model. Before parsing, ``TensorRtHandler`` therefore rewrites
 every such node into primitive ops (``onnx_layernorm_decomposition.hpp``/``.cpp``). The rewrite works on the
 protobuf wire format directly, so it needs no ONNX or protobuf library. Like the ONNX op, the decomposition
-computes in float32 (float16 inputs are cast and the result is cast back), and in FP16 engines the
-decomposed layers are kept in FP32 because the variance computation can overflow in FP16.
+computes in float32 (float16 inputs are cast and the result is cast back). In FP16 engines the variance
+computation of each decomposed LayerNormalization is kept in FP32
+(``onnx_rewrite::is_precision_sensitive_layer``): in FP16 it breaks the detections, while pinning more of the
+decomposition only costs speed without measurably improving accuracy. The LayerNormalizations of the
+line-segmentation head are the exception and stay entirely in FP16: pinning them costs about a millisecond
+per frame without changing the line mask or the detections.
 ``test_onnx_layernorm_decomposition`` checks the rewrite against ONNX Runtime's native op.
 
 If the backend doesn't build or misbehaves on a robot, the error messages are logged verbosely (including

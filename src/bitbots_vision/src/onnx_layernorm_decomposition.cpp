@@ -451,8 +451,8 @@ bool can_decompose(const Node& node, std::optional<uint64_t> type) {
 /// in float32; inputs of other types are cast to float32 and the result is
 /// cast back.
 void emit_decomposition(std::string& out, const Node& node, uint64_t type, int index, int64_t opset) {
-  const std::string base = (node.name.empty() ? node.outputs[0] : node.name) + kDecomposedNodeTag +
-                           std::to_string(index) + "/";
+  const std::string base =
+      (node.name.empty() ? node.outputs[0] : node.name) + kDecomposedNodeTag + std::to_string(index) + "/";
   const auto name = [&base](const char* suffix) { return base + suffix; };
 
   const bool needs_cast = type != tensor_type::kFloat;
@@ -479,8 +479,8 @@ void emit_decomposition(std::string& out, const Node& node, uint64_t type, int i
     std::string raw(axes.size() * sizeof(int64_t), '\0');
     std::memcpy(raw.data(), axes.data(), raw.size());
     emit_node(out, "Constant", name("axes"), {}, {name("axes")},
-              {encode_tensor_attribute("value", encode_tensor(tensor_type::kInt64,
-                                                              {static_cast<int64_t>(axes.size())}, raw))});
+              {encode_tensor_attribute("value",
+                                       encode_tensor(tensor_type::kInt64, {static_cast<int64_t>(axes.size())}, raw))});
     reduce_attributes.clear();
     reduce_extra_inputs.push_back(name("axes"));
   }
@@ -503,8 +503,7 @@ void emit_decomposition(std::string& out, const Node& node, uint64_t type, int i
   emit_node(out, "ReduceMean", name("mean"), reduce_inputs(x), {name("mean")}, reduce_attributes);
   emit_node(out, "Sub", name("centered"), {x, name("mean")}, {name("centered")});
   emit_node(out, "Mul", name("squared"), {name("centered"), name("centered")}, {name("squared")});
-  emit_node(out, "ReduceMean", name("variance"), reduce_inputs(name("squared")), {name("variance")},
-            reduce_attributes);
+  emit_node(out, "ReduceMean", name("variance"), reduce_inputs(name("squared")), {name("variance")}, reduce_attributes);
   emit_node(out, "Constant", name("epsilon"), {}, {name("epsilon")},
             {encode_tensor_attribute("value", encode_tensor(tensor_type::kFloat, {}, eps_raw))});
   emit_node(out, "Add", name("variance_eps"), {name("variance"), name("epsilon")}, {name("variance_eps")});
@@ -550,6 +549,19 @@ int64_t default_domain_opset(std::string_view model) {
 }
 
 }  // namespace
+
+bool is_precision_sensitive_layer(const std::string& layer_name) {
+  if (layer_name.find(kDecomposedNodeTag) == std::string::npos) {
+    return false;
+  }
+  for (const char* suffix : {"/squared", "/variance", "/variance_eps", "/std"}) {
+    const size_t len = std::strlen(suffix);
+    if (layer_name.size() >= len && layer_name.compare(layer_name.size() - len, len, suffix) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
 
 LayerNormDecompositionResult decompose_layer_normalization(const std::string& serialized_model) {
   LayerNormDecompositionResult result;

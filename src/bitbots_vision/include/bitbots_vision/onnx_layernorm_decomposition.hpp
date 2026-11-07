@@ -31,6 +31,13 @@ namespace bitbots_vision::onnx_rewrite {
 /// to keep them in FP32 when building a reduced-precision TensorRT engine).
 inline constexpr const char* kDecomposedNodeTag = "/ln_decomposed/";
 
+/// Whether the named layer is one of the decomposition's variance
+/// computations (squaring, mean of the squares, adding epsilon, square root).
+/// These overflow or lose too much precision in FP16 and must stay in FP32
+/// when building a reduced-precision engine; the remaining decomposed layers
+/// are safe in FP16.
+bool is_precision_sensitive_layer(const std::string& layer_name);
+
 struct LayerNormDecompositionResult {
   /// Serialized `onnx.ModelProto` with all supported LayerNormalization nodes
   /// decomposed. Identical to the input if nothing was replaced.

@@ -26,12 +26,18 @@ namespace bitbots_vision {
 ///
 /// On first construction for a given model directory, a TensorRT engine is
 /// built from `<model_dir>/onnx/rfdetr.onnx` and cached to
-/// `<model_dir>/onnx/rfdetr.trt` (this can take several minutes on a
-/// Jetson); subsequent runs load the cached engine directly (a few
-/// seconds). The cache is rebuilt automatically if the .onnx file is newer
-/// than the cached engine. A TensorRT engine is tied to the exact GPU +
-/// TensorRT version it was built on -- delete the cached .trt file to force
-/// a rebuild after a TensorRT/driver upgrade or a GPU swap.
+/// `<model_dir>/onnx/rfdetr_trt<version>_r<revision>.engine` (this can take
+/// several minutes on a Jetson); subsequent runs load the cached engine
+/// directly (a few seconds). The cache is rebuilt automatically if the .onnx
+/// file is newer than the cached engine, and the file name encodes the
+/// TensorRT version and the engine build revision so stale engines are never
+/// loaded. A TensorRT engine is also tied to the GPU it was built on --
+/// delete the cached engine to force a rebuild after a driver upgrade or a
+/// GPU swap.
+///
+/// Inference (input upload, network, output download) is captured into a
+/// CUDA graph after the first frame and replayed afterwards, which avoids
+/// the launch overhead of enqueueing every layer each frame.
 ///
 /// FP16 is enabled automatically when the platform supports it
 /// (`IBuilder::platformHasFastFp16()`, true on all JetPack 5.1.5
@@ -111,6 +117,25 @@ class TensorRtHandler : public RfdetrHandlerInterface {
   void* d_dets_{nullptr};
   void* d_labels_{nullptr};
   void* d_line_mask_{nullptr};
+  std::vector<void*> bindings_;
+
+  // ----- Pinned host buffers (allocated once, so the copies are truly
+  // asynchronous and can be part of the CUDA graph) -----
+  float* h_input_{nullptr};
+  float* h_dets_{nullptr};
+  float* h_labels_{nullptr};
+  float* h_line_mask_{nullptr};
+  size_t input_size_{0};
+  size_t dets_size_{0};
+  size_t labels_size_{0};
+  size_t line_mask_size_{0};
+
+  // ----- CUDA graph of one complete inference (input upload, network,
+  // output download). Replaying it avoids the per-kernel launch overhead
+  // of enqueueing the many layers of the network every frame. Null if
+  // capturing is not possible, in which case the work is enqueued directly.
+  cudaGraphExec_t graph_exec_{nullptr};
+  bool graph_capture_attempted_{false};
 
   // ----- Model metadata -----
   int net_h_{0};
@@ -125,7 +150,6 @@ class TensorRtHandler : public RfdetrHandlerInterface {
   RfdetrConfig cfg_;
   rclcpp::Logger logger_;
 
-  std::vector<float> input_data_;
   int orig_h_{0};
   int orig_w_{0};
 
@@ -139,6 +163,10 @@ class TensorRtHandler : public RfdetrHandlerInterface {
   void allocate_buffers();
   void preprocess(const cv::Mat& bgr_image);
   void run_inference();
+  /// Enqueue one complete inference on `stream_` without a CUDA graph.
+  void enqueue_inference();
+  /// Try to capture `enqueue_inference()` into `graph_exec_`.
+  void capture_graph();
 };
 
 }  // namespace bitbots_vision

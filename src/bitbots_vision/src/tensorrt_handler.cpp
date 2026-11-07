@@ -18,6 +18,18 @@ void check_cuda(cudaError_t err, const char* what) {
   }
 }
 
+// Increment whenever the engine build settings change (precision choices,
+// graph rewrites, ...) so cached engines built with the old settings are
+// rebuilt instead of reused.
+constexpr int kEngineBuildRevision = 2;
+
+// LayerNormalizations under this module (RF-DETR's line-segmentation head)
+// stay in FP16 entirely. Measured on recorded game frames, their FP32
+// variance computation adds about a millisecond per frame (it forces format
+// conversions on the head's large feature maps) without any measurable
+// change in the line mask or the detections.
+constexpr const char* kFp16LayerNormModule = "/line_segmentation_head/";
+
 int64_t dims_element_count(const nvinfer1::Dims& dims) {
   int64_t count = 1;
   for (int i = 0; i < dims.nbDims; ++i) {
@@ -41,6 +53,14 @@ TensorRtHandler::TensorRtHandler(const std::string& model_path, const ModelConfi
 }
 
 TensorRtHandler::~TensorRtHandler() {
+  if (graph_exec_) {
+    cudaGraphExecDestroy(graph_exec_);
+  }
+  for (float* host_buffer : {h_input_, h_dets_, h_labels_, h_line_mask_}) {
+    if (host_buffer) {
+      cudaFreeHost(host_buffer);
+    }
+  }
   if (d_input_) {
     cudaFree(d_input_);
   }
@@ -64,7 +84,12 @@ TensorRtHandler::~TensorRtHandler() {
 
 void TensorRtHandler::build_or_load_engine(const std::string& model_path) {
   const std::string onnx_path = model_path + "/onnx/rfdetr.onnx";
-  const std::string engine_cache_path = model_path + "/onnx/rfdetr.trt";
+  // The cache name encodes the TensorRT version and the engine build
+  // revision, so an engine built by another TensorRT version or with
+  // outdated build settings is never loaded.
+  const std::string engine_cache_path = model_path + "/onnx/rfdetr_trt" + std::to_string(NV_TENSORRT_MAJOR) + "." +
+                                        std::to_string(NV_TENSORRT_MINOR) + "." + std::to_string(NV_TENSORRT_PATCH) +
+                                        "_r" + std::to_string(kEngineBuildRevision) + ".engine";
 
   if (!std::filesystem::exists(onnx_path)) {
     throw std::runtime_error("ONNX model file not found: " + onnx_path);
@@ -142,14 +167,17 @@ void TensorRtHandler::build_or_load_engine(const std::string& model_path) {
     if (builder->platformHasFastFp16()) {
       config->setFlag(nvinfer1::BuilderFlag::kFP16);
       RCLCPP_INFO(logger_, "TensorRT: platform supports fast FP16, enabling FP16 mode");
-      // The variance computation of decomposed LayerNormalizations can
-      // overflow in FP16, so keep those layers in FP32.
+      // The variance computation of decomposed LayerNormalizations overflows
+      // or loses too much precision in FP16 (detections break), so keep
+      // those layers in FP32. Pinning more of the decomposition costs speed
+      // without measurably improving accuracy.
       int fp32_layers = 0;
       for (int32_t i = 0; i < network->getNbLayers(); ++i) {
         nvinfer1::ILayer* layer = network->getLayer(i);
         // Constants keep their type, and ONNX Cast nodes are imported as
         // identity layers whose output type *is* the cast, so both are skipped.
-        if (std::strstr(layer->getName(), onnx_rewrite::kDecomposedNodeTag) == nullptr ||
+        if (!onnx_rewrite::is_precision_sensitive_layer(layer->getName()) ||
+            std::strstr(layer->getName(), kFp16LayerNormModule) != nullptr ||
             layer->getType() == nvinfer1::LayerType::kCONSTANT || layer->getType() == nvinfer1::LayerType::kIDENTITY) {
           continue;
         }
@@ -161,7 +189,7 @@ void TensorRtHandler::build_or_load_engine(const std::string& model_path) {
       }
       if (fp32_layers > 0) {
         config->setFlag(nvinfer1::BuilderFlag::kPREFER_PRECISION_CONSTRAINTS);
-        RCLCPP_INFO(logger_, "TensorRT: keeping %d decomposed LayerNormalization layer(s) in FP32", fp32_layers);
+        RCLCPP_INFO(logger_, "TensorRT: keeping %d LayerNormalization variance layer(s) in FP32", fp32_layers);
       }
     } else {
       RCLCPP_WARN(logger_, "TensorRT: platform has no fast FP16 support, building FP32-only engine");
@@ -230,12 +258,17 @@ void TensorRtHandler::allocate_buffers() {
   num_dets_ = dets_dims.d[1];
   num_classes_ = labels_dims.d[2];
 
-  check_cuda(cudaMalloc(&d_input_, sizeof(float) * 3 * static_cast<size_t>(net_h_) * static_cast<size_t>(net_w_)),
-             "cudaMalloc(input)");
-  check_cuda(cudaMalloc(&d_dets_, sizeof(float) * static_cast<size_t>(dims_element_count(dets_dims))),
-             "cudaMalloc(dets)");
-  check_cuda(cudaMalloc(&d_labels_, sizeof(float) * static_cast<size_t>(dims_element_count(labels_dims))),
-             "cudaMalloc(labels)");
+  input_size_ = 3 * static_cast<size_t>(net_h_) * static_cast<size_t>(net_w_);
+  dets_size_ = static_cast<size_t>(dims_element_count(dets_dims));
+  labels_size_ = static_cast<size_t>(dims_element_count(labels_dims));
+
+  check_cuda(cudaMalloc(&d_input_, sizeof(float) * input_size_), "cudaMalloc(input)");
+  check_cuda(cudaMalloc(&d_dets_, sizeof(float) * dets_size_), "cudaMalloc(dets)");
+  check_cuda(cudaMalloc(&d_labels_, sizeof(float) * labels_size_), "cudaMalloc(labels)");
+  check_cuda(cudaMallocHost(reinterpret_cast<void**>(&h_input_), sizeof(float) * input_size_), "cudaMallocHost(input)");
+  check_cuda(cudaMallocHost(reinterpret_cast<void**>(&h_dets_), sizeof(float) * dets_size_), "cudaMallocHost(dets)");
+  check_cuda(cudaMallocHost(reinterpret_cast<void**>(&h_labels_), sizeof(float) * labels_size_),
+             "cudaMallocHost(labels)");
 
   if (line_mask_binding_idx_ >= 0) {
     const nvinfer1::Dims lm_dims = engine_->getBindingDimensions(line_mask_binding_idx_);
@@ -243,8 +276,18 @@ void TensorRtHandler::allocate_buffers() {
       line_mask_h_ = lm_dims.d[2];
       line_mask_w_ = lm_dims.d[3];
     }
-    check_cuda(cudaMalloc(&d_line_mask_, sizeof(float) * static_cast<size_t>(dims_element_count(lm_dims))),
-               "cudaMalloc(line_mask)");
+    line_mask_size_ = static_cast<size_t>(dims_element_count(lm_dims));
+    check_cuda(cudaMalloc(&d_line_mask_, sizeof(float) * line_mask_size_), "cudaMalloc(line_mask)");
+    check_cuda(cudaMallocHost(reinterpret_cast<void**>(&h_line_mask_), sizeof(float) * line_mask_size_),
+               "cudaMallocHost(line_mask)");
+  }
+
+  bindings_.assign(static_cast<size_t>(engine_->getNbBindings()), nullptr);
+  bindings_[static_cast<size_t>(input_binding_idx_)] = d_input_;
+  bindings_[static_cast<size_t>(dets_binding_idx_)] = d_dets_;
+  bindings_[static_cast<size_t>(labels_binding_idx_)] = d_labels_;
+  if (line_mask_binding_idx_ >= 0) {
+    bindings_[static_cast<size_t>(line_mask_binding_idx_)] = d_line_mask_;
   }
 }
 
@@ -289,58 +332,82 @@ const std::vector<std::string>& TensorRtHandler::detection_class_names() const {
 void TensorRtHandler::preprocess(const cv::Mat& bgr_image) {
   orig_h_ = bgr_image.rows;
   orig_w_ = bgr_image.cols;
-  input_data_ = processing::preprocess_image_rfdetr(bgr_image, net_h_, net_w_);
+  const std::vector<float> input = processing::preprocess_image_rfdetr(bgr_image, net_h_, net_w_);
+  std::memcpy(h_input_, input.data(), input_size_ * sizeof(float));
 }
 
 // ---------------------------------------------------------------------------
 // Inference
 // ---------------------------------------------------------------------------
 
-void TensorRtHandler::run_inference() {
-  check_cuda(cudaMemcpyAsync(d_input_, input_data_.data(), input_data_.size() * sizeof(float), cudaMemcpyHostToDevice,
-                             stream_),
+void TensorRtHandler::enqueue_inference() {
+  check_cuda(cudaMemcpyAsync(d_input_, h_input_, input_size_ * sizeof(float), cudaMemcpyHostToDevice, stream_),
              "cudaMemcpyAsync(input H2D)");
-
-  std::vector<void*> bindings(static_cast<size_t>(engine_->getNbBindings()), nullptr);
-  bindings[static_cast<size_t>(input_binding_idx_)] = d_input_;
-  bindings[static_cast<size_t>(dets_binding_idx_)] = d_dets_;
-  bindings[static_cast<size_t>(labels_binding_idx_)] = d_labels_;
-  if (line_mask_binding_idx_ >= 0) {
-    bindings[static_cast<size_t>(line_mask_binding_idx_)] = d_line_mask_;
-  }
-
-  if (!context_->enqueueV2(bindings.data(), stream_, nullptr)) {
+  if (!context_->enqueueV2(bindings_.data(), stream_, nullptr)) {
     throw std::runtime_error("TensorRT inference (enqueueV2) failed");
   }
-
-  std::vector<float> dets_host(static_cast<size_t>(num_dets_ * 4));
-  std::vector<float> labels_host(static_cast<size_t>(num_dets_ * num_classes_));
-  check_cuda(
-      cudaMemcpyAsync(dets_host.data(), d_dets_, dets_host.size() * sizeof(float), cudaMemcpyDeviceToHost, stream_),
-      "cudaMemcpyAsync(dets D2H)");
-  check_cuda(cudaMemcpyAsync(labels_host.data(), d_labels_, labels_host.size() * sizeof(float), cudaMemcpyDeviceToHost,
-                             stream_),
+  check_cuda(cudaMemcpyAsync(h_dets_, d_dets_, dets_size_ * sizeof(float), cudaMemcpyDeviceToHost, stream_),
+             "cudaMemcpyAsync(dets D2H)");
+  check_cuda(cudaMemcpyAsync(h_labels_, d_labels_, labels_size_ * sizeof(float), cudaMemcpyDeviceToHost, stream_),
              "cudaMemcpyAsync(labels D2H)");
-
-  std::vector<float> line_mask_host;
   if (line_mask_binding_idx_ >= 0) {
-    line_mask_host.resize(static_cast<size_t>(line_mask_h_) * static_cast<size_t>(line_mask_w_));
-    check_cuda(cudaMemcpyAsync(line_mask_host.data(), d_line_mask_, line_mask_host.size() * sizeof(float),
-                               cudaMemcpyDeviceToHost, stream_),
-               "cudaMemcpyAsync(line_mask D2H)");
+    check_cuda(
+        cudaMemcpyAsync(h_line_mask_, d_line_mask_, line_mask_size_ * sizeof(float), cudaMemcpyDeviceToHost, stream_),
+        "cudaMemcpyAsync(line_mask D2H)");
   }
+}
 
+void TensorRtHandler::capture_graph() {
+  graph_capture_attempted_ = true;
+  cudaGraph_t graph = nullptr;
+  if (cudaStreamBeginCapture(stream_, cudaStreamCaptureModeThreadLocal) != cudaSuccess) {
+    RCLCPP_WARN(logger_, "TensorRT: CUDA graph capture unavailable, enqueueing inference directly");
+    cudaGetLastError();  // clear the error state
+    return;
+  }
+  bool enqueued = true;
+  try {
+    enqueue_inference();
+  } catch (const std::runtime_error&) {
+    enqueued = false;
+  }
+  const cudaError_t end_status = cudaStreamEndCapture(stream_, &graph);
+  if (enqueued && end_status == cudaSuccess &&
+      cudaGraphInstantiate(&graph_exec_, graph, nullptr, nullptr, 0) == cudaSuccess) {
+    RCLCPP_INFO(logger_, "TensorRT: inference captured into a CUDA graph");
+  } else {
+    graph_exec_ = nullptr;
+    cudaGetLastError();  // clear the error state
+    RCLCPP_WARN(logger_, "TensorRT: CUDA graph capture failed, enqueueing inference directly");
+  }
+  if (graph) {
+    cudaGraphDestroy(graph);
+  }
+}
+
+void TensorRtHandler::run_inference() {
+  if (graph_exec_) {
+    check_cuda(cudaGraphLaunch(graph_exec_, stream_), "cudaGraphLaunch");
+  } else {
+    enqueue_inference();
+  }
   check_cuda(cudaStreamSynchronize(stream_), "cudaStreamSynchronize");
+
+  // TensorRT needs one regular enqueue before the context's work can be
+  // captured into a graph, so capturing happens after the first inference.
+  if (!graph_capture_attempted_) {
+    capture_graph();
+  }
 
   // Same pure, backend-agnostic postprocessing used by the ONNX Runtime
   // handler -- already unit-tested and numerically verified against the
   // Python reference implementation.
-  det_results_ = processing::postprocess_detections_rfdetr(dets_host.data(), labels_host.data(), num_dets_,
-                                                           num_classes_, det_class_names_, cfg_.class_conf_thresholds,
+  det_results_ = processing::postprocess_detections_rfdetr(h_dets_, h_labels_, num_dets_, num_classes_,
+                                                           det_class_names_, cfg_.class_conf_thresholds,
                                                            cfg_.default_conf_threshold, orig_h_, orig_w_);
 
   if (line_mask_binding_idx_ >= 0) {
-    line_mask_result_ = processing::postprocess_line_mask_rfdetr(line_mask_host.data(), line_mask_h_, line_mask_w_,
+    line_mask_result_ = processing::postprocess_line_mask_rfdetr(h_line_mask_, line_mask_h_, line_mask_w_,
                                                                  cfg_.line_mask_threshold, orig_h_, orig_w_);
   }
 }
