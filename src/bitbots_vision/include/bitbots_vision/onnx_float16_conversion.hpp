@@ -13,8 +13,9 @@
 /// Converted are: float16 initializers and tensor attributes (e.g. Constant
 /// values), the element types of graph inputs / outputs / value infos, and
 /// the target type of Cast and of the ops with a `dtype` attribute. This is
-/// applied recursively to subgraphs. The rewrite works directly on the
-/// protobuf wire format, so no ONNX / protobuf library is required.
+/// applied recursively to subgraphs and model-local functions. The model is
+/// parsed with the classes generated from the vendored ONNX schema
+/// (proto/onnx-ml.proto, protobuf lite runtime).
 namespace bitbots_vision::onnx_rewrite {
 
 struct Float16ConversionResult {

@@ -24,6 +24,7 @@ find_package(soccer_vision_attribute_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(vision_msgs REQUIRED)
 find_package(yaml-cpp REQUIRED)
+find_package(Protobuf CONFIG REQUIRED)
 
 # ---------- ONNX Runtime ----------
 # find_package(onnxruntime CONFIG QUIET)
@@ -65,6 +66,31 @@ generate_parameter_library(vision_parameters config/vision_parameters.yaml)
 # ---------------------------------------------------------------------------
 # Processing library (no ONNX dependency) – used by tests and the handler
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# C++ classes of the vendored ONNX schema (protobuf lite runtime), used to
+# rewrite serialized models (see onnx_float16_conversion.hpp)
+# ---------------------------------------------------------------------------
+add_library(bitbots_vision_onnx_proto STATIC proto/onnx-ml.proto)
+# protoc does not create its output directory
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/proto)
+protobuf_generate(
+  TARGET
+  bitbots_vision_onnx_proto
+  LANGUAGE
+  cpp
+  IMPORT_DIRS
+  ${CMAKE_CURRENT_SOURCE_DIR}/proto
+  PROTOC_OUT_DIR
+  ${CMAKE_CURRENT_BINARY_DIR}/proto)
+set_target_properties(bitbots_vision_onnx_proto
+                      PROPERTIES POSITION_INDEPENDENT_CODE ON)
+target_include_directories(bitbots_vision_onnx_proto
+                           PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/proto)
+target_link_libraries(bitbots_vision_onnx_proto
+                      PUBLIC protobuf::libprotobuf-lite)
+# Generated code: do not apply the warning flags of the workspace
+target_compile_options(bitbots_vision_onnx_proto PRIVATE -w)
+
 add_library(
   bitbots_vision_processing SHARED
   src/rfdetr_processing.cpp src/debug_image.cpp src/model_config.cpp
@@ -76,6 +102,8 @@ target_include_directories(
          $<INSTALL_INTERFACE:include>)
 
 target_link_libraries(bitbots_vision_processing PUBLIC yaml-cpp ${OpenCV_LIBS})
+target_link_libraries(bitbots_vision_processing
+                      PRIVATE bitbots_vision_onnx_proto)
 
 # ---------------------------------------------------------------------------
 # Full vision library (includes ONNX handler) – used by the node and handler

@@ -1,68 +1,18 @@
 #include <bitbots_vision/onnx_float16_conversion.hpp>
 #include <cstdint>
 #include <cstring>
-#include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
 #include <vector>
 
-#include "onnx_wire_format.hpp"
+#include "onnx-ml.pb.h"  // generated from proto/onnx-ml.proto
 
 namespace bitbots_vision::onnx_rewrite {
 
 namespace {
 
-using onnx_wire::Field;
-using onnx_wire::kLengthDelimited;
-using onnx_wire::kVarint;
-using onnx_wire::Reader;
-using onnx_wire::write_bytes_field;
-using onnx_wire::write_varint_field;
-
-// Field numbers from onnx.proto
-namespace model_field {
-constexpr uint32_t kGraph = 7;
-}  // namespace model_field
-namespace graph_field {
-constexpr uint32_t kNode = 1;
-constexpr uint32_t kInitializer = 5;
-constexpr uint32_t kInput = 11;
-constexpr uint32_t kOutput = 12;
-constexpr uint32_t kValueInfo = 13;
-}  // namespace graph_field
-namespace node_field {
-constexpr uint32_t kOpType = 4;
-constexpr uint32_t kAttribute = 5;
-}  // namespace node_field
-namespace attribute_field {
-constexpr uint32_t kName = 1;
-constexpr uint32_t kI = 3;
-constexpr uint32_t kT = 5;
-constexpr uint32_t kG = 6;
-constexpr uint32_t kTensors = 10;
-constexpr uint32_t kGraphs = 11;
-}  // namespace attribute_field
-namespace tensor_field {
-constexpr uint32_t kDataType = 2;
-constexpr uint32_t kInt32Data = 5;
-constexpr uint32_t kRawData = 9;
-constexpr uint32_t kDataLocation = 14;
-}  // namespace tensor_field
-namespace value_info_field {
-constexpr uint32_t kType = 2;
-}  // namespace value_info_field
-namespace type_field {
-constexpr uint32_t kTensorType = 1;
-constexpr uint32_t kSequenceType = 4;
-constexpr uint32_t kSparseTensorType = 8;
-constexpr uint32_t kOptionalType = 9;
-constexpr uint32_t kElemType = 1;  // in Tensor, SparseTensor, Sequence and Optional
-}  // namespace type_field
-
-constexpr uint64_t kFloat = 1;
-constexpr uint64_t kFloat16 = 10;
-constexpr uint64_t kDataLocationExternal = 1;
+namespace pb = bitbots_vision::onnx;
 
 float half_to_float(uint16_t h) {
   const uint32_t sign = static_cast<uint32_t>(h & 0x8000) << 16;
@@ -94,57 +44,26 @@ struct Counts {
   int types{0};
 };
 
-std::string convert_graph(std::string_view graph, Counts& counts);
+void convert_graph(pb::GraphProto& graph, Counts& counts);
 
-/// Returns the converted TensorProto, or the input if it is not float16.
-std::string convert_tensor(std::string_view tensor, Counts& counts) {
-  std::optional<uint64_t> data_type;
-  bool external = false;
-  {
-    Reader reader(tensor);
-    while (!reader.done()) {
-      const Field f = reader.next();
-      if (f.number == tensor_field::kDataType && f.wire_type == kVarint) {
-        data_type = f.value;
-      } else if (f.number == tensor_field::kDataLocation && f.wire_type == kVarint) {
-        external = f.value == kDataLocationExternal;
-      }
-    }
+void convert_tensor(pb::TensorProto& tensor, Counts& counts) {
+  if (tensor.data_type() != pb::TensorProto::FLOAT16) {
+    return;
   }
-  if (data_type != kFloat16) {
-    return std::string(tensor);
-  }
-  if (external) {
+  if (tensor.data_location() == pb::TensorProto::EXTERNAL) {
     throw std::runtime_error("ONNX float16 conversion: tensors in external data files are not supported");
   }
 
+  // float16 values are stored either in raw_data or as their bit pattern in int32_data
   std::vector<uint16_t> halves;
-  std::string out;
-  Reader reader(tensor);
-  while (!reader.done()) {
-    const Field f = reader.next();
-    if (f.number == tensor_field::kDataType) {
-      continue;  // rewritten below
-    } else if (f.number == tensor_field::kRawData && f.wire_type == kLengthDelimited) {
-      const size_t n = f.payload.size() / sizeof(uint16_t);
-      for (size_t i = 0; i < n; ++i) {
-        uint16_t h;
-        std::memcpy(&h, f.payload.data() + i * sizeof(uint16_t), sizeof(h));
-        halves.push_back(h);
-      }
-    } else if (f.number == tensor_field::kInt32Data) {
-      // float16 values may also be stored as the bit pattern in int32_data,
-      // either packed or as single varints.
-      if (f.wire_type == kLengthDelimited) {
-        Reader packed(f.payload);
-        while (!packed.done()) {
-          halves.push_back(static_cast<uint16_t>(packed.read_varint()));
-        }
-      } else {
-        halves.push_back(static_cast<uint16_t>(f.value));
-      }
-    } else {
-      out.append(f.raw);
+  if (tensor.has_raw_data()) {
+    const std::string& raw = tensor.raw_data();
+    halves.resize(raw.size() / sizeof(uint16_t));
+    std::memcpy(halves.data(), raw.data(), halves.size() * sizeof(uint16_t));
+  } else {
+    halves.reserve(static_cast<size_t>(tensor.int32_data_size()));
+    for (const int32_t bits : tensor.int32_data()) {
+      halves.push_back(static_cast<uint16_t>(bits));
     }
   }
 
@@ -153,54 +72,45 @@ std::string convert_tensor(std::string_view tensor, Counts& counts) {
     const float value = half_to_float(halves[i]);
     std::memcpy(raw.data() + i * sizeof(float), &value, sizeof(float));
   }
-  write_varint_field(out, tensor_field::kDataType, kFloat);
-  write_bytes_field(out, tensor_field::kRawData, raw);
+  tensor.clear_int32_data();
+  tensor.set_raw_data(std::move(raw));
+  tensor.set_data_type(pb::TensorProto::FLOAT);
   ++counts.tensors;
-  return out;
 }
 
-/// Converts the element type of a TypeProto (recursing into sequences and optionals).
-std::string convert_type(std::string_view type, Counts& counts) {
-  std::string out;
-  Reader reader(type);
-  while (!reader.done()) {
-    const Field f = reader.next();
-    const bool is_tensor = f.number == type_field::kTensorType || f.number == type_field::kSparseTensorType;
-    const bool is_container = f.number == type_field::kSequenceType || f.number == type_field::kOptionalType;
-    if (f.wire_type != kLengthDelimited || (!is_tensor && !is_container)) {
-      out.append(f.raw);
-      continue;
-    }
-    std::string inner;
-    Reader inner_reader(f.payload);
-    while (!inner_reader.done()) {
-      const Field g = inner_reader.next();
-      if (is_tensor && g.number == type_field::kElemType && g.wire_type == kVarint && g.value == kFloat16) {
-        write_varint_field(inner, type_field::kElemType, kFloat);
-        ++counts.types;
-      } else if (is_container && g.number == type_field::kElemType && g.wire_type == kLengthDelimited) {
-        write_bytes_field(inner, type_field::kElemType, convert_type(g.payload, counts));
-      } else {
-        inner.append(g.raw);
-      }
-    }
-    write_bytes_field(out, f.number, inner);
+void convert_elem_type(int32_t& elem_type, Counts& counts) {
+  if (elem_type == pb::TensorProto::FLOAT16) {
+    elem_type = pb::TensorProto::FLOAT;
+    ++counts.types;
   }
-  return out;
 }
 
-std::string convert_value_info(std::string_view value_info, Counts& counts) {
-  std::string out;
-  Reader reader(value_info);
-  while (!reader.done()) {
-    const Field f = reader.next();
-    if (f.number == value_info_field::kType && f.wire_type == kLengthDelimited) {
-      write_bytes_field(out, f.number, convert_type(f.payload, counts));
-    } else {
-      out.append(f.raw);
-    }
+void convert_type(pb::TypeProto& type, Counts& counts) {
+  if (type.has_tensor_type()) {
+    int32_t elem_type = type.tensor_type().elem_type();
+    convert_elem_type(elem_type, counts);
+    type.mutable_tensor_type()->set_elem_type(elem_type);
   }
-  return out;
+  if (type.has_sparse_tensor_type()) {
+    int32_t elem_type = type.sparse_tensor_type().elem_type();
+    convert_elem_type(elem_type, counts);
+    type.mutable_sparse_tensor_type()->set_elem_type(elem_type);
+  }
+  if (type.has_sequence_type() && type.sequence_type().has_elem_type()) {
+    convert_type(*type.mutable_sequence_type()->mutable_elem_type(), counts);
+  }
+  if (type.has_optional_type() && type.optional_type().has_elem_type()) {
+    convert_type(*type.mutable_optional_type()->mutable_elem_type(), counts);
+  }
+  if (type.has_map_type() && type.map_type().has_value_type()) {
+    convert_type(*type.mutable_map_type()->mutable_value_type(), counts);
+  }
+}
+
+void convert_value_info(pb::ValueInfoProto& value_info, Counts& counts) {
+  if (value_info.has_type()) {
+    convert_type(*value_info.mutable_type(), counts);
+  }
 }
 
 /// Whether the integer attribute `name` of an op of type `op_type` holds a target element type.
@@ -220,113 +130,76 @@ bool is_type_attribute(std::string_view op_type, std::string_view name) {
   return false;
 }
 
-std::string convert_attribute(std::string_view attribute, std::string_view op_type, Counts& counts) {
-  std::string name;
-  {
-    Reader reader(attribute);
-    while (!reader.done()) {
-      const Field f = reader.next();
-      if (f.number == attribute_field::kName) {
-        name = std::string(f.payload);
-      }
-    }
-  }
-  const bool type_attribute = is_type_attribute(op_type, name);
-
-  std::string out;
-  Reader reader(attribute);
-  while (!reader.done()) {
-    const Field f = reader.next();
-    if (f.number == attribute_field::kI && f.wire_type == kVarint && type_attribute && f.value == kFloat16) {
-      write_varint_field(out, f.number, kFloat);
+void convert_node(pb::NodeProto& node, Counts& counts) {
+  for (pb::AttributeProto& attribute : *node.mutable_attribute()) {
+    if (attribute.has_i() && attribute.i() == pb::TensorProto::FLOAT16 &&
+        is_type_attribute(node.op_type(), attribute.name())) {
+      attribute.set_i(pb::TensorProto::FLOAT);
       ++counts.types;
-    } else if ((f.number == attribute_field::kT || f.number == attribute_field::kTensors) &&
-               f.wire_type == kLengthDelimited) {
-      write_bytes_field(out, f.number, convert_tensor(f.payload, counts));
-    } else if ((f.number == attribute_field::kG || f.number == attribute_field::kGraphs) &&
-               f.wire_type == kLengthDelimited) {
-      write_bytes_field(out, f.number, convert_graph(f.payload, counts));
-    } else {
-      out.append(f.raw);
+    }
+    if (attribute.has_t()) {
+      convert_tensor(*attribute.mutable_t(), counts);
+    }
+    for (pb::TensorProto& tensor : *attribute.mutable_tensors()) {
+      convert_tensor(tensor, counts);
+    }
+    if (attribute.has_g()) {
+      convert_graph(*attribute.mutable_g(), counts);
+    }
+    for (pb::GraphProto& graph : *attribute.mutable_graphs()) {
+      convert_graph(graph, counts);
     }
   }
-  return out;
 }
 
-std::string convert_node(std::string_view node, Counts& counts) {
-  std::string op_type;
-  {
-    Reader reader(node);
-    while (!reader.done()) {
-      const Field f = reader.next();
-      if (f.number == node_field::kOpType) {
-        op_type = std::string(f.payload);
-      }
+void convert_graph(pb::GraphProto& graph, Counts& counts) {
+  for (pb::NodeProto& node : *graph.mutable_node()) {
+    convert_node(node, counts);
+  }
+  for (pb::TensorProto& tensor : *graph.mutable_initializer()) {
+    convert_tensor(tensor, counts);
+  }
+  for (pb::SparseTensorProto& sparse : *graph.mutable_sparse_initializer()) {
+    if (sparse.has_values()) {
+      convert_tensor(*sparse.mutable_values(), counts);
     }
   }
-  std::string out;
-  Reader reader(node);
-  while (!reader.done()) {
-    const Field f = reader.next();
-    if (f.number == node_field::kAttribute && f.wire_type == kLengthDelimited) {
-      write_bytes_field(out, f.number, convert_attribute(f.payload, op_type, counts));
-    } else {
-      out.append(f.raw);
+  for (auto* value_infos : {graph.mutable_input(), graph.mutable_output(), graph.mutable_value_info()}) {
+    for (pb::ValueInfoProto& value_info : *value_infos) {
+      convert_value_info(value_info, counts);
     }
   }
-  return out;
-}
-
-std::string convert_graph(std::string_view graph, Counts& counts) {
-  std::string out;
-  out.reserve(graph.size() + graph.size() / 2);
-  Reader reader(graph);
-  while (!reader.done()) {
-    const Field f = reader.next();
-    if (f.wire_type != kLengthDelimited) {
-      out.append(f.raw);
-      continue;
-    }
-    switch (f.number) {
-      case graph_field::kNode:
-        write_bytes_field(out, f.number, convert_node(f.payload, counts));
-        break;
-      case graph_field::kInitializer:
-        write_bytes_field(out, f.number, convert_tensor(f.payload, counts));
-        break;
-      case graph_field::kInput:
-      case graph_field::kOutput:
-      case graph_field::kValueInfo:
-        write_bytes_field(out, f.number, convert_value_info(f.payload, counts));
-        break;
-      default:
-        out.append(f.raw);
-        break;
-    }
-  }
-  return out;
 }
 
 }  // namespace
 
 Float16ConversionResult convert_float16_to_float32(const std::string& serialized_model) {
+  pb::ModelProto model;
+  if (!model.ParseFromString(serialized_model)) {
+    throw std::runtime_error("ONNX float16 conversion: the model could not be parsed");
+  }
+
   Counts counts;
-  std::string model;
-  model.reserve(serialized_model.size() * 2);
-  Reader reader(serialized_model);
-  while (!reader.done()) {
-    const Field f = reader.next();
-    if (f.number == model_field::kGraph && f.wire_type == kLengthDelimited) {
-      write_bytes_field(model, f.number, convert_graph(f.payload, counts));
-    } else {
-      model.append(f.raw);
+  if (model.has_graph()) {
+    convert_graph(*model.mutable_graph(), counts);
+  }
+  // Model-local functions can contain float16 nodes as well
+  for (pb::FunctionProto& function : *model.mutable_functions()) {
+    for (pb::NodeProto& node : *function.mutable_node()) {
+      convert_node(node, counts);
     }
   }
 
   Float16ConversionResult result;
   result.num_tensors = counts.tensors;
   result.num_types = counts.types;
-  result.model = (counts.tensors > 0 || counts.types > 0) ? std::move(model) : serialized_model;
+  if (counts.tensors > 0 || counts.types > 0) {
+    if (!model.SerializeToString(&result.model)) {
+      throw std::runtime_error("ONNX float16 conversion: the converted model could not be serialized");
+    }
+  } else {
+    result.model = serialized_model;
+  }
   return result;
 }
 
