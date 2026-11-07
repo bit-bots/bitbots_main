@@ -11,7 +11,7 @@
 
   <asset>
     <texture name="skybox" type="skybox" fileup="backgrounds/kiara_1_dawn_top.png" filedown="backgrounds/kiara_1_dawn_bottom.png" filefront="backgrounds/kiara_1_dawn_front.png" fileback="backgrounds/kiara_1_dawn_back.png" fileleft="backgrounds/kiara_1_dawn_left.png" fileright="backgrounds/kiara_1_dawn_right.png"/>
-    <texture name="pitch" file="kid_field.png" type="2d"/>
+    <texture name="pitch" file="kid_field_cut_right.png" type="2d"/>
     <material name="pitch" reflectance="0.0" texture="pitch" texrepeat="1 1" texuniform="false"/>
     <texture name="ball" type="cube" fileup="ball/up.png" filedown="ball/down.png" filefront="ball/front.png" fileback="ball/back.png" fileleft="ball/left.png" fileright="ball/right.png"/>
     <material name="ball" texture="ball"/>
