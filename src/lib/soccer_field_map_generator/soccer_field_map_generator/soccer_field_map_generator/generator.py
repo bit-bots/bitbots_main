@@ -67,7 +67,7 @@ def drawDistance(image, decay_factor):
     return cv2.normalize(
         distance_map,
         None,
-        alpha=0,
+        alpha=155,
         beta=255,
         norm_type=cv2.NORM_MINMAX,
         dtype=cv2.CV_64F,
