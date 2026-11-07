@@ -1,0 +1,76 @@
+#SearchBall
+$DoOnce
+    NOT_DONE --> @ChangeAction + action:searching, @LookAtFieldFeatures, @WalkInPlace + duration:1, @TurnLastSeenBallSide + duration:6, @GoToAbsolutePositionFieldFraction + x:0.5 + blocking:false
+    DONE --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:0.5 + latch:true
+        NO --> @LookAtFieldFeatures, @GoToAbsolutePositionFieldFraction + x:0.5
+        YES --> $DoOnce
+            NOT_DONE --> @Turn + duration:15
+            DONE --> $DoOnce
+                NOT_DONE --> @GoToAbsolutePositionFieldFraction + y:1.0 + t:-90 + blocking:false
+                DONE --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:0.2 + latch:true
+                    YES --> @Stand
+                    NO --> @GoToAbsolutePositionFieldFraction + y:1.0 + t:-90
+
+#DoNothing
+@ChangeAction + action:waiting, @LookForward, @Stand
+
+#StandAndLook
+@ChangeAction + action:waiting, @LookAtFieldFeatures, @Stand
+
+#GetWalkreadyAndLocalize
+@ChangeAction + action:waiting + r:false, @LookAtFieldFeatures + r:false, @WalkInPlace
+
+#Dribble
+@ChangeAction + action:kicking, @CancelPathplanning, @LookAtFront, @DribbleForward
+
+#RolePositionWithPause
+$DoOnce
+    NOT_DONE --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToRolePosition + blocking:false
+    DONE --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:0.2 + latch:true
+        YES -->  #StandAndLook
+        NO --> @LookAtFieldFeatures, @GoToRolePosition
+
+#PositioningReady
+$GoalScoreRecently
+    YES --> $ConfigRole
+        GOALIE -->  $RobotInOwnPercentOfField + p:40
+            YES --> @Stand + duration:1.0 + r:false, @PlayAnimationCheering + r:false, @Stand
+            NO -->  @ChangeAction + action:positioning, @PlaySound + file:ole.wav, @LookAtFieldFeatures, @Stand + duration:%ready_wait_time, @AvoidBallActive, @GoToRolePosition
+        ELSE --> @ChangeAction + action:positioning, @PlaySound + file:ole.wav, @LookAtFieldFeatures, @Stand + duration:%ready_wait_time, @AvoidBallActive, @GoToRolePosition
+    NO --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @Stand + duration:%ready_wait_time, @AvoidBallActive, @GoToRolePosition
+
+
+#Init
+@Stand + duration:0.1 + r:false, @ChangeAction + action:waiting, @LookForward, @Stand
+
+
+#GoalieBehavior
+$BallInGoalieZone
+    YES --> #Dribble
+    NO --> #GoToGoaliePosition
+
+
+-->BodyBehavior
+$IsPenalized
+    YES --> #DoNothing
+    JUST_UNPENALIZED --> $GameStateDecider
+        INITIAL --> #Init
+        ELSE --> #GetWalkreadyAndLocalize
+    NO --> $GameStateDecider
+        INITIAL --> #Init
+        READY --> $AnyGoalScoreRecently + time:50
+            YES --> $ReachedAndAlignedToConfigRolePosition
+                YES --> #StandAndLook
+                NO --> #PositioningReady
+            NO --> $DoOnce
+                NOT_DONE --> @ChangeAction + action:waiting + r:false, @LookAtFieldFeatures + r:false, @Stand + duration:2
+                DONE --> $ReachedAndAlignedToConfigRolePosition
+                    YES --> #StandAndLook
+                    NO --> #PositioningReady
+        SET --> #StandAndLook
+        FINISHED --> $CurrentScore
+            AHEAD --> @Stand + duration:0.5 + r:false, @PlaySound + file:fanfare.wav, @PlayAnimationCheering + r:false, @LookForward, @Stand
+            ELSE --> #Init
+        PLAYING --> #PlayingBehavior
+        STANDBY --> #StandAndLook
+        STOPPED --> #DoNothing
