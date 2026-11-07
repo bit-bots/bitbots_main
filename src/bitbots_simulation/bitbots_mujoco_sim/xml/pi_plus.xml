@@ -1,18 +1,20 @@
 <mujoco model="piplus">
   <compiler angle="radian" meshdir="./assets/meshes/"/>
   <default>
+    <!-- The passive joint damping of all joints is set to 0 (the AMP walk policy was trained without it).
+         The actuator damping (kv of the position actuators) is unchanged. -->
     <default class="pi_joint_arm">
-      <joint damping="0.25" actuatorfrcrange="-10 10" armature="0.01317" frictionloss="0.2"/>
-      <!-- damping = 10Nm / (155rpm - 10 rpm (in rad/s)) -->
+      <!-- unused estimate: damping = 10Nm / (155rpm - 10 rpm (in rad/s)) -->
+      <joint damping="0" actuatorfrcrange="-10 10" armature="0.01317" frictionloss="0.2"/>
     </default>
     <default class="pi_joint_leg">
-      <joint damping="0.8" actuatorfrcrange="-20 20" armature="0.01316"/>
+      <!-- unused estimate: damping = 20Nm / (75rpm - 10 rpm (in rad/s)) -->
+      <joint damping="0" actuatorfrcrange="-20 20" armature="0.01316"/>
       <!--<joint damping="2.94" actuatorfrcrange="-20 20" armature="0.01316" frictionloss="0.2"/>-->
-      <!-- damping = 20Nm / (75rpm - 10 rpm (in rad/s)) -->
     </default>
     <default class="pi_joint_head">
-      <joint damping="0.48" actuatorfrcrange="-2.5 2.5" armature="0.00249" frictionloss="0.1"/>
-      <!-- damping = 2.5Nm / (60rpm - 10 rpm (in rad/s))-->
+      <!-- unused estimate: damping = 2.5Nm / (60rpm - 10 rpm (in rad/s)) -->
+      <joint damping="0" actuatorfrcrange="-2.5 2.5" armature="0.00249" frictionloss="0.1"/>
     </default>
     <default class="pi_actuator_arm">
       <!-- ctrllimited is false because policies should be able to set values outside the ranges to reach torques required -->
