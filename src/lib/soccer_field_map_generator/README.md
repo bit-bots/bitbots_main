@@ -79,3 +79,15 @@ intensity bounds for binary and distance maps, including inverted maps. Both
 must be integers within the unsigned byte range, with the minimum below the
 maximum. Omitted bounds retain the full unsigned byte range. The GUI exposes
 these parameters and saves them with the generator configuration.
+
+The GUI also supports generating a horizontal cut-off map. Enable `Cut Off Map`
+and set `Cut Off Start (m)` and `Cut Off End (m)` relative to the left edge of
+the generated image; the end is exclusive. The range includes the requested
+centimeter pixel cells and controls where field features are drawn. The image
+dimensions and metadata origin remain unchanged; features outside the range are
+removed. The additional margin in a field-boundary map is part of its generated
+image and therefore part of this range. The equivalent config parameters are
+`crop_enabled`, `crop_start`, and `crop_end`; this option is off by default, so
+configurations without these parameters continue to generate full maps. Feature
+removal occurs before distance-map calculation, so distance values can extend
+into regions without drawn features.
