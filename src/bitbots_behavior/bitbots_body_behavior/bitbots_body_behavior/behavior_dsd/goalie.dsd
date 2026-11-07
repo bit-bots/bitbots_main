@@ -47,7 +47,7 @@ $GoalScoreRecently
 #GoalieBehavior
 $BallInGoalieZone
     YES --> #Dribble
-    NO --> #GoToGoaliePosition
+    NO --> @LookAtFieldFeatures @GoToBlockPosition
 
 
 -->BodyBehavior
