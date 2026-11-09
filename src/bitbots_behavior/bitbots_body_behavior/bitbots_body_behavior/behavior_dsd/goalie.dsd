@@ -53,7 +53,7 @@ $BallSeen
     YES --> $BallInGoalieZone
         YES --> #WalkAndDribble
         NO --> @LookAtFieldFeatures, @GoToBlockPosition
-    NO --> @LookAtFieldFeatures, @GoToRolePosition
+    NO --> #SearchBall
 
 -->BodyBehavior
 $IsPenalized
