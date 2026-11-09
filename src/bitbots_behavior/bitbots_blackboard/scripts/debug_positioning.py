@@ -5,6 +5,7 @@ Exercises the exact capsule code without starting the full stack.
 Click the field to move the ball; use the sliders to tweak params.
 """
 
+from dataclasses import fields
 from typing import TypedDict
 
 import numpy as np
@@ -44,36 +45,18 @@ def run_gui():
         return slider_ax
 
     s_players = Slider(_ax(), "players", 1, 8, valinit=state["n"], valstep=1)
-    # goalie
-    s_goalie_forward_dist = Slider(_ax(), "goalie forward dist", 0.0, 2.0, valinit=params.goalie_forward_dist)
-    # defender
-    s_relativ_def_depth = Slider(_ax(), "relativ def depth", 0.1, 0.8, valinit=params.relativ_def_depth)
-    s_def_depth_bias = Slider(_ax(), "def depth bias", -2.0, 3.0, valinit=params.def_depth_bias)
-    s_def_min_depth = Slider(_ax(), "def min depth ", 0.0, 2.0, valinit=params.def_min_depth)
-    s_def_max_depth = Slider(_ax(), "def max depth ", 2.0, 8.0, valinit=params.def_max_depth)
-    s_def_to_goalie_depth = Slider(_ax(), "def to goalie depth ", 0.0, 2.0, valinit=params.def_to_goalie_depth)
-    s_standoff = Slider(_ax(), "standoff", 0.0, 2.0, valinit=params.standoff)
-    s_def_side_gap = Slider(_ax(), "def side gap", 0.5, 2.0, valinit=params.def_side_gap)
-    s_def_side_gap_close = Slider(_ax(), "def side gap @goal", 0.2, 2.0, valinit=params.def_side_gap_close)
-    s_solo_def_side_gap = Slider(_ax(), "solo def side gap", 0.0, 2.0, valinit=params.solo_def_side_gap)
-    # supporter
+    sliders = [
+        (
+            param.name,
+            Slider(
+                _ax(), param.metadata["display_name"], *param.metadata["bounds"], valinit=getattr(params, param.name)
+            ),
+        )
+        for param in fields(params)
+        if "bounds" in param.metadata
+    ]
     check_supp = CheckButtons(fig.add_axes((0.83, 0.05, 0.14, 0.025)), ["supporter"], [params.include_supporter])
-    s_supp_forward_offset = Slider(_ax(), "supp forward offset", 0.0, 3.0, valinit=params.supp_forward_offset)
-    s_supp_side = Slider(_ax(), "supp side", 0.0, 2.5, valinit=params.supp_side)
-    s_relativ_supp_max_x = Slider(_ax(), "relativ supp max x", 0.0, 4.2, valinit=params.relativ_supp_max_x)
-    # striker
-    # kickoffset
-    s_kick_offset = Slider(_ax(), "kick offset", 0.0, 2.0, valinit=params.kick_offset)
-    s_post_margin = Slider(_ax(), "post margin", 0.0, 1.3, valinit=params.post_margin)
-    s_back_dist = Slider(_ax(), "back dist", 0.0, 3.0, valinit=params.back_dist)
-    # other
-    s_min_sep = Slider(_ax(), "min_sep", 0.3, 2.0, valinit=params.min_sep)
-
-    s_kick_clear = Slider(_ax(), "kick clear", 0.0, 1.5, valinit=params.kick_clear)
-    # kick range
-    s_kick_range = Slider(_ax(), "kick range", 0.0, 5.0, valinit=params.kick_range)
     check_sp = CheckButtons(fig.add_axes((0.83, 0.09, 0.14, 0.025)), ["set play"], [False])
-    s_set_play_clearance = Slider(_ax(), "set play clearance", 0.1, 2.0, valinit=params.opp_set_play_clearance)
 
     # one checkbox per possible robot identity (0..max players - 1); checkboxes beyond the
     # current player count are simply ignored. CheckButtons (unlike TextBox) doesn't hook
@@ -123,30 +106,10 @@ def run_gui():
             )
         ax.set_facecolor("#2e7d32")
 
-        params.min_sep, params.relativ_def_depth, params.def_side_gap, params.relativ_supp_max_x = (
-            s_min_sep.val,
-            s_relativ_def_depth.val,
-            s_def_side_gap.val,
-            s_relativ_supp_max_x.val,
-        )
-        params.def_side_gap_close = s_def_side_gap_close.val
-        params.def_depth_bias, params.supp_side, params.goalie_forward_dist = (
-            s_def_depth_bias.val,
-            s_supp_side.val,
-            s_goalie_forward_dist.val,
-        )
-        params.relativ_supp_max_x, params.solo_def_side_gap = s_relativ_supp_max_x.val, s_solo_def_side_gap.val
-        params.post_margin, params.back_dist = s_post_margin.val, s_back_dist.val
-        params.kick_clear, params.kick_range, params.kick_offset = s_kick_clear.val, s_kick_range.val, s_kick_offset.val
-        params.standoff = s_standoff.val
-        params.def_min_depth, params.def_max_depth, params.def_to_goalie_depth = (
-            s_def_min_depth.val,
-            s_def_max_depth.val,
-            s_def_to_goalie_depth.val,
-        )
+        for name, slider in sliders:
+            setattr(params, name, slider.val)
         opp_set_play = check_sp.get_status()[0]
         params.include_supporter = check_supp.get_status()[0]
-        params.opp_set_play_clearance = s_set_play_clearance.val
         n = int(s_players.val)
 
         if opp_set_play:
@@ -248,29 +211,7 @@ def run_gui():
             state["ball"] = (event.xdata, event.ydata)
             draw()
 
-    for s in (
-        s_players,
-        s_min_sep,
-        s_relativ_def_depth,
-        s_def_depth_bias,
-        s_solo_def_side_gap,
-        s_def_side_gap,
-        s_def_side_gap_close,
-        s_supp_forward_offset,
-        s_supp_side,
-        s_relativ_supp_max_x,
-        s_post_margin,
-        s_back_dist,
-        s_kick_clear,
-        s_goalie_forward_dist,
-        s_set_play_clearance,
-        s_def_min_depth,
-        s_def_max_depth,
-        s_def_to_goalie_depth,
-        s_standoff,
-        s_kick_offset,
-        s_kick_range,
-    ):
+    for s in [s_players, *(slider for _, slider in sliders)]:
         s.on_changed(lambda _v: draw())
     check_sp.on_clicked(lambda _label: draw())
     check_supp.on_clicked(lambda _label: draw())

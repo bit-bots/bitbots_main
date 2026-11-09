@@ -30,7 +30,7 @@ from the ball if we need to keep our distance from it because the opponent has s
 
 import math
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import TypedDict
 
@@ -74,37 +74,183 @@ class Field:
 
 @dataclass
 class Params:
-    """Positioning params. Defalut vaules will be updated in __init__."""
+    """Positioning params. Default values will be updated in __init__."""
 
     # goalie
-    goalie_forward_dist: float = 0.5  # how far the goalie comes out of the goal (dist from goal centre)
+    goalie_forward_dist: float = field(
+        default=0.5,
+        metadata={
+            "bounds": (0.0, 2.0),
+            "display_name": "Goalie Forward Distance",
+            "__doc__": "how far the goalie comes out of the goal (dist from goal centre)",
+        },
+    )
     # defenders
-    relativ_def_depth: float = 0.5  # defender depth as a fraction of |ball-goal|  (push-up factor)
-    def_depth_bias: float = 0.0  # extra defender depth: + = further forward, - = further back
-    def_min_depth: float = 1.0  # min defender depth from goal (never tuck behind this)
-    def_max_depth: float = 4.5  # max defender depth from goal (high-line cap)
-    def_to_goalie_depth: float = 0.5  # keep defenders at least this far ahead of the goalie
-    standoff: float = 1.0  # keep defenders at least this far (goal-side) of the ball
-    def_side_gap: float = 1.0  # lateral spacing between adjacent defenders (ball at/beyond the centre circle)
-    def_side_gap_close: float = 0.5  # lateral spacing when the ball is at our goal (defenders tuck in)
-    solo_def_side_gap: float = 0.0  # lateral offset for a lone defender (so it's not on the axis)
+    relativ_def_depth: float = field(
+        default=0.5,
+        metadata={
+            "bounds": (0.1, 0.8),
+            "display_name": "Relative Defender Depth",
+            "__doc__": "Defender depth as a fraction of the ball-to-goal distance.",
+        },
+    )
+    def_depth_bias: float = field(
+        default=0.0,
+        metadata={
+            "bounds": (-2.0, 3.0),
+            "display_name": "Defender Depth Bias",
+            "__doc__": "Additional forward or backward defender depth.",
+        },
+    )
+    def_min_depth: float = field(
+        default=1.0,
+        metadata={
+            "bounds": (0.0, 2.0),
+            "display_name": "Defender Minimum Depth",
+            "__doc__": "Minimum defender depth from the goal.",
+        },
+    )
+    def_max_depth: float = field(
+        default=4.5,
+        metadata={
+            "bounds": (2.0, 8.0),
+            "display_name": "Defender Maximum Depth",
+            "__doc__": "Maximum defender depth from the goal.",
+        },
+    )
+    def_to_goalie_depth: float = field(
+        default=0.5,
+        metadata={
+            "bounds": (0.0, 2.0),
+            "display_name": "Defender to Goalie Depth",
+            "__doc__": "Minimum distance defenders stay ahead of the goalie.",
+        },
+    )
+    standoff: float = field(
+        default=1.0,
+        metadata={
+            "bounds": (0.0, 2.0),
+            "display_name": "Standoff",
+            "__doc__": "Minimum distance defenders stay goal-side of the ball.",
+        },
+    )
+    def_side_gap: float = field(
+        default=1.0,
+        metadata={
+            "bounds": (0.5, 2.0),
+            "display_name": "Defender Side Gap",
+            "__doc__": "Lateral spacing between defenders when the ball is far from our goal.",
+        },
+    )
+    def_side_gap_close: float = field(
+        default=0.5,
+        metadata={
+            "bounds": (0.2, 2.0),
+            "display_name": "Defender Side Gap Near Goal",
+            "__doc__": "Lateral spacing between defenders when the ball is at our goal.",
+        },
+    )
+    solo_def_side_gap: float = field(
+        default=0.0,
+        metadata={
+            "bounds": (0.0, 2.0),
+            "display_name": "Solo Defender Side Gap",
+            "__doc__": "Lateral offset for a lone defender.",
+        },
+    )
     # supporter
-    include_supporter: bool = False  # if False, no supporter is assigned; its slot becomes an extra defender
-    supp_forward_offset: float = 1.0  # how far in front of the ball (toward opp goal) the supporter sits
-    supp_side: float = 1.0  # supporter lateral offset magnitude (auto-leans toward centre)
-    relativ_supp_max_x: float = 0.7  # supporter never goes past this x (keeps it out of the opp corner)
+    include_supporter: bool = field(
+        default=False,
+        metadata={"display_name": "Include Supporter", "__doc__": "Assign a supporter instead of an extra defender."},
+    )
+    supp_forward_offset: float = field(
+        default=1.0,
+        metadata={
+            "bounds": (0.0, 3.0),
+            "display_name": "Supporter Forward Offset",
+            "__doc__": "Distance the supporter sits in front of the ball toward the opponent goal.",
+        },
+    )
+    supp_side: float = field(
+        default=1.0,
+        metadata={
+            "bounds": (0.0, 2.5),
+            "display_name": "Supporter Side Offset",
+            "__doc__": "Supporter lateral offset toward the centre.",
+        },
+    )
+    relativ_supp_max_x: float = field(
+        default=0.7,
+        metadata={
+            "bounds": (0.0, 4.2),
+            "display_name": "Relative Supporter Maximum X",
+            "__doc__": "Maximum supporter x position as a fraction of field length.",
+        },
+    )
     # striker
-    kick_offset: float = 0.25  # striker stands this far behind the ball (to push it forward)
-    post_margin: float = 0.45  # safety margin inside each goal post for a straight shot
-    back_dist: float = 200  # within this x of the opp goal & not aligned -> play back to our side
+    kick_offset: float = field(
+        default=0.25,
+        metadata={
+            "bounds": (0.0, 2.0),
+            "display_name": "Kick Offset",
+            "__doc__": "Distance the striker stands behind the ball.",
+        },
+    )
+    post_margin: float = field(
+        default=0.45,
+        metadata={
+            "bounds": (0.0, 1.3),
+            "display_name": "Post Margin",
+            "__doc__": "Safety margin inside each goal post for a straight shot.",
+        },
+    )
+    back_dist: float = field(
+        default=2.0,
+        metadata={
+            "bounds": (0.0, 3.0),
+            "display_name": "Back Distance",
+            "__doc__": "Distance from the opponent goal within which an unaligned striker plays back.",
+        },
+    )
     # separation
-    min_sep: float = 1.0  # no two robots closer than this
-    sep_iters: int = 8
+    min_sep: float = field(
+        default=1.0,
+        metadata={
+            "bounds": (0.3, 2.0),
+            "display_name": "Minimum Separation",
+            "__doc__": "Minimum desired separation between robots.",
+        },
+    )
+    sep_iters: int = field(
+        default=8,
+        metadata={"display_name": "Separation Iterations", "__doc__": "Number of separation relaxation iterations."},
+    )
     # kick lane: keep teammates out of the corridor in front of the ball
-    kick_clear: float = 0.7  # half-width of the cleared corridor
-    kick_range: float = 3.0  # how far in front of the ball the corridor extends
+    kick_clear: float = field(
+        default=0.7,
+        metadata={
+            "bounds": (0.0, 1.5),
+            "display_name": "Kick Clearance",
+            "__doc__": "Half-width of the cleared kick corridor.",
+        },
+    )
+    kick_range: float = field(
+        default=3.0,
+        metadata={
+            "bounds": (0.0, 5.0),
+            "display_name": "Kick Range",
+            "__doc__": "Distance the cleared kick corridor extends in front of the ball.",
+        },
+    )
     # opponent set play: keep all robots outside this radius
-    opp_set_play_clearance: float = 1.0
+    opp_set_play_clearance: float = field(
+        default=1.0,
+        metadata={
+            "bounds": (0.1, 2.0),
+            "display_name": "Opponent Set Play Clearance",
+            "__doc__": "Distance robots keep from the ball during an opponent set play.",
+        },
+    )
 
 
 class PositioningCapsule(AbstractBlackboardCapsule):
@@ -124,7 +270,7 @@ class PositioningCapsule(AbstractBlackboardCapsule):
             ],
         )
 
-        self.behavior_config = get_parameter_dict(self._node, "")
+        self.formation_config = get_parameter_dict(self._node, "formation")
 
         self._field = Field(
             length=parameters["field.size.x"],
