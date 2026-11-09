@@ -233,7 +233,7 @@ class InnerPositioningCapsule:
         ball: NDArray[np.float64] | None = None,
         field: Field | None = None,
         include_supporter: bool = True,
-        force_roles: list[str] | None = None
+        force_roles: list[str] | None = None,
     ) -> list[Role]:
         """Keep-priority as the count drops: striker > goalie > 1st defender > supporter
         > 2nd defender (and any further players are extra defenders).
@@ -251,8 +251,9 @@ class InnerPositioningCapsule:
             if n <= len(force_roles):
                 return [Role(force_roles[i]) for i in range(n)]
             else:
-                return ([Role(force_roles[i]) for i in range(len(force_roles))]
-                        + [Role(f"{Role.DEFENDER}_{i}") for i in range(n - len(force_roles))])
+                return [Role(force_roles[i]) for i in range(len(force_roles))] + [
+                    Role(f"{Role.DEFENDER}_{i}") for i in range(n - len(force_roles))
+                ]
         n_def = 0
         has_support = False
         if n >= 3:
@@ -467,7 +468,9 @@ class InnerPositioningCapsule:
         perp = np.array([-to_ball[1], to_ball[0]])
 
         roles = self._allocate_roles(
-            n_players, b, field,
+            n_players,
+            b,
+            field,
             include_supporter=params.include_supporter and not opp_set_play,
             force_roles=params.force_roles,
         )

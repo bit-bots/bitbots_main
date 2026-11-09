@@ -140,9 +140,7 @@ def compute_game_settings(teams: list[int]) -> list[dict]:
     return settings
 
 
-def compute_robot_poses(
-    teams: list[int], field_length: float, field_width: float
-) -> list[tuple[float, float, float]]:
+def compute_robot_poses(teams: list[int], field_length: float, field_width: float) -> list[tuple[float, float, float]]:
     """Compute the ``(x, y, yaw)`` placement for every robot.
 
     Field dimensions are passed in from the selected field configuration.

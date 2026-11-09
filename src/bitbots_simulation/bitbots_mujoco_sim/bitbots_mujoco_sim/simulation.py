@@ -188,9 +188,7 @@ class Simulation(Node):
             field_config = yaml.safe_load(field_config_file)
             field_size = field_config["parameter_blackboard"]["ros__parameters"]["field"]["size"]
 
-        return str(
-            generate_world_xml("1", self.package_path, "piplus", field_size["x"], field_size["y"])
-        )
+        return str(generate_world_xml("1", self.package_path, "piplus", field_size["x"], field_size["y"]))
 
     def _find_robot_indices(self) -> list[int]:
         """Find all robot instances by looking for bodies named 'robot_<index>_base_link'."""
