@@ -30,7 +30,7 @@ from the ball if we need to keep our distance from it because the opponent has s
 
 import math
 from collections.abc import Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
 from enum import StrEnum
 from typing import TypedDict
 
@@ -278,28 +278,8 @@ class PositioningCapsule(AbstractBlackboardCapsule):
             goal_width=parameters["field.goal.width"],
         )
         self._params = Params()
-        self._params.goalie_forward_dist = float(self.formation_config["goalie_forward_dist"])
-        self._params.relativ_def_depth = float(self.formation_config["relativ_def_depth"])
-        self._params.def_depth_bias = float(self.formation_config["def_depth_bias"])
-        self._params.def_min_depth = float(self.formation_config["def_min_depth"])
-        self._params.def_max_depth = float(self.formation_config["def_max_depth"])
-        self._params.def_to_goalie_depth = float(self.formation_config["def_to_goalie_depth"])
-        self._params.standoff = float(self.formation_config["standoff"])
-        self._params.def_side_gap = float(self.formation_config["def_side_gap"])
-        self._params.def_side_gap_close = float(self.formation_config["def_side_gap_close"])
-        self._params.solo_def_side_gap = float(self.formation_config["solo_def_side_gap"])
-        self._params.include_supporter = bool(self.formation_config["include_supporter"])
-        self._params.supp_forward_offset = float(self.formation_config["supp_forward_offset"])
-        self._params.supp_side = float(self.formation_config["supp_side"])
-        self._params.relativ_supp_max_x = float(self.formation_config["relativ_supp_max_x"])
-        self._params.kick_offset = float(self.formation_config["kick_offset"])
-        self._params.post_margin = float(self.formation_config["post_margin"])
-        self._params.back_dist = float(self.formation_config["back_dist"])
-        self._params.min_sep = float(self.formation_config["min_sep"])
-        self._params.sep_iters = int(self.formation_config["sep_iters"])
-        self._params.kick_clear = float(self.formation_config["kick_clear"])
-        self._params.kick_range = float(self.formation_config["kick_range"])
-        self._params.opp_set_play_clearance = float(self.formation_config["opp_set_play_clearance"])
+        for param in fields(self._params):
+            setattr(self._params, param.name, param.type(self.formation_config[param.name]))
 
         self._inner = InnerPositioningCapsule()
 
