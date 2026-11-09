@@ -1,9 +1,11 @@
 # Configuration of the Pi Plus AMP soccer kick policy.
 #
 # Training: repository AMP_mjlab (worktree AMP_mjlab-kick-noballvel, branch amp-soccer-kick),
-# task PiPlus-AMP-Kick-DA, run piplus_amp_kick_symmetric/2026-11-02_21-25-35_kick_sym_huber,
-# checkpoint model_29000.pt (iteration 29000). Do not use model_29999.pt of this run: the
-# training became numerically unstable at about iteration 29467.
+# task PiPlus-AMP-Kick-DA, run
+# piplus_amp_kick_symmetric/2026-11-08_10-24-15_kick_clipobs_noairtime_swing80,
+# checkpoint model_13000.pt (iteration 13000). The run was stopped at this iteration.
+# The ball position has a tanh bound (ball.pos_tanh_scale 3.0). The last action in the
+# observation is the action after the clip to the soft joint limits.
 # The joint order, default pose, gains, action scale, joint ranges, history length and
 # control period come from the env.yaml of this run and from the robot model of the training.
 # The policy was trained in simulation only.
@@ -173,9 +175,10 @@ piplus_amp_kick_node:
          0.9500,  # l_ankle_pitch_joint
          0.7200,  # l_ankle_roll_joint
       ]
-      # Bound for the last action in the observation. The training does not bound it.
-      # This value is much larger than the actions of the trained policy. It only stops
-      # a feedback loop that diverges.
+      # The last action in the observation is the joint action after the clip to the soft
+      # joint limits, as in the training (last_action_clipped). This value is an extra
+      # bound for a policy output that is not finite or very large. It does not act on
+      # the clipped feedback of the kick node.
       action_limit: 50.0
 
     phase:
@@ -201,11 +204,9 @@ piplus_amp_kick_node:
       position_clip: 10.0
       # Scale in meters of the tanh bound of the ball position: each axis becomes
       # s * tanh(x / s) after the clip. Null turns the bound off. The value must agree with
-      # the training of the model. The current model (kick_sym_huber, model_29000) was
-      # trained without the bound, so the value must stay null for it. Runs with the
-      # bound (for example kick_sym_huber_coeff01_rest05_tanh) need the value of their
-      # training (BALL_POS_TANH_SCALE_M).
-      pos_tanh_scale: null
+      # the training of the model. The current model (kick_clipobs_noairtime_swing80,
+      # model_13000) was trained with BALL_POS_TANH_SCALE_M = 3.0.
+      pos_tanh_scale: 3.0
 
     command:
       action_name: rl_kick

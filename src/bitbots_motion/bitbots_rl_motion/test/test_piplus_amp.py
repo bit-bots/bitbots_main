@@ -321,9 +321,9 @@ def test_ball_position_tanh_bound():
     assert np.all(np.abs(bounded) < 3.0)
 
 
-def test_shipped_kick_model_has_no_ball_tanh_bound():
-    """The shipped kick model (kick_sym_huber, model_29000) was trained without the tanh bound."""
-    assert parse_optional_scale(load_params("piplus_amp_kick_node")["ball"]["pos_tanh_scale"]) is None
+def test_shipped_kick_model_has_the_ball_tanh_bound():
+    """The shipped kick model (kick_clipobs_noairtime_swing80, model_13000) was trained with BALL_POS_TANH_SCALE_M = 3.0."""
+    assert parse_optional_scale(load_params("piplus_amp_kick_node")["ball"]["pos_tanh_scale"]) == 3.0
 
 
 def test_kick_intensity_is_the_inverse_of_the_training_map():
