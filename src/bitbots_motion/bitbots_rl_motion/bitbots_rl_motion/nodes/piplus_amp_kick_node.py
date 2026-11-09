@@ -127,18 +127,11 @@ class PiplusAmpKickNode(RLNode):
 
     # publisher function
     def publisher(self, onnx_pred):
-        feedback, feedback_bounded = self._action_limiter.bound_feedback(onnx_pred)
-        if feedback_bounded:
-            self.get_logger().warning(
-                f"Action of {np.abs(onnx_pred).max():.1f} is outside the feedback limit. "
-                "The policy sees an observation that it did not see in training.",
-                throttle_duration_sec=2.0,
-            )
-            self._previous_action.set_previous_action(feedback)
-
         joint_action, joint_action_clipped = self._action_limiter.clip_joint_action(onnx_pred)
         if joint_action_clipped:
             self.get_logger().debug("Joint targets clipped to the soft joint limits.", throttle_duration_sec=2.0)
+        # The training observes the action after this clip (last_action_clipped), not the raw policy output
+        self._previous_action.set_previous_action(joint_action)
         joint_command = self._joint_handler.get_joint_commands(joint_action)
         self._joint_command_pub.publish(joint_command)
 

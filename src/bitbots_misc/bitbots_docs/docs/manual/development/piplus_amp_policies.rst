@@ -59,16 +59,12 @@ Provenance
      - ``model_29999.pt`` (iteration 29999)
    * - Kick
      - ``AMP_mjlab`` (worktree ``AMP_mjlab-kick-noballvel``, branch ``amp-soccer-kick``), task ``PiPlus-AMP-Kick-DA``
-     - ``logs/rsl_rl/piplus_amp_kick_symmetric/2026-11-02_21-25-35_kick_sym_huber``
-     - ``model_29000.pt`` (iteration 29000)
+     - ``logs/rsl_rl/piplus_amp_kick_symmetric/2026-11-08_10-24-15_kick_clipobs_noairtime_swing80``
+     - ``model_13000.pt`` (iteration 13000, the run was stopped there)
 
-Do not use ``model_29999.pt`` of the kick run.
-The kick training became numerically unstable at approximately iteration 29467.
-
-A new kick run (``2026-11-04_08-11-39_kick_sym_huber_coeff01_rest05_tanh``) observes the ball position with a tanh bound
-(see `Ball position bound`_). It is not complete. Its ONNX model is not in the package yet.
-When its model replaces the current model, export it from the final checkpoint and set ``ball.pos_tanh_scale``
-to the value of its training. The current model must not get the tanh bound.
+The kick model observes the ball position with a tanh bound (see `Ball position bound`_)
+and the last action after the clip to the soft joint limits (see `Safety clamps`_).
+The config sets ``ball.pos_tanh_scale`` to 3.0, the value of the training.
 
 The ONNX files were exported on the CPU.
 The walk model was exported with the ``MLPModel.as_onnx()`` function of the rsl_rl version of the training repository.
@@ -296,7 +292,7 @@ In the training, this transform comes after the noise, the delay and the transfo
 (``object_pos_b_noisy_delayed_world`` with ``tanh_scale``).
 If ``ball.pos_tanh_scale`` is null, the node does not apply the transform.
 The value must agree with the training of the loaded model.
-The current model was trained without the transform, so its config sets null.
+The current kick model was trained with the scale 3.0, so its config sets 3.0.
 
 
 Safety clamps
@@ -311,10 +307,11 @@ Both nodes apply these limits (``ActionLimiter``):
   The soft limits are the joint ranges in the config, shrunk around their centers by ``joints.soft_limit_factor``.
   The kick training uses the same clip (``LimitedJointPositionAction``).
   The walk training does not clip the action. For the walk, the clip is a deployment safety limit only.
-* The last action in the observation is clipped to plus or minus ``joints.action_limit``.
-  The training does not clip this value. In the kick training, the "last action" observation is the raw policy output
-  (``ActionManager.action``), not the clipped action.
-  Thus, the limit is much larger than the actions of the trained policies. It only stops a feedback loop that diverges.
+* Walk node: the last action in the observation is clipped to plus or minus ``joints.action_limit``.
+  The walk training does not clip this value. The limit is much larger than the actions of the trained policy.
+  It only stops a feedback loop that diverges.
+* Kick node: the last action in the observation is the joint action after the clip to the soft joint limits.
+  This is the same value as in the kick training (``last_action_clipped``).
 
 The ``RLNode`` also skips steps with observations or actions that are not finite.
 
