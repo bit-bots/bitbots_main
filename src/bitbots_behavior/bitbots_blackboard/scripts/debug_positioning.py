@@ -64,7 +64,8 @@ def run_gui():
         for name, slider in sliders:
             if slider.label.contains(event)[0]:
                 tooltip.set_text(descriptions[name])
-                tooltip.set_position(fig.transFigure.inverted().transform((event.x + 10, event.y + 10)))
+                x, y = fig.transFigure.inverted().transform((event.x + 10, event.y + 10))
+                tooltip.set_position((x, y))
                 tooltip.set_visible(True)
                 fig.canvas.draw_idle()
                 return

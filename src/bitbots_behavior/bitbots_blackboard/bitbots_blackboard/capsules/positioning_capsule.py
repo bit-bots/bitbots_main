@@ -279,6 +279,7 @@ class PositioningCapsule(AbstractBlackboardCapsule):
         )
         self._params = Params()
         for param in fields(self._params):
+            assert param.type in (float, bool)
             setattr(self._params, param.name, param.type(self.formation_config[param.name]))
 
         self._inner = InnerPositioningCapsule()
