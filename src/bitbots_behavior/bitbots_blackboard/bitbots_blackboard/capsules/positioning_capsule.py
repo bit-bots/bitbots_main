@@ -205,7 +205,7 @@ class Params:
         },
     )
     back_dist: float = field(
-        default=2.0,
+        default=0.5,
         metadata={
             "bounds": (0.0, 3.0),
             "display_name": "Back Distance",
