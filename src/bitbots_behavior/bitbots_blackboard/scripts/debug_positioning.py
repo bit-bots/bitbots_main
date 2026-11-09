@@ -55,6 +55,24 @@ def run_gui():
         for param in fields(params)
         if "bounds" in param.metadata
     ]
+    descriptions = {param.name: param.metadata["__doc__"] for param in fields(params) if "bounds" in param.metadata}
+    tooltip = fig.text(
+        0, 0, "", visible=False, zorder=100, bbox={"boxstyle": "round", "facecolor": "white", "alpha": 0.95}
+    )
+
+    def show_description(event):
+        for name, slider in sliders:
+            if slider.label.contains(event)[0]:
+                tooltip.set_text(descriptions[name])
+                tooltip.set_position(fig.transFigure.inverted().transform((event.x + 10, event.y + 10)))
+                tooltip.set_visible(True)
+                fig.canvas.draw_idle()
+                return
+        if tooltip.get_visible():
+            tooltip.set_visible(False)
+            fig.canvas.draw_idle()
+
+    fig.canvas.mpl_connect("motion_notify_event", show_description)
     check_supp = CheckButtons(fig.add_axes((0.83, 0.05, 0.14, 0.025)), ["supporter"], [params.include_supporter])
     check_sp = CheckButtons(fig.add_axes((0.83, 0.09, 0.14, 0.025)), ["set play"], [False])
 
