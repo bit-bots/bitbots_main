@@ -24,6 +24,7 @@
 
   <depend>cv_bridge</depend>
   <depend>generate_parameter_library</depend>
+  <depend>protobuf-dev</depend>
   <depend>rclcpp</depend>
   <depend>sensor_msgs</depend>
   <depend>soccer_vision_2d_msgs</depend>
