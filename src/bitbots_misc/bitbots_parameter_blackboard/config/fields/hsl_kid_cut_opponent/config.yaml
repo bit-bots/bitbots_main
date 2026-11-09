@@ -19,7 +19,7 @@ parameter_blackboard:
         width: 1.85   # The width of the goal (center of one goal post to the other goal post)
         depth: 0.75   # The depth of the goal (distance from the goal line to the back of the goal)
       navigation_bounds:   # Hard limits for the robot position (map frame) that the path planning never leaves. Goals outside are clamped onto the limit. Matches the crop range in generator_config.yaml.
-        x_min: -5.5
-        x_max: 1.5
-        y_min: -4.0
-        y_max: 4.0
+        x_min: -5.0
+        x_max: 1.0
+        y_min: -3.5
+        y_max: 3.5
