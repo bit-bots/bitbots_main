@@ -31,7 +31,6 @@ using namespace std::chrono_literals;
 namespace move_head {
 
 #define DEG_TO_RAD M_PI / 180
-#define RAD_CAMERA_ANGLE DEG_TO_RAD * 30
 
 using LookAtGoal = bitbots_msgs::action::LookAt;
 using LookAtGoalHandle = rclcpp_action::ServerGoalHandle<LookAtGoal>;
@@ -555,7 +554,7 @@ class HeadMover {
     get_head_position(current_yaw, current_pitch);
 
     head_yaw = rel_head_yaw + current_yaw;
-    head_pitch = rel_head_pitch + (current_pitch - RAD_CAMERA_ANGLE);
+    head_pitch = rel_head_pitch + current_pitch;
   }
 
   /**

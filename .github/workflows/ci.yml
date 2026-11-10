@@ -20,10 +20,11 @@ jobs:
           cancel_others: 'true'
 
       # Remove comments to spawn an interactive debugging ssh shell in the ci
-      #- name: Setup tmate session
-      #   uses: mxschmitt/action-tmate@v3
+      # - name: Setup upterm session
+      #   uses: owenthereal/action-upterm@v2
       #   with:
       #     detached: true
+      #     limit-access-to-actor: true
 
       - name: Check out repository
         uses: actions/checkout@v7
