@@ -3,6 +3,8 @@
 A ROS 2 domain bridge.
 Bridges ROS communication between different ROS domain IDs.
 
+Forked by bitbots for inclusion of services as something that can be bridged.
+
 See the [design document](doc/design.md) for more details about how the bridge works.
 
 ## Prerequisites

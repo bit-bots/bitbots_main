@@ -22,6 +22,7 @@
   <depend>std_srvs</depend>
   <depend>rosgraph_msgs</depend>
   <depend>bitbots_msgs</depend>
+  <depend>bitbots_localization</depend>
   <depend>ament_index_python</depend>
   <depend>python3-numpy</depend>
   <depend>python3-mujoco</depend>
