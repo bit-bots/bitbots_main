@@ -3,13 +3,14 @@
 import socket
 import struct
 import threading
+import time
 from typing import Optional
 
 import rclpy
 import transforms3d
 from ament_index_python.packages import get_package_share_directory
 from bitbots_tf_buffer import Buffer
-from bitbots_utils.utils import get_parameter_dict, get_parameters_from_other_node
+from bitbots_utils.utils import get_global_parameters, get_parameter_dict
 from builtin_interfaces.msg import Time as TimeMsg
 from game_controller_hsl_interfaces.msg import GameState
 from geometry_msgs.msg import PoseWithCovarianceStamped, Quaternion, Twist, TwistWithCovarianceStamped
@@ -38,9 +39,7 @@ class TeamCommunication:
         self.logger = self.node.get_logger()
 
         self.logger.info("Initializing bitbots_team_communication...")
-        params_blackboard = get_parameters_from_other_node(
-            self.node, "parameter_blackboard", ["bot_id", "team_id", "team_color"]
-        )
+        params_blackboard = get_global_parameters(self.node, ["bot_id", "team_id", "team_color"])
         self.player_id = params_blackboard["bot_id"]
         self.team_id = params_blackboard["team_id"]
         self.team_color_id = params_blackboard["team_color"]
@@ -67,7 +66,6 @@ class TeamCommunication:
 
         self.tf_buffer = Buffer(node=self.node)
 
-        self.run_spin_in_thread()
         self.try_to_establish_connection()
 
         self.actual_rate = self.rate * self.increase_rate_during_kick_factor
@@ -116,10 +114,7 @@ class TeamCommunication:
         except KeyboardInterrupt:
             pass
 
-    def run_spin_in_thread(self):
-        # Necessary in ROS2, else we are forever stuck receiving messages
-        thread = threading.Thread(target=self.spin, daemon=True)
-        thread.start()
+        self.logger.info("Initialization complete.")
 
     def set_state_defaults(self):
         self.gamestate: Optional[GameState] = None
@@ -139,8 +134,9 @@ class TeamCommunication:
     def try_to_establish_connection(self):
         # we will try multiple times till we manage to get a connection
         while rclpy.ok() and not self.socket_communication.is_setup():
+            self.logger.info("Trying to establish connection...")
             self.socket_communication.establish_connection()
-            self.node.get_clock().sleep_for(Duration(seconds=1))
+            time.sleep(1)
 
     def create_publishers(self):
         self.team_data_publisher = self.node.create_publisher(TeamData, self.topics["team_data_topic"], qos_profile=1)
@@ -351,7 +347,14 @@ class TeamCommunication:
 
 def main():
     rclpy.init(args=None)
-    TeamCommunication()
+    tc = TeamCommunication()
+
+    executor = EventsExecutor()
+    executor.add_node(tc.node)
+    try:
+        executor.spin()
+    except KeyboardInterrupt:
+        pass
 
 
 if __name__ == "__main__":

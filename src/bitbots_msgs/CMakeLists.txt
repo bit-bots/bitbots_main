@@ -11,7 +11,9 @@ find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(action_msgs REQUIRED)
 find_package(bitbots_docs REQUIRED)
+find_package(builtin_interfaces REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(rcl_interfaces REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(trajectory_msgs REQUIRED)
@@ -35,6 +37,7 @@ rosidl_generate_interfaces(
   "msg/JointTorque.msg"
   "msg/ModelStates.msg"
   "msg/NetworkInterface.msg"
+  "msg/ParameterBlackboard.msg"
   "msg/PoseWithCertainty.msg"
   "msg/PoseWithCertaintyArray.msg"
   "msg/RobotControlState.msg"
@@ -53,7 +56,9 @@ rosidl_generate_interfaces(
   "srv/SimulatorPush.srv"
   DEPENDENCIES
   action_msgs
+  builtin_interfaces
   geometry_msgs
+  rcl_interfaces
   sensor_msgs
   std_msgs
   trajectory_msgs)

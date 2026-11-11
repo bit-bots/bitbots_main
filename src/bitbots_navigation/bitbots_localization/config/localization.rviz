@@ -75,7 +75,7 @@ Visualization Manager:
       Draw Behind: false
       Enabled: true
       Name: Map
-      Topic: /field/map
+      Topic: /field/map/lines
       Unreliable: false
       Use Timestamp: false
       Value: true

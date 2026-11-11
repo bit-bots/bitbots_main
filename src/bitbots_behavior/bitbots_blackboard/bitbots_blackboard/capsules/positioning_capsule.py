@@ -35,7 +35,7 @@ from enum import StrEnum
 from typing import TypedDict
 
 import numpy as np
-from bitbots_utils.utils import get_parameters_from_other_node
+from bitbots_utils.utils import get_global_parameters
 from numpy.typing import NDArray
 from scipy.optimize import linear_sum_assignment
 
@@ -111,9 +111,8 @@ class PositioningCapsule(AbstractBlackboardCapsule):
     def __init__(self, node, blackboard):
         super().__init__(node, blackboard)
 
-        parameters = get_parameters_from_other_node(
+        parameters = get_global_parameters(
             self._node,
-            "/parameter_blackboard",
             [
                 "field.goal.width",
                 "field.markings.penalty_area.size.x",

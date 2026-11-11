@@ -33,6 +33,14 @@ bitbots_localization:
       type: string
       description: "Topic for the particle publishing messages"
       read_only: true
+    lines_map_topic:
+      type: string
+      description: "Latched topic of the field lines map, which is published by the parameter blackboard"
+      read_only: true
+    goals_map_topic:
+      type: string
+      description: "Latched topic of the field goals map, which is published by the parameter blackboard"
+      read_only: true
     debug_visualization:
       type: bool
       description: "Activate debug visualization"

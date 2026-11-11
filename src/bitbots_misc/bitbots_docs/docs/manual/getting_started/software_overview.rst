@@ -10,6 +10,71 @@ Global Software Overview
    - A high level data flow diagram of the software stack.
    - A list of all bitbots packages with a short description, grouped by topic.
 
+Compose Server and TUI
+======================
+
+``bitbots_bringup`` contains the compose server, which runs the software stack described by a compose file,
+and a terminal frontend for it.
+
+``bitbots_compose_server`` (``pixi run compose_server``) starts, stops and restarts the software components of the robot,
+each as its own process group, and keeps their logs.
+Its output is the combined log of all components.
+Pass ``--autostart`` to start all enabled components right away.
+``--profile <name>``, ``--set <parameter>=<value>``, ``--enable <component>`` and ``--disable <component>``
+preselect what is started, see ``--help``.
+
+``bitbots_compose_tui`` (``pixi run teamplayer``) is a TUI for the compose server.
+It configures and starts the components, shows their state and logs, and restarts or stops single components.
+If no compose server is running, it starts one in the background and accepts the same preset flags for it,
+including ``--global``.
+When quitting, it asks whether to stop the compose server together with all components or to leave it running,
+also when it attached to a compose server that was already running, so the TUI can be closed and reopened at any time.
+``--attach`` only connects to a running compose server.
+``--headless`` runs a compose server in the foreground instead of the TUI and starts all enabled components;
+Ctrl-C then stops the components and the compose server.
+
+Both talk over an HTTP API on a Unix socket in ``$XDG_RUNTIME_DIR/bitbots_compose``.
+Several compose servers can run on one machine, e.g. for multiple simulated robots, by giving each a different ``--name``;
+pass the same ``--name`` to the TUI to connect to it.
+A second compose server with the same name refuses to start.
+The routes live below ``/api/v1``, see ``compose_server/src/server.rs`` in ``bitbots_bringup``.
+For example, the current state can be queried with:
+
+.. code-block:: bash
+
+   curl --unix-socket $XDG_RUNTIME_DIR/bitbots_compose/default.sock http://localhost/api/v1/status
+
+The Compose File
+----------------
+
+What the compose server starts is declared in ``config/teamplayer.yaml`` of ``bitbots_bringup``,
+not in the compose server itself.
+It lists the stack's parameters, named profiles (e.g. ``sim``), and its components.
+Each component names the launch file or executable that runs it and may declare
+
+- ``if``: parameter values under which it is available, e.g. only on hardware,
+- ``requires``: components that have to run before it is started,
+- ``fallback_for``: a component it replaces while that one is disabled,
+- ``locked``: that it cannot be deselected.
+
+The global parameters (field dimensions, game settings, ...) come from the ``blackboard`` component,
+the ``parameter_blackboard`` node of ``bitbots_parameter_blackboard``.
+The field can be chosen in the TUI or with ``--set fieldname=<field>``, the available fields are offered as choices.
+Game settings come from ``game_settings.yaml``, which the deploy tool writes;
+they cannot be changed in the TUI.
+For setups that need different values, such as several simulated robots,
+the compose server passes overrides on to the blackboard when it starts:
+give them with ``--global <parameter>=<value>`` (the value is read as YAML) or ``PUT /api/v1/global_parameters``.
+The compose server writes them to a ROS parameter file, which components receive through ``${global_parameters_file}``;
+a running blackboard keeps its values until it is restarted.
+The blackboard refuses overrides of parameters that its configuration files do not define, or with another type.
+
+To add a component, add an entry there and declare its package as ``exec_depend`` of ``bitbots_bringup``.
+The tests of ``bitbots_bringup`` check that the file is consistent,
+that every profile resolves without missing requirements,
+and that all referenced launch files and packages exist and are declared.
+The header of the file documents all fields.
+
 Bringup Launch Scripts
 ======================
 

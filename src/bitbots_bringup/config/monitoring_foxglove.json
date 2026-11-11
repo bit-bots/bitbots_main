@@ -156,7 +156,7 @@
         "/initialpose": {
           "visible": false
         },
-        "/nuc2/field/map": {
+        "/nuc2/field/map/lines": {
           "visible": true
         },
         "/nuc2/pose_with_covariance": {
@@ -180,7 +180,7 @@
           "visible": false,
           "covarianceColor": "#ccff6b40"
         },
-        "/nuc1/field/map": {
+        "/nuc1/field/map/lines": {
           "visible": true
         },
         "/nuc1/pose_with_covariance": {

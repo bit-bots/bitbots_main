@@ -1,7 +1,7 @@
 from typing import Literal, Optional
 
 import numpy as np
-from bitbots_utils.utils import get_parameters_from_other_node
+from bitbots_utils.utils import get_global_parameters
 from geometry_msgs.msg import PointStamped, Pose
 from rclpy.duration import Duration
 from rclpy.time import Time
@@ -23,7 +23,7 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
         self.time_to_ball_publisher = self._node.create_publisher(Float32, "time_to_ball", 2)
 
         # Retrieve game settings from parameter blackboard
-        params = get_parameters_from_other_node(self._node, "parameter_blackboard", ["role"])
+        params = get_global_parameters(self._node, ["role"])
         self.role = params["role"]
 
         # Data

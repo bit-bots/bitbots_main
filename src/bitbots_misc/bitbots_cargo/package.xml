@@ -13,6 +13,17 @@
 
     <buildtool_depend>ament_cmake</buildtool_depend>
 
+    <!-- Message packages of BITBOTS_R2R_IDL_PACKAGES, see cmake/bitbots_cargo.cmake.in -->
+    <build_export_depend>rcl</build_export_depend>
+    <build_export_depend>rcl_action</build_export_depend>
+    <build_export_depend>rcl_interfaces</build_export_depend>
+    <build_export_depend>builtin_interfaces</build_export_depend>
+    <build_export_depend>rosgraph_msgs</build_export_depend>
+    <build_export_depend>geometry_msgs</build_export_depend>
+    <build_export_depend>tf2_msgs</build_export_depend>
+    <build_export_depend>nav_msgs</build_export_depend>
+    <build_export_depend>bitbots_msgs</build_export_depend>
+
     <export>
         <build_type>ament_cmake</build_type>
     </export>

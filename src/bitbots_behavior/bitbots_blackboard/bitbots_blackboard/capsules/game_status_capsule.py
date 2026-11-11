@@ -1,4 +1,4 @@
-from bitbots_utils.utils import get_parameters_from_other_node
+from bitbots_utils.utils import get_global_parameters
 from builtin_interfaces.msg import Time as TimeMsg
 from game_controller_hsl_interfaces.msg import GameState
 from rclpy.time import Time
@@ -12,8 +12,9 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
 
     def __init__(self, node, blackboard=None):
         super().__init__(node, blackboard)
-        self.team_id: int = get_parameters_from_other_node(self._node, "parameter_blackboard", ["team_id"])["team_id"]
-        self.own_id: int = get_parameters_from_other_node(self._node, "parameter_blackboard", ["bot_id"])["bot_id"]
+        parameters = get_global_parameters(self._node, ["team_id", "bot_id"])
+        self.team_id: int = parameters["team_id"]
+        self.own_id: int = parameters["bot_id"]
         self.gamestate = GameState()
         self.last_update: float = 0.0
         self.unpenalized_time: float = 0.0

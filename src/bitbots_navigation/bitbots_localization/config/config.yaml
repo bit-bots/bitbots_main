@@ -9,6 +9,8 @@ bitbots_localization:
       line_pointcloud_topic: 'line_mask_relative_pc'
       goal_topic: 'goals_simulated'
       particle_publishing_topic: 'pose_particles'
+      lines_map_topic: 'field/map/lines'
+      goals_map_topic: 'field/map/goals'
       debug_visualization: true
     particle_filter:
       particle_number: 300

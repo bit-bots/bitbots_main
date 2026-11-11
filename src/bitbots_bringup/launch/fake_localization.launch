@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- Stands in for the localization: a fixed map frame on top of the odometry -->
+    <arg name="sim" default="false" description="Whether the robot is running in simulation or on real hardware" />
+
+    <node name="map_odom" pkg="tf2_ros" exec="static_transform_publisher" args="--x 0 --y 0 --z 0 --roll 0 --pitch 0 --yaw 0 --frame-id map --child-frame-id odom">
+        <param name="use_sim_time" value="$(var sim)" />
+    </node>
+</launch>

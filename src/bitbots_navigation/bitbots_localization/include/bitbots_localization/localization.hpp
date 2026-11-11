@@ -37,6 +37,8 @@
 #include <image_transport/image_transport.hpp>
 #include <iterator>
 #include <memory>
+#include <nav_msgs/msg/occupancy_grid.hpp>
+#include <optional>
 #include <particle_filter/CRandomNumberGenerator.hpp>
 #include <particle_filter/ParticleFilter.hpp>
 #include <particle_filter/gaussian_mixture_model.hpp>
@@ -97,6 +99,23 @@ class Localization {
   void updateParams(bool force_reload = false);
 
   /**
+   * Creates the map of a measurement class from the received field map
+   * @param map_msg The received field map, if any
+   * @param factor The scoring factor of the measurement class, no map is created if the class is not used
+   * @param out_of_field_score Score for measurements outside of the map
+   * @param topic The topic of the field map, used for error reporting
+   * @return The map, or null if the class is not used or no valid field map is available
+   */
+  std::shared_ptr<Map> createMap(const std::optional<nav_msgs::msg::OccupancyGrid>& map_msg, double factor,
+                                 double out_of_field_score, const std::string& topic);
+
+  /**
+   * Checks that the maps of all used measurement classes are available and reports the missing ones
+   * @return True if the filter can be run
+   */
+  bool requiredMapsAvailable();
+
+  /**
    * Callback for the line point cloud measurements
    * @param msg Message containing the line point cloud.
    */
@@ -145,19 +164,19 @@ class Localization {
   // Data structure to hold field specific parameters, as they are not part of the schema and get pulled from the global
   // parameter server
   bitbots_localization::FieldDimensions field_dimensions_;
-  std::string field_name_;
 
   // Declare subscribers
   rclcpp::Subscription<sm::msg::PointCloud2>::SharedPtr line_point_cloud_subscriber_;
   rclcpp::Subscription<sv3dm::msg::GoalpostArray>::SharedPtr goal_subscriber_;
   rclcpp::Subscription<gm::msg::PoseWithCovarianceStamped>::SharedPtr rviz_initial_pose_subscriber_;
+  rclcpp::Subscription<nav_msgs::msg::OccupancyGrid>::SharedPtr lines_map_subscriber_;
+  rclcpp::Subscription<nav_msgs::msg::OccupancyGrid>::SharedPtr goals_map_subscriber_;
 
   // Declare publishers
   rclcpp::Publisher<gm::msg::PoseWithCovarianceStamped>::SharedPtr pose_with_covariance_publisher_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr pose_particles_publisher_;
   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr line_ratings_publisher_;
   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr goal_ratings_publisher_;
-  rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr field_publisher_;
 
   // Declare services
   rclcpp::Service<bl::srv::ResetFilter>::SharedPtr reset_service_;
@@ -209,9 +228,15 @@ class Localization {
   // Keep track of the number of filter steps
   int timer_callback_count_ = 0;
 
-  // Maps for the different measurement classes
+  // Maps for the different measurement classes, they are null if the class is not used or its map is not available
   std::shared_ptr<Map> lines_;
   std::shared_ptr<Map> goals_;
+
+  // Latest field maps received from the parameter blackboard
+  std::optional<nav_msgs::msg::OccupancyGrid> lines_map_msg_;
+  std::optional<nav_msgs::msg::OccupancyGrid> goals_map_msg_;
+  // Set when a new field map is received, so the maps are recreated in the next filter step
+  bool field_maps_updated_ = false;
 
   // Flag that enables or disables observations
   bool observe_ = true;

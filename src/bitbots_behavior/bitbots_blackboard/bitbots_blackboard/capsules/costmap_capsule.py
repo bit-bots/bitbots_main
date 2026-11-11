@@ -3,7 +3,7 @@ from typing import Optional
 
 import numpy as np
 import tf2_ros as tf2
-from bitbots_utils.utils import get_parameter_dict, get_parameters_from_other_node
+from bitbots_utils.utils import get_global_parameters, get_parameter_dict
 from geometry_msgs.msg import Point, Pose, PoseStamped, Quaternion
 from nav_msgs.msg import MapMetaData, OccupancyGrid
 from PIL import Image, ImageDraw
@@ -31,9 +31,7 @@ class CostmapCapsule(AbstractBlackboardCapsule):
         self.map_frame: str = self._node.get_parameter("map_frame").value
         self.base_footprint_frame: str = self._node.get_parameter("base_footprint_frame").value
 
-        parameters = get_parameters_from_other_node(
-            self._node, "/parameter_blackboard", ["field.size.x", "field.size.y", "field.goal.width"]
-        )
+        parameters = get_global_parameters(self._node, ["field.size.x", "field.size.y", "field.goal.width"])
         self.field_length: float = parameters["field.size.x"]
         self.field_width: float = parameters["field.size.y"]
         self.goal_width: float = parameters["field.goal.width"]
