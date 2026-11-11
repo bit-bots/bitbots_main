@@ -90,3 +90,51 @@ class BallInGoalieZone(AbstractDecisionElement):
 
     def get_reevaluate(self):
         return True
+
+
+class BallInDemoPenaltyArea(AbstractDecisionElement):
+    blackboard: BodyBlackboard
+
+    def __init__(self, blackboard, dsd, parameters):
+        super().__init__(blackboard, dsd, parameters)
+        self.demo_penalty_area_x = self.blackboard.config["demo_penalty_area_x"]
+        self.demo_penalty_area_x_range = self.blackboard.config["demo_penalty_area_x_range"]
+        self.demo_penalty_area_y = self.blackboard.config["demo_penalty_area_y"]
+        self.demo_penalty_area_y_range = self.blackboard.config["demo_penalty_area_y_range"]
+
+    def perform(self, reevaluate=False):
+        """
+        Determines whether the ball is in the defensive area of the field as defined in the config.
+        :param reevaluate:
+        :return:
+        """
+        ball_position = self.blackboard.world_model.get_ball_position_xy()
+        # calculate the x value of the boundary of the defensive area
+        penalty_area_x_upper = (
+            self.demo_penalty_area_x * self.blackboard.world_model.field_length
+            + self.demo_penalty_area_x_range * self.blackboard.world_model.field_length
+        )
+        penalty_area_x_lower = (
+            self.demo_penalty_area_x * self.blackboard.world_model.field_length
+            - self.demo_penalty_area_x_range * self.blackboard.world_model.field_length
+        )
+
+        defensive_y_left = (self.demo_penalty_area_y * self.blackboard.world_model.field_width) - (
+            self.blackboard.world_model.field_width * self.demo_penalty_area_y_range
+        )
+        defensive_y_right = -(
+            (self.demo_penalty_area_y * self.blackboard.world_model.field_width)
+            - (self.blackboard.world_model.field_width * self.demo_penalty_area_y_range)
+        )
+
+        if (
+            ball_position[0] <= penalty_area_x_upper
+            and ball_position[0] >= penalty_area_x_lower
+            and ball_position[1] <= defensive_y_right
+            and ball_position[1] >= defensive_y_left
+        ):
+            return "YES"
+        return "NO"
+
+    def get_reevaluate(self):
+        return True

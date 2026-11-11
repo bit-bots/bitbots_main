@@ -23,7 +23,7 @@ class KickOrDribble(AbstractDecisionElement):
         map_goal = self.blackboard.pathfinding.get_map_goal(distance=0.0, side_offset=0.0)
 
         # Are no other robots too close?
-        other_robots_close = self.blackboard.costmap.is_other_robot_close(
+        other_robots_close = self.blackboard.world_model.is_other_robot_close(
             self.threshold_upfield, self.threshold_downfield
         )
         # Get actual set play situation
