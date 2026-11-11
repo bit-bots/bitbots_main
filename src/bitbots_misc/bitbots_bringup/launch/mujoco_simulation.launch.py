@@ -168,7 +168,7 @@ def launch_setup(context):
         if start_teamplayer:
             actions.append(
                 TimerAction(
-                    period=3.0,
+                    period=3.0 * (robot_index + 1),  # start the first after 3, the second after 6, etc.
                     actions=[
                         LogInfo(msg=f"Launching teamplayer stack for robot{robot_domain} in domain {robot_domain}"),
                         ExecuteProcess(
