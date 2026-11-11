@@ -56,9 +56,13 @@ $GoalScoreRecently
     YES --> $ConfigRole
         GOALIE -->  $RobotInOwnPercentOfField + p:40
             YES --> @Stand + duration:1.0 + r:false, @PlayAnimationCheering + r:false, @Stand
-            NO -->  @ChangeAction + action:positioning, @PlaySound + file:ole.wav, @LookAtFieldFeatures, @Stand + duration:%ready_wait_time, @AvoidBallActive, @GoToRolePosition
-        ELSE --> @ChangeAction + action:positioning, @PlaySound + file:ole.wav, @LookAtFieldFeatures, @Stand + duration:%ready_wait_time, @AvoidBallActive, @GoToRolePosition
-    NO --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @Stand + duration:%ready_wait_time, @AvoidBallActive, @GoToRolePosition
+            NO --> @ChangeAction + action:positioning, @PlaySound + file:ole.wav, @LookAtFieldFeatures, @Stand + duration:%ready_wait_time, @AvoidBallActive, @GoToRolePosition
+        ELSE --> $ReachedAndAlignedToConfigRolePosition
+            YES --> @ChangeAction + action:waiting, @PlaySound + file:ole.wav, @LookAtFieldFeatures, @Stand
+            NO --> @ChangeAction + action:positioning, @PlaySound + file:ole.wav, @LookAtFieldFeatures, @Stand + duration:%ready_wait_time, @AvoidBallActive, @GoToRolePosition
+    NO --> $ReachedAndAlignedToConfigRolePosition
+        YES --> #StandAndLook
+        NO --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @Stand + duration:%ready_wait_time, @AvoidBallActive, @GoToRolePosition
 
 #SupporterRole
 $BallSeen
@@ -137,20 +141,14 @@ $IsPenalized
         READY --> $DoOnce
             NOT_DONE --> #ActivateDoubleTouchProtection
             DONE --> $AnyGoalScoreRecently + time:50
-                YES --> $ReachedAndAlignedToConfigRolePosition
-                    YES --> #StandAndLook
-                    NO --> #PositioningReady
+                YES --> #PositioningReady
                 NO --> $DoOnce
                     NOT_DONE --> @ChangeAction + action:waiting + r:false, @LookAtFieldFeatures + r:false, @Stand + duration:2
-                    DONE --> $ReachedAndAlignedToConfigRolePosition
-                        YES --> #StandAndLook
-                        NO --> #PositioningReady
+                    DONE --> #PositioningReady
         SET --> $WhistleDetected
             DETECTED --> $SecondaryStateTeamDecider
                 OUR --> #PlayingBehavior
-                OTHER --> $ReachedAndAlignedToConfigRolePosition
-                    YES --> #StandAndLook
-                    NO --> #PositioningReady
+                OTHER --> #PositioningReady
                 ELSE --> #PlayingBehavior
             NOT_DETECTED --> $SecondaryStateDecider
                 PENALTYSHOOT --> $SecondaryStateTeamDecider
