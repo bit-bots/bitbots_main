@@ -3,6 +3,7 @@ from pathlib import Path
 
 import yaml
 from ament_index_python.packages import get_package_share_directory
+from bitbots_mujoco_sim.world import compute_game_settings, generate_world_xml, parse_num_robots
 from launch import LaunchDescription
 from launch.actions import (
     DeclareLaunchArgument,
@@ -88,45 +89,43 @@ def generate_domain_bridge_config(robot_domain: int, output_dir: Path) -> Path:
     return config_path
 
 
-def generate_world_xml(num_robots: int, package_share: str, robot_type: str) -> Path:
-    """Generate MuJoCo world XML with the correct number of robots."""
-    template_path = Path(package_share) / "xml" / "kid_field.xml"
-    output_path = Path(package_share) / "xml" / "generated_world.xml"
-    offset = 4 * (
-        1 / num_robots
-    )  # this makes the offset be the default value when there are 4 robots and increse the less robots there are
-
-    with open(template_path) as f:
-        template = f.read()
-
-    # Replace placeholder with actual robot count
-    world_xml = (
-        template.replace("{{NUM_ROBOTS}}", str(num_robots))
-        .replace("{{OFFSET}}", str(offset))
-        .replace("{{ROBOT_TYPE}}", robot_type)
-    )
-
-    with open(output_path, "w") as f:
-        f.write(world_xml)
-    return output_path
-
-
 def launch_setup(context):
     """Dynamically set up launches based on num_robots."""
-    num_robots = int(LaunchConfiguration("num_robots").perform(context))
+    num_robots_spec = LaunchConfiguration("num_robots").perform(context)
+    teams = parse_num_robots(num_robots_spec)
+    num_robots = sum(teams)  # total robots across all teams
     robot_type = str(LaunchConfiguration("robot_type").perform(context))
+    field_name = LaunchConfiguration("fieldname").perform(context)
     use_web = LaunchConfiguration("web").perform(context).lower() == "true"
+    start_teamplayer = LaunchConfiguration("teamplayer").perform(context).lower() == "true"
     package_share = get_package_share_directory("bitbots_mujoco_sim")
+    blackboard_share = get_package_share_directory("bitbots_parameter_blackboard")
     bridge_config_dir = Path(package_share) / "config" / "domain_bridges"
 
+    field_config_path = Path(blackboard_share) / "config" / "fields" / field_name / "config.yaml"
+    with open(field_config_path) as field_config_file:
+        field_config = yaml.safe_load(field_config_file)
+        field_size = field_config["parameter_blackboard"]["ros__parameters"]["field"]["size"]
+
     # Get teamplayer argument values - only pass if explicitly set (not empty)
-    teamplayer_args = ["sim:=true"]  # sim is always true for mujoco simulation
+    teamplayer_args = ["sim:=true", f"fieldname:={field_name}"]  # sim is always true for mujoco simulation
     for arg_name, _ in TEAMPLAYER_ARGS:
         value = LaunchConfiguration(arg_name).perform(context)
         if value:  # Only pass if not empty string
             teamplayer_args.append(f"{arg_name}:={value}")
 
-    world_file = generate_world_xml(num_robots, package_share, robot_type)
+    world_file = generate_world_xml(
+        teams,
+        package_share,
+        robot_type,
+        field_size["x"],
+        field_size["y"],
+    )
+
+    # Compute individual game settings for every robot so that each robot gets its
+    # own team affiliation, bot id and role instead of relying on hand-written
+    # per-domain config files. Ordered the same as the robot domains below.
+    game_settings = compute_game_settings(teams)
 
     actions = []
 
@@ -144,7 +143,8 @@ def launch_setup(context):
         ),
     )
 
-    for robot_domain in range(11, num_robots + 11):  # 11 is the standart starting id for our robots
+    # 11 is the standard starting id for our robots
+    for robot_index, robot_domain in enumerate(range(11, num_robots + 11)):
         config_file = generate_domain_bridge_config(robot_domain, bridge_config_dir)
         actions.append(
             LogInfo(msg=f"Starting domain bridge for robot{robot_domain} (domain {robot_domain})"),
@@ -160,25 +160,40 @@ def launch_setup(context):
             ),
         )
 
-        actions.append(
-            TimerAction(
-                period=3.0,
-                actions=[
-                    LogInfo(msg=f"Launching teamplayer stack for robot{robot_domain} in domain {robot_domain}"),
-                    ExecuteProcess(
-                        cmd=[
-                            "ros2",
-                            "launch",
-                            "bitbots_bringup",
-                            "teamplayer.launch",
-                        ]
-                        + teamplayer_args,
-                        output="screen",
-                        additional_env={"ROS_DOMAIN_ID": str(robot_domain)},
-                    ),
-                ],
+        # Pass this robot's individual game settings down to the teamplayer stack,
+        # where parameter_blackboard.launch.py applies them on top of the shared
+        # game_settings.yaml defaults.
+        robot_game_settings_args = [f"{key}:={value}" for key, value in game_settings[robot_index].items()]
+
+        if start_teamplayer:
+            actions.append(
+                TimerAction(
+                    period=3.0 * (robot_index + 1),  # start the first after 3, the second after 6, etc.
+                    actions=[
+                        LogInfo(msg=f"Launching teamplayer stack for robot{robot_domain} in domain {robot_domain}"),
+                        ExecuteProcess(
+                            cmd=[
+                                "ros2",
+                                "launch",
+                                "bitbots_bringup",
+                                "teamplayer.launch",
+                            ]
+                            + teamplayer_args
+                            + robot_game_settings_args,
+                            output="screen",
+                            additional_env={"ROS_DOMAIN_ID": str(robot_domain)},
+                        ),
+                    ],
+                )
             )
-        )
+        else:
+            args = " ".join(teamplayer_args + robot_game_settings_args)
+            actions.append(LogInfo(msg=f"Will not start teamplayer stack for robot{robot_domain}"))
+            actions.append(
+                LogInfo(
+                    msg=f"ROS_DOMAIN_ID={robot_domain} pixi run ros2 launch bitbots_bringup teamplayer.launch {args}"
+                )
+            )
 
     return actions
 
@@ -188,14 +203,27 @@ def generate_launch_description():
 
     declared_args = [
         DeclareLaunchArgument(
+            "teamplayer",
+            default_value="true",
+            description="Whether to launch the teamplayer software stack for the simulated robots",
+        ),
+        DeclareLaunchArgument(
             "num_robots",
             default_value="1",
-            description="Number of robots in the simulation",
+            description=(
+                "Robot setup in the simulation. Either a single number for one team "
+                "(e.g. '3') or a colon separated team setup (e.g. '2:2' for a 2 vs 2)."
+            ),
         ),
         DeclareLaunchArgument(
             "robot_type",
             default_value="piplus",
             description="Set the type of robot used (piplus, x02)",
+        ),
+        DeclareLaunchArgument(
+            "fieldname",
+            default_value="hsl_kid",
+            description="Field configuration to use for the simulation",
         ),
         DeclareLaunchArgument(
             "web",
