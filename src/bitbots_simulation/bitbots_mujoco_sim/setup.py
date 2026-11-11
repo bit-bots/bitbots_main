@@ -31,6 +31,10 @@ setup(
         ],
     },
     entry_points={
-        "console_scripts": ["sim = bitbots_mujoco_sim.main:main"],
+        "console_scripts": [
+            "sim = bitbots_mujoco_sim.main:main",
+            "localization_faker = bitbots_mujoco_sim.localization_faker:main",
+            "field_publisher = bitbots_mujoco_sim.field_publisher:main",
+        ],
     },
 )

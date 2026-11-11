@@ -8,7 +8,7 @@
         <arg name="behavior_dsd_file" value="$(var behavior_dsd_file)" />
         <arg name="fieldname" value="demo" />
         <arg name="game_controller" value="false"/>
-        <arg name="localization" value="false" />
+        <arg name="localization" value="static" />
         <arg name="sim" value="$(var sim)" />
         <arg name="teamcom" value="false" />
         <arg name="path_planning" value="true" />
