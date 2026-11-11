@@ -5,7 +5,7 @@ from typing import Optional
 import yaml
 from rclpy.node import Node
 
-from dynamic_stack_decider.tree import ActionTreeElement, DecisionTreeElement, SequenceTreeElement, Tree
+from dynamic_stack_decider.tree import ActionTreeElement, DecisionTreeElement, Tree
 
 
 class DsdParser:
@@ -101,57 +101,24 @@ class DsdParser:
 
                         if call.startswith("#"):
                             # A subtree is called here.
-                            subtree_name = call.strip("#")
-                            name, parameters, unset_parameters = self._extract_parameters(subtree_name, lnr)
-                            if name not in subtrees:
-                                raise ParseError(f"Error parsing line {lnr}: {name} not defined")
-                            subtree = subtrees[name]
-                            if (set(parameters.keys()) | set(unset_parameters.keys())) != set(subtree.parameter_list):
-                                raise ParseError(
-                                    "Error parsing line {}: Invalid parameters specified.\n"
-                                    "Available parameters are {}, specified parameters are {}.".format(
-                                        lnr,
-                                        set(parameters.keys()) | set(unset_parameters.keys()),
-                                        set(subtree.parameter_list),
-                                    )
-                                )
-                            # The root element of the subtree should be placed in this tree position
                             if current_tree_element is None:
                                 # The current subtree is empty, set the subtree as its root element
+                                subtree, _, _ = self._lookup_subtree(call, lnr, subtrees)
                                 current_subtree.set_root_element(subtree.root_element)
                             else:
-                                # Copy this subtree
-                                subtree_copy = copy.deepcopy(subtree.root_element)
-                                # Evaluate all unset parameters
-                                to_evaluate = [subtree_copy]
-                                while len(to_evaluate) > 0:
-                                    current = to_evaluate.pop(0)
-                                    if isinstance(current, SequenceTreeElement):
-                                        # For sequence elements, only evaluate the actions
-                                        to_evaluate.extend(current.action_elements)
-                                        continue
-                                    elif isinstance(current, DecisionTreeElement):
-                                        to_evaluate.extend(current.children.values())
-
-                                    for name, reference in current.unset_parameters.items():
-                                        if reference in parameters:
-                                            current.parameters[name] = parameters[reference]
-                                        elif reference in unset_parameters:
-                                            current.unset_parameters[name] = unset_parameters[reference]
-                                        else:
-                                            raise ParseError(
-                                                f"Error evaluating subtree call in line {lnr}: "
-                                                f"Unknown reference to {reference}."
-                                            )
-
-                                # Append this subtree in the current position
+                                # Copy this subtree and place it in the current tree position
+                                subtree_copy = self._instantiate_subtree(call, lnr, subtrees)
                                 current_tree_element.add_child_element(subtree_copy, result)
 
                         elif re.search(r"\s*,\s*", call):
-                            # A sequence element
-                            actions = re.split(r"\s*,\s*", call)
-                            element = self._create_sequence_element(actions, current_tree_element, lnr)
-                            current_tree_element.add_child_element(element, result)
+                            # A sequence: a chain of actions, optionally ending in a decision or a subtree
+                            tokens = re.split(r"\s*,\s*", call)
+                            head, tail = self._create_chain(tokens, current_tree_element, lnr, subtrees)
+                            current_tree_element.add_child_element(head, result)
+                            if tokens[-1].startswith("$"):
+                                # A decision at the end of a sequence receives its children from the
+                                # following indented lines
+                                current_tree_element = tail
 
                         elif call.startswith("@"):
                             # An action is called
@@ -166,18 +133,22 @@ class DsdParser:
 
                         else:
                             raise ParseError(
-                                f"Error parsing line {lnr}: " f"Element {call} is neither an action nor a decision"
+                                f"Error parsing line {lnr}: Element {call} is neither an action nor a decision"
                             )
 
                     else:
                         # No arrow, must be the beginning of a new subtree
-                        if re.search(r"\s*,\s*", line):
-                            actions = re.split(r"\s*,\s*", line)
-                            element = self._create_sequence_element(actions, current_tree_element, lnr)
+                        if re.search(r"\s*,\s*", line_content):
+                            tokens = re.split(r"\s*,\s*", line_content)
+                            head, tail = self._create_chain(tokens, current_tree_element, lnr, subtrees)
+                            current_subtree.set_root_element(head)
+                            # A decision at the end of a sequence receives its children from the
+                            # following indented lines
+                            current_tree_element = tail if tokens[-1].startswith("$") else head
                         else:
                             element = self._create_tree_element(line_content, current_tree_element, lnr)
-                        current_subtree.set_root_element(element)
-                        current_tree_element = element
+                            current_subtree.set_root_element(element)
+                            current_tree_element = element
 
                     last_indent = indent
         return tree
@@ -203,7 +174,7 @@ class DsdParser:
 
             if " " in parameter_value:
                 raise ParseError(
-                    f"Error parsing line {lnr}: Parameter values should not contain spaces. " "Did you forget a comma?"
+                    f"Error parsing line {lnr}: Parameter values should not contain spaces. Did you forget a comma?"
                 )
 
             if parameter_value.startswith("%"):
@@ -223,7 +194,7 @@ class DsdParser:
         The method derives the type (Action/Decision) and optional parameters from the token
         :param token: the string describing the element in the dsd description
         :param parent: the parent element of the new element, None for root
-        :type parent: Union[DecisionTreeElement, SequenceTreeElement]
+        :type parent: Union[DecisionTreeElement, ActionTreeElement]
         :param lnr: Line number of the current line (used for error messages)
         :type lnr: int
         :return: a TreeElement containing the information given in token
@@ -237,25 +208,112 @@ class DsdParser:
             raise ParseError("An element has to start with either $ or @")
         return element
 
-    def _create_sequence_element(self, actions, parent, lnr):
+    def _create_chain(self, tokens, parent, lnr, subtrees):
         """
-        Create a new sequence element
+        Create a sequence as a chain of tree elements linked via ``next_element``.
 
-        :param actions: The names of actions in the sequence
-        :type actions: list[str]
-        :param parent: The parent element of the sequence
-        :type parent: AbstractDecisionElement
+        Every element except the last must be an action, as only actions advance to their successor
+        by popping themselves. The last element may be an action, a decision, or a subtree call, which
+        allows a decision or a subtree to follow a sequence of actions.
+
+        :param tokens: The call tokens of the sequence (e.g. ``["@A", "@B", "$D"]``)
+        :type tokens: list[str]
+        :param parent: The element the chain is attached to
         :param lnr: Line number of the current line (used for error messages)
         :type lnr: int
-        :return: The sequence element
+        :param subtrees: The already parsed subtrees, needed to resolve a trailing subtree call
+        :type subtrees: dict
+        :return: A tuple of the head element (the child of ``parent``) and the tail element of the chain
         """
-        sequence_element = SequenceTreeElement(parent)
-        for action in actions:
-            element = self._create_tree_element(action, sequence_element, lnr)
-            if not isinstance(element, ActionTreeElement):
-                raise ParseError("In a sequence, only actions are allowed!")
-            sequence_element.add_action_element(element)
-        return sequence_element
+        head = None
+        previous = None
+        for i, token in enumerate(tokens):
+            is_last = i == len(tokens) - 1
+            if is_last and token.startswith("#"):
+                # A subtree may terminate a sequence
+                element = self._instantiate_subtree(token, lnr, subtrees)
+            elif is_last:
+                # The last element may be an action or a decision
+                element = self._create_tree_element(token, parent, lnr)
+            else:
+                # Only actions may be followed by another element in a sequence
+                if not token.startswith("@"):
+                    raise ParseError(
+                        f"Error parsing line {lnr}: Only actions may be followed by another element "
+                        f"in a sequence, but got '{token}'"
+                    )
+                element = self._create_tree_element(token, parent, lnr)
+
+            if previous is None:
+                head = element
+            else:
+                previous.next_element = element
+            previous = element
+        return head, previous
+
+    def _lookup_subtree(self, call, lnr, subtrees):
+        """
+        Look up the subtree referenced by a ``#``-call and validate that its parameters match.
+
+        :param call: The call token, e.g. ``#SubBehavior + key:value``
+        :param lnr: Line number of the current line (used for error messages)
+        :param subtrees: The already parsed subtrees
+        :return: A tuple of the referenced subtree and the set and unset parameters of the call
+        """
+        name, parameters, unset_parameters = self._extract_parameters(call.strip("#"), lnr)
+        if name not in subtrees:
+            raise ParseError(f"Error parsing line {lnr}: {name} not defined")
+        subtree = subtrees[name]
+        if (set(parameters.keys()) | set(unset_parameters.keys())) != set(subtree.parameter_list):
+            raise ParseError(
+                "Error parsing line {}: Invalid parameters specified.\n"
+                "Available parameters are {}, specified parameters are {}.".format(
+                    lnr,
+                    set(parameters.keys()) | set(unset_parameters.keys()),
+                    set(subtree.parameter_list),
+                )
+            )
+        return subtree, parameters, unset_parameters
+
+    def _instantiate_subtree(self, call, lnr, subtrees):
+        """
+        Create a deep copy of a referenced subtree with its parameters evaluated.
+
+        :param call: The call token, e.g. ``#SubBehavior + key:value``
+        :param lnr: Line number of the current line (used for error messages)
+        :param subtrees: The already parsed subtrees
+        :return: The root element of the instantiated subtree
+        """
+        subtree, parameters, unset_parameters = self._lookup_subtree(call, lnr, subtrees)
+        subtree_copy = copy.deepcopy(subtree.root_element)
+        self._evaluate_subtree_parameters(subtree_copy, parameters, unset_parameters, lnr)
+        return subtree_copy
+
+    def _evaluate_subtree_parameters(self, root, parameters, unset_parameters, lnr):
+        """
+        Resolve the unset parameters of a copied subtree against the parameters given in the call.
+
+        :param root: The root element of the copied subtree
+        :param parameters: The set parameters of the subtree call
+        :param unset_parameters: The unset (referenced) parameters of the subtree call
+        :param lnr: Line number of the current line (used for error messages)
+        """
+        to_evaluate = [root]
+        while len(to_evaluate) > 0:
+            current = to_evaluate.pop(0)
+            if isinstance(current, DecisionTreeElement):
+                to_evaluate.extend(current.children.values())
+            elif isinstance(current, ActionTreeElement) and current.next_element is not None:
+                # Follow the chain of actions (i.e. a sequence)
+                to_evaluate.append(current.next_element)
+
+            for name, reference in current.unset_parameters.items():
+                if reference in parameters:
+                    current.parameters[name] = parameters[reference]
+                elif reference in unset_parameters:
+                    current.unset_parameters[name] = unset_parameters[reference]
+                else:
+                    raise ParseError(f"Error evaluating subtree call in line {lnr}: Unknown reference to {reference}.")
 
 
 class ParseError(AssertionError):

@@ -162,10 +162,9 @@ class DsdFollower:
             assert (
                 stack_element["type"] == tree_element["type"]
             ), f"The stack and the tree do not match (element type mismatch: {stack_element['type']} vs. {tree_element['type']})"
-            if stack_element["type"] != "sequence":
-                assert (
-                    stack_element["name"] == tree_element["name"]
-                ), f"The stack and the tree do not match (element name mismatch: {stack_element['name']} vs. {tree_element['name']})"
+            assert (
+                stack_element["name"] == tree_element["name"]
+            ), f"The stack and the tree do not match (element name mismatch: {stack_element['name']} vs. {tree_element['name']})"
 
         # Initialize parameters of the dot node we are going to create
         dot_node_params = {
@@ -173,21 +172,7 @@ class DsdFollower:
         }
 
         # Go through all possible element types and create the corresponding label and shape
-        if tree_element["type"] == "sequence":
-            dot_node_params["shape"] = "box"
-
-            # If we have a sequence we have to create a label for each action and mark the current one (if one is on the stack)
-            label = ["Sequence:"]
-            for i, action in enumerate(tree_element["action_elements"]):
-                # Spaces for indentation
-                action_label = "  "
-                # Mark current element (if this sequence is on the stack)
-                if stack_element is not None and i == stack_element["current_action_index"]:
-                    action_label += "--> "
-                action_label += action["name"] + param_string(action["parameters"])
-                label.append(action_label)
-            dot_node_params["label"] = "\n".join(label)
-        elif tree_element["type"] == "decision":
+        if tree_element["type"] == "decision":
             dot_node_params["shape"] = "ellipse"
             dot_node_params["label"] = tree_element["name"] + param_string(tree_element["parameters"])
         elif tree_element["type"] == "action":
@@ -202,6 +187,17 @@ class DsdFollower:
         # Create node in graph
         return pydot.Node(**dot_node_params)
 
+    @staticmethod
+    def _stack_matches_tree(stack_element: Optional[dict], tree_element: dict) -> bool:
+        """
+        Check whether a stack element corresponds to a given tree element.
+
+        Matching is done via the stable ``id`` of the tree element rather than the name, because a
+        chain (i.e. a sequence) may contain multiple elements with the same name (e.g.
+        ``@Wait, @SomeAction, @Wait``) and we need to know exactly which one is active.
+        """
+        return stack_element is not None and stack_element["id"] == tree_element["id"]
+
     def _stack_to_dotgraph(
         self, dot: pydot.Dot, subtree_root: dict, stack_root: Optional[dict] = None, full_tree: bool = False
     ) -> (pydot.Dot, str):
@@ -210,43 +206,48 @@ class DsdFollower:
 
         :param dot: The dotgraph to modify
         :param subtree_root: The root node of the subtree which should be added to the graph
-        :param stack_root: The root node / bottom of the stack which should be added to the graph (this corresponds to subtree_root as they are different representations of the same component). The stack is optional as certain subtrees might not be in contact with the stack.
+        :param stack_root: The stack element which is currently active in this position of the tree, or None if
+            this branch of the tree is not on the stack. For a chain of actions (i.e. a sequence) linked via
+            ``next`` this is the currently active element of the chain, which is not necessarily ``subtree_root``.
         :param full_tree: If true the whole tree is rendered, otherwise only the current stack and its direct neighbors are rendered
         :return: The modified dotgraph and the uid of the root node
         """
-        # Sanity check
-        if stack_root is not None:
-            assert (
-                stack_root["type"] == subtree_root["type"]
-            ), f"The stack element type and the tree element type do not match ({stack_root['type']} vs. {subtree_root['type']})"
-            if stack_root["type"] != "sequence":
-                assert (
-                    stack_root["name"] == subtree_root["name"]
-                ), f"The stack element name and the tree element name do not match ({stack_root['name']} vs. {subtree_root['name']})"
+        # The passed stack element only corresponds to this tree node if their type and name match. For a chain of
+        # actions (a sequence) the active element might be a later element of the chain, so it does not match here.
+        node_stack = stack_root if self._stack_matches_tree(stack_root, subtree_root) else None
 
         # Generate dot node for the root and mark it as active if it is on the stack
-        dot_node = DsdFollower._dot_node_from_tree_element(subtree_root, stack_root)
+        dot_node = DsdFollower._dot_node_from_tree_element(subtree_root, node_stack)
         # Append this element to graph
         dot.add_node(dot_node)
 
         # Append children to graph if this element is on the stack or if we want to render the whole tree
-        if "children" in subtree_root and (stack_root is not None or full_tree):
+        if "children" in subtree_root and (node_stack is not None or full_tree):
             # Go through all children
             for activating_result, child in subtree_root["children"].items():
                 # Get the root of the sub stack if this branch of the tree is the one which is currently on the stack
                 sub_stack_root = None
                 if (
-                    stack_root is not None
-                    and stack_root["next"] is not None
-                    and stack_root["next"]["activation_reason"] == activating_result
+                    node_stack is not None
+                    and node_stack["next"] is not None
+                    and node_stack["next"]["activation_reason"] == activating_result
                 ):
-                    sub_stack_root = stack_root["next"]
+                    sub_stack_root = node_stack["next"]
 
                 # Recursively generate dot nodes for the children
                 dot, child_uid = self._stack_to_dotgraph(dot, child, sub_stack_root, full_tree)
                 # Connect the child to the parent element
                 edge = pydot.Edge(src=dot_node.get_name(), dst=child_uid, label=activating_result)
                 dot.add_edge(edge)
+
+        # Append the successor of a chain (e.g. the next action of a sequence) if it exists.
+        # We render the whole chain if any element of it is on the stack or if the whole tree is requested.
+        if subtree_root.get("next") is not None and (stack_root is not None or full_tree):
+            # We pass the same active stack element down the whole chain. Only the element it actually
+            # corresponds to (matched via its id) is rendered as active; all others are rendered inactive.
+            dot, next_uid = self._stack_to_dotgraph(dot, subtree_root["next"], stack_root, full_tree)
+            # Connect the successor to this element
+            dot.add_edge(pydot.Edge(src=dot_node.get_name(), dst=next_uid))
         return dot, dot_node.get_name()
 
     def _append_debug_data_to_item(
@@ -312,9 +313,6 @@ class DsdFollower:
         # Start with the root/bottom of the stack
         stack_element = self.stack
 
-        # Store the corresponding tree element
-        tree_element = self.tree
-
         # Go through all stack elements
         while stack_element is not None:
             # Sanity check
@@ -328,13 +326,7 @@ class DsdFollower:
             elem_item.setSelectable(False)
 
             # Set the text of the item
-            if stack_element["type"] == "sequence":
-                # Get the names of all actions
-                action_names = [action["name"] for action in tree_element["action_elements"]]
-                # Join them together and set the text
-                elem_item.setText("Sequence: " + ", ".join(action_names))
-            else:
-                elem_item.setText(stack_element["name"])
+            elem_item.setText(stack_element["name"])
 
             # Add debug data to the item
             self._append_debug_data_to_item(elem_item, stack_element["debug_data"])
@@ -354,9 +346,6 @@ class DsdFollower:
 
             # Go to next element
             stack_element = stack_element["next"]
-            # Also select the corresponding tree element if there are any
-            if "children" in tree_element and stack_element is not None:
-                tree_element = tree_element["children"][stack_element["activation_reason"]]
 
         return model
 
