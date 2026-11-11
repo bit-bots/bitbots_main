@@ -81,6 +81,27 @@ def generate_domain_bridge_config(robot_domain: int, output_dir: Path) -> Path:
         "remap": f"{namespace}/joint_command",
     }
 
+    # Debug topics: robot domain -> main (reversed direction)
+    debug_topics = [
+        ("/debug/dsd/body_behavior/dsd_current_action", "std_msgs/msg/String"),
+        ("/debug/dsd/body_behavior/dsd_stack", "std_msgs/msg/String"),
+        ("/debug/dsd/body_behavior/dsd_tree", "std_msgs/msg/String"),
+        ("/debug/dsd/hcm/dsd_current_action", "std_msgs/msg/String"),
+        ("/debug/dsd/hcm/dsd_stack", "std_msgs/msg/String"),
+        ("/debug/dsd/hcm/dsd_tree", "std_msgs/msg/String"),
+        ("/debug/dsd/localization/dsd_current_action", "std_msgs/msg/String"),
+        ("/debug/dsd/localization/dsd_stack", "std_msgs/msg/String"),
+        ("/debug/dsd/localization/dsd_tree", "std_msgs/msg/String"),
+    ]
+    for topic_suffix, msg_type in debug_topics:
+        src_topic = topic_suffix
+        config["topics"][src_topic] = {
+            "type": msg_type,
+            "remap": f"{namespace}{topic_suffix}",
+            "from_domain": robot_domain,
+            "to_domain": main_domain,
+        }
+
     config_path = output_dir / f"robot{robot_domain}_bridge.yaml"
     with open(config_path, "w") as f:
         yaml.dump(config, f, default_flow_style=False, sort_keys=False)
