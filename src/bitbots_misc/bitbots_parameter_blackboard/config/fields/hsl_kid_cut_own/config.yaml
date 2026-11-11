@@ -1,0 +1,25 @@
+###################################
+# RoboCup 2026 Standard HSL Field #
+###################################
+
+# Settings for the standard platform league field
+
+parameter_blackboard:
+  ros__parameters:
+    field:
+      size:
+        x: 8.3
+        y: 6.0
+        padding: 1.0   # Padding (area outside of the lines) of the field in all directions
+      markings:
+        penalty_area:
+          size:
+            x: 2.0   # The distance from the goal line to the boundary of the penalty area
+      goal:
+        width: 1.88   # The width of the goal (center of one goal post to the other goal post)
+        depth: 0.85   # The depth of the goal (distance from the goal line to the back of the goal)
+      navigation_bounds:   # Hard limits for the robot position (map frame) that the path planning never leaves. Goals outside are clamped onto the limit. Matches the crop range in generator_config.yaml.
+        x_min: -1.0
+        x_max: 5.0
+        y_min: -3.5
+        y_max: 3.5

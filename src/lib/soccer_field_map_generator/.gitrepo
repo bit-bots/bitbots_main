@@ -1,12 +1,13 @@
 ; DO NOT EDIT (unless you know what you are doing)
 ;
 ; This subdirectory is a git "subrepo", and this file is maintained by the
-; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+; git-include command (compatible with git-subrepo).
+; See https://github.com/flova/git-include
 ;
 [subrepo]
-	remote = https://github.com/ros-sports/soccer_field_map_generator.git
-	branch = rolling
-	commit = 17e8f8addeb20b5ab1601a980a3f3f38011c72dc
+	remote = ssh://git@github.com/jaagut/soccer_field_map_generator
+	branch = feature/grayscale-bounds
+	commit = da04323cb0a2d8b8283dccd505e8d07485c6e953
 	parent = c6810dbe985da51d09e3f984b521bd376f5dd163
 	method = merge
-	cmdver = 0.4.9
+	cmdver = git-include/0.1.5

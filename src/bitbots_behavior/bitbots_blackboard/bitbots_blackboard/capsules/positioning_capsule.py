@@ -104,6 +104,10 @@ class Params:
     # opponent set play: keep all robots outside this radius
     opp_set_play_clearance: float = 1.1
 
+    # an exact list of rules to be forced. On an n-sized team, the first n roles are used.
+    # Any further robots get defender
+    force_roles: list[str] | None = None
+
 
 class PositioningCapsule(AbstractBlackboardCapsule):
     """Decides and communicates the optimal positions, based on the game situation."""
@@ -131,6 +135,7 @@ class PositioningCapsule(AbstractBlackboardCapsule):
         # Whether the formation includes a supporter. Off by default; enabling it lets one
         # field player push up as a supporter instead of being an extra defender.
         self._params.include_supporter = bool(blackboard.config.get("formation_include_supporter", False))
+        self._params.force_roles = blackboard.config.get("formation_force_roles", [])
         self._inner = InnerPositioningCapsule()
 
     # Cached capsule functions can not have parameters or side effects,
@@ -228,6 +233,7 @@ class InnerPositioningCapsule:
         ball: NDArray[np.float64] | None = None,
         field: Field | None = None,
         include_supporter: bool = True,
+        force_roles: list[str] | None = None,
     ) -> list[Role]:
         """Keep-priority as the count drops: striker > goalie > 1st defender > supporter
         > 2nd defender (and any further players are extra defenders).
@@ -241,6 +247,13 @@ class InnerPositioningCapsule:
         When `include_supporter` is False, no supporter is allocated at all; its slot
         becomes an extra defender instead.
         """
+        if force_roles:
+            if n <= len(force_roles):
+                return [Role(force_roles[i]) for i in range(n)]
+            else:
+                return [Role(force_roles[i]) for i in range(len(force_roles))] + [
+                    Role(f"{Role.DEFENDER}_{i}") for i in range(n - len(force_roles))
+                ]
         n_def = 0
         has_support = False
         if n >= 3:
@@ -375,7 +388,7 @@ class InnerPositioningCapsule:
         striker_deadband: float = 0.2,
     ) -> list[tuple[int, NDArray[np.float64], str]]:
         """Assign physical robots (at `old_poses`) to the new target poses.
-        The striker target goes to the robot with the lowest player number among all
+        If present, the striker target goes to the robot with the lowest player number among all
         robots whose distance to the ball is within `striker_deadband` metres of the
         robot closest to the ball. Grouping the near-equidistant robots and breaking
         the tie on the player number keeps two robots from both deferring to each other
@@ -396,20 +409,24 @@ class InnerPositioningCapsule:
         ball = np.asarray(ball)
         n = len(old_poses)
         # striker target -> chosen from the robots nearest the ball
-        s_j = next(j for j, (r, _) in enumerate(new_items) if r == Role.STRIKER)
-        # distance of every robot to the ball
-        ball_dists = [float(np.linalg.norm(old_poses[i][:2] - ball)) for i in range(n)]
-        # exclude passive robots from the striker choice, unless every robot is passive
-        eligible = [i for i in range(n) if i not in passive_indices] or list(range(n))
-        # treat every eligible robot within the deadband of the closest one as equally
-        # close to the ball, then take the lowest player number as a deterministic
-        # tie-break so both robots agree on who becomes striker
-        closest_dist = min(ball_dists[i] for i in eligible)
-        group = [i for i in eligible if ball_dists[i] <= closest_dist + striker_deadband]
-        s_i = min(group, key=lambda i: player_ids[i])
-        pairs = [(s_i, new_items[s_j][1], new_items[s_j][0])]
-        rem_i = [i for i in range(n) if i != s_i]
-        rem_j = [j for j in range(len(new_items)) if j != s_j]
+        s_j = next((j for j, (r, _) in enumerate(new_items) if r == Role.STRIKER), None)
+        pairs = []
+        rem_i = list(range(n))
+        rem_j = list(range(len(new_items)))
+        if s_j is not None and rem_i:
+            # distance of every robot to the ball
+            ball_dists = [float(np.linalg.norm(old_poses[i][:2] - ball)) for i in range(n)]
+            # exclude passive robots from the striker choice, unless every robot is passive
+            eligible = [i for i in range(n) if i not in passive_indices] or list(range(n))
+            # treat every eligible robot within the deadband of the closest one as equally
+            # close to the ball, then take the lowest player number as a deterministic
+            # tie-break so both robots agree on who becomes striker
+            closest_dist = min(ball_dists[i] for i in eligible)
+            group = [i for i in eligible if ball_dists[i] <= closest_dist + striker_deadband]
+            s_i = min(group, key=lambda i: player_ids[i])
+            pairs.append((s_i, new_items[s_j][1], new_items[s_j][0]))
+            rem_i.remove(s_i)
+            rem_j.remove(s_j)
         if rem_i:
             cost = np.empty((len(rem_i), len(rem_j)))
             for a, i in enumerate(rem_i):
@@ -451,7 +468,11 @@ class InnerPositioningCapsule:
         perp = np.array([-to_ball[1], to_ball[0]])
 
         roles = self._allocate_roles(
-            n_players, b, field, include_supporter=params.include_supporter and not opp_set_play
+            n_players,
+            b,
+            field,
+            include_supporter=params.include_supporter and not opp_set_play,
+            force_roles=params.force_roles,
         )
         out = {}
         head = {}  # role -> heading (rad); filled lazily, completed after separation

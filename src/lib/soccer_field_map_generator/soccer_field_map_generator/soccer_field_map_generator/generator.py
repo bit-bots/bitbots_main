@@ -74,7 +74,63 @@ def drawDistance(image, decay_factor):
     ).astype(np.uint8)
 
 
+def get_crop_bounds(parameters, image_width):
+    crop_enabled = parameters.get('crop_enabled', False)
+    if not isinstance(crop_enabled, bool):
+        raise ValueError('Crop enabled must be a boolean')
+    if not crop_enabled:
+        return None
+
+    try:
+        crop_start_value = parameters['crop_start']
+        crop_end_value = parameters['crop_end']
+    except KeyError:
+        raise ValueError(
+            'Crop range requires numeric crop_start and crop_end in meters'
+        ) from None
+
+    if isinstance(crop_start_value, bool) or isinstance(crop_end_value, bool):
+        raise ValueError('Crop range bounds must be numeric meters')
+
+    try:
+        crop_start = float(crop_start_value)
+        crop_end = float(crop_end_value)
+    except (TypeError, ValueError, OverflowError):
+        raise ValueError(
+            'Crop range requires numeric crop_start and crop_end in meters'
+        ) from None
+
+    image_width_meters = image_width / 100
+    if (
+        not math.isfinite(crop_start)
+        or not math.isfinite(crop_end)
+        or crop_start < 0
+        or crop_start >= crop_end
+        or crop_end > image_width_meters
+    ):
+        raise ValueError(
+            f'Crop range must satisfy 0 <= crop_start < crop_end <= '
+            f'{image_width_meters} meters'
+        )
+
+    # Include every centimeter pixel cell touched by the requested range.
+    crop_start_pixel = math.floor(crop_start * 100 + 1e-9)
+    crop_end_pixel = math.ceil(crop_end * 100 - 1e-9)
+    if crop_start_pixel >= crop_end_pixel:
+        raise ValueError('Crop range must include at least one map pixel')
+    return crop_start_pixel, crop_end_pixel
+
+
 def generate_map_image(parameters):
+    grayscale_min = parameters.get('grayscale_min', 0)
+    grayscale_max = parameters.get('grayscale_max', 255)
+    if not (
+        isinstance(grayscale_min, int)
+        and isinstance(grayscale_max, int)
+        and 0 <= grayscale_min < grayscale_max <= 255
+    ):
+        raise ValueError('Grayscale bounds must be integers within uint8 range, with min < max')
+
     target = MapTypes(parameters['map_type'])
     mark_type = MarkTypes(parameters['mark_type'])
     field_feature_style = FieldFeatureStyles(parameters['field_feature_style'])
@@ -656,15 +712,27 @@ def generate_map_image(parameters):
             -1,
         )
 
+    crop_bounds = get_crop_bounds(parameters, img.shape[1])
+    if crop_bounds is not None:
+        crop_start_pixel, crop_end_pixel = crop_bounds
+        img[:, :crop_start_pixel] = 0
+        img[:, crop_end_pixel:] = 0
+
     # Create distance map
     if distance_map:
+        if crop_bounds is not None and not np.any(img):
+            raise ValueError('Cropped map contains no features for distance-map generation')
         img = drawDistance(img, distance_decay)
 
     # Invert
     if invert:
         img = 255 - img
 
-    return img
+    # Scale after inversion so both polarities use the requested bounds.
+    return np.rint(
+        img.astype(np.float64) * (grayscale_max - grayscale_min) / 255
+        + grayscale_min
+    ).astype(np.uint8)
 
 
 def generate_metadata(parameters: dict, image_name: str) -> dict:

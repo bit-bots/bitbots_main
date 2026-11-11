@@ -17,6 +17,21 @@ deploy = {cmd = "scripts/deploy_robots.py", description = "Deploys the current e
 # Default stage `pre-commit` enables ruff auto-formatting, stage `manual` disables ruff auto-formatting, only shows diff
 format = {cmd = "sh -c 'pre-commit run --all-files --hook-stage \"${PRE_COMMIT_STAGE:-pre-commit}\"'", description = "Runs code formatting and linting."}
 
+[tasks.striker]
+default-environment = "robot"
+cmd = "ros2 launch bitbots_bringup teamplayer.launch fieldname:=hsl_kid_cut_own team_id:=6 bot_id:=1 role:=offense position_number:=0"
+description = "Starts the demo configured striker (team=6, id=1, center)"
+
+[tasks.supporter]
+default-environment = "robot"
+cmd = "ros2 launch bitbots_bringup teamplayer.launch fieldname:=hsl_kid_cut_own team_id:=6 bot_id:=2 role:=offense position_number:=1"
+description = "Starts the demo configured supporter (team=6, id=2, left)"
+
+[tasks.goalie]
+default-environment = "robot"
+cmd = "ros2 launch bitbots_bringup teamplayer.launch fieldname:=hsl_kid_cut_opponent team_id:=7 bot_id:=1 role:=goalie behavior_dsd_file:=goalie.dsd"
+description = "Starts the demo configured goalie (team=7, id=1)"
+
 [tasks.build]
 # Skipping ZED-camera related packages as they require a local installation of the ZED SDK.
 # Use broad warnings and treat them as errors for repository code.
@@ -50,6 +65,7 @@ rust = ">=1.88"
 
 # Patches
 readline = ">=8.2.999"  # This is needed because we want to install an empty readline package from our models channel that leads to the system version being used. Otherwise we might have a mismatch between bash (often accessed globally ignoring the env) and readline (provided by the env)  breaking everything.
+pixi-pycharm = ">=0.0.12,<0.0.13"
 
 [feature.ros.dependencies]
 # Misc dependencies for our ROS 2 packages

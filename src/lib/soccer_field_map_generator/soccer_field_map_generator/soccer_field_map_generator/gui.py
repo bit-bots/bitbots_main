@@ -210,6 +210,26 @@ class MapGeneratorGUI:
                     'label': 'Border Strip Width',
                     'tooltip': 'Width of the border strip around the field in cm',
                 },
+                'crop_enabled': {
+                    'type': bool,
+                    'default': False,
+                    'label': 'Cut Off Map',
+                    'tooltip': (
+                        'Keep map dimensions and remove features outside a horizontal range'
+                    ),
+                },
+                'crop_start': {
+                    'type': float,
+                    'default': 0.0,
+                    'label': 'Cut Off Start (m)',
+                    'tooltip': 'Start of the map range in meters from the left edge',
+                },
+                'crop_end': {
+                    'type': float,
+                    'default': 10.0,
+                    'label': 'Cut Off End (m)',
+                    'tooltip': 'End of the map range in meters from the left edge',
+                },
                 'penalty_area_length': {
                     'type': int,
                     'default': 200,
@@ -251,6 +271,18 @@ class MapGeneratorGUI:
                     'default': 0.0,
                     'label': 'Distance Decay',
                     'tooltip': 'Exponential decay applied to the distance map',
+                },
+                'grayscale_min': {
+                    'type': int,
+                    'default': 0,
+                    'label': 'Grayscale Min',
+                    'tooltip': 'Output grayscale minimum intensity',
+                },
+                'grayscale_max': {
+                    'type': int,
+                    'default': 255,
+                    'label': 'Grayscale Max',
+                    'tooltip': 'Output grayscale maximum intensity',
                 },
                 'invert': {
                     'type': bool,
@@ -350,6 +382,13 @@ class MapGeneratorGUI:
             print(f'Saved config to {file.name}')
 
     def save_map(self):
+        try:
+            parameters = self.parameter_input.get_parameters()
+            generated_map = generate_map_image(parameters)
+        except (tk.TclError, ValueError) as e:
+            tk.messagebox.showerror('Invalid map parameters', str(e))
+            return
+
         file = filedialog.asksaveasfile(
             mode='w',
             defaultextension='.png',
@@ -358,9 +397,6 @@ class MapGeneratorGUI:
         if file:
             print(f'Saving map to {file.name}')
 
-            # Generate and save the map
-            parameters = self.parameter_input.get_parameters()
-            generated_map = generate_map_image(parameters)
             if cv2.imwrite(file.name, generated_map):
                 # Save metadata
                 if self.save_metadata.get():
@@ -398,7 +434,7 @@ class MapGeneratorGUI:
         try:
             generated_map = generate_map_image(self.parameter_input.get_parameters())
             self.display_map(generated_map)
-        except tk.TclError as e:
+        except (tk.TclError, ValueError) as e:
             print(f"Invalid input for map generation. '{e}'")
 
     def display_map(self, image):

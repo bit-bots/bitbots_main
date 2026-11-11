@@ -5,8 +5,9 @@ from geometry_msgs.msg import PointStamped, PoseStamped, PoseWithCovarianceStamp
 from nav_msgs.msg import Path
 from rclpy.duration import Duration
 from rclpy.experimental.events_executor import EventsExecutor
+from rclpy.qos import DurabilityPolicy, QoSProfile
 from std_msgs.msg import Bool, Empty
-from visualization_msgs.msg import MarkerArray
+from visualization_msgs.msg import Marker, MarkerArray
 
 from bitbots_path_planning import NodeWithConfig
 from bitbots_path_planning.controller import Controller
@@ -44,6 +45,13 @@ class PathPlanning(NodeWithConfig):
         self.path_pub = self.create_publisher(Path, "path", 1)
         self.carrot_pub = self.create_publisher(PointStamped, "carrot", 1)
         self.graph_pub = self.create_publisher(MarkerArray, "visibility_graph", 1)
+        # The navigation bounds are static, so they are published once on a latched topic for visualization
+        self.navigation_bounds_pub = self.create_publisher(
+            Marker, "navigation_bounds", QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL)
+        )
+        navigation_bounds_marker = self.planner.navigation_bounds_marker()
+        if navigation_bounds_marker is not None:
+            self.navigation_bounds_pub.publish(navigation_bounds_marker)
 
         # Timer that updates the path and command velocity at a given rate
         self.create_timer(1 / self.config.rate, self.step, clock=self.get_clock())

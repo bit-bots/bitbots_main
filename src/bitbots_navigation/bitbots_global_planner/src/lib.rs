@@ -1,4 +1,4 @@
-use map::{ObstacleMap, ObstacleMapConfig};
+use map::{NavigationBounds, ObstacleMap, ObstacleMapConfig};
 use obstacle::{PolygonObstacle, RoundObstacle};
 use pyo3::prelude::*;
 
@@ -12,6 +12,7 @@ fn bitbots_global_planner(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PolygonObstacle>()?;
     m.add_class::<ObstacleMap>()?;
     m.add_class::<ObstacleMapConfig>()?;
+    m.add_class::<NavigationBounds>()?;
     // Further classes and functions can be added here
     Ok(())
 }

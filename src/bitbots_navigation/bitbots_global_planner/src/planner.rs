@@ -25,9 +25,22 @@ pub struct PathPlanner {
 const MULTIPLIER: f64 = 10.0;
 
 impl PathPlanner {
-    /// Create a new path planner planning task with the given map, start and goal
+    /// Create a new path planner planning task with the given map, start and goal.
+    ///
+    /// If the map has navigation bounds, the goal is clamped into them and all
+    /// visibility graph vertices outside of them are discarded.
+    /// As the bounds describe a convex region, every connection between two vertices
+    /// inside of it stays inside, so the resulting path never leaves the bounds.
+    /// Only the start may lie outside, in which case the path leads back into the bounds.
     pub fn new(map: &ObstacleMap, start: (f64, f64), goal: (f64, f64)) -> Self {
         let mut vertices = map.as_vertices();
+        let goal = match map.bounds {
+            Some(bounds) => {
+                vertices.retain(|vertex| bounds.contains(vertex.x_y()));
+                bounds.clamp(goal)
+            }
+            None => goal,
+        };
         vertices.append(&mut vec![start.into(), goal.into()]);
         let start: usize = vertices.len() - 2;
         let goal = vertices.len() - 1;
@@ -163,5 +176,123 @@ impl PathPlanner {
             self.expand_node(vertex);
         }
         unreachable!()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{
+        map::{NavigationBounds, ObstacleMap, ObstacleMapConfig},
+        obstacle::{AnyObstacle, PolygonObstacle},
+    };
+
+    fn config() -> ObstacleMapConfig {
+        ObstacleMapConfig {
+            robot_radius: 0.3,
+            margin: 0.1,
+            num_vertices: 12,
+        }
+    }
+
+    fn upper_bound(x_max: f64) -> Option<NavigationBounds> {
+        Some(NavigationBounds::try_new(None, Some(x_max), None, None).unwrap())
+    }
+
+    /// A horizontal wall whose right end is closer to the start and goal used in the tests,
+    /// so an unbounded path routes around its right end
+    fn wall() -> Vec<AnyObstacle> {
+        vec![AnyObstacle::Polygon(PolygonObstacle::new(vec![
+            (-1.5, -0.1),
+            (0.5, -0.1),
+            (0.5, 0.1),
+            (-1.5, 0.1),
+        ]))]
+    }
+
+    #[test]
+    fn goal_outside_bounds_is_clamped() {
+        let map = ObstacleMap::new(config(), vec![], upper_bound(0.0));
+        let path = map.shortest_path((-2.0, 0.0), (3.0, 1.0));
+        assert_eq!(path.last(), Some(&(0.0, 1.0)));
+    }
+
+    #[test]
+    fn goal_inside_bounds_is_unchanged() {
+        let map = ObstacleMap::new(config(), vec![], upper_bound(0.0));
+        let path = map.shortest_path((-2.0, 0.0), (-1.0, 1.0));
+        assert_eq!(path.last(), Some(&(-1.0, 1.0)));
+    }
+
+    #[test]
+    fn path_does_not_leave_bounds_to_avoid_obstacle() {
+        let start = (-0.2, -1.0);
+        let goal = (-0.2, 1.0);
+
+        // Without bounds the shorter way around the right end of the wall is used
+        let unbounded = ObstacleMap::new(config(), wall(), None).shortest_path(start, goal);
+        assert!(unbounded.iter().any(|(x, _)| *x > 0.0));
+
+        // With bounds the path has to take the longer way around the left end
+        let bounded =
+            ObstacleMap::new(config(), wall(), upper_bound(0.0)).shortest_path(start, goal);
+        assert!(bounded.iter().all(|(x, _)| *x <= 0.0));
+        assert!(bounded.iter().any(|(x, _)| *x < -1.5));
+    }
+
+    #[test]
+    fn start_outside_bounds_leads_back_inside() {
+        let start = (1.0, 0.0);
+        let map = ObstacleMap::new(config(), vec![], upper_bound(0.0));
+        let path = map.shortest_path(start, (2.0, 1.0));
+        assert_eq!(path.first(), Some(&start));
+        assert!(path[1..].iter().all(|(x, _)| *x <= 0.0));
+    }
+
+    #[test]
+    fn goal_outside_y_bounds_is_clamped() {
+        let bounds = NavigationBounds::try_new(None, None, Some(-1.0), Some(1.0)).unwrap();
+        let map = ObstacleMap::new(config(), vec![], Some(bounds));
+        let path = map.shortest_path((0.0, 0.0), (2.0, 3.0));
+        assert_eq!(path.last(), Some(&(2.0, 1.0)));
+    }
+
+    #[test]
+    fn goal_outside_corner_is_clamped_in_both_axes() {
+        let bounds =
+            NavigationBounds::try_new(Some(-2.0), Some(0.0), Some(-1.0), Some(1.0)).unwrap();
+        let map = ObstacleMap::new(config(), vec![], Some(bounds));
+        let path = map.shortest_path((-1.0, 0.0), (3.0, -4.0));
+        assert_eq!(path.last(), Some(&(0.0, -1.0)));
+    }
+
+    #[test]
+    fn path_does_not_leave_y_bounds_to_avoid_obstacle() {
+        // The wall rotated by 90 degrees, with its upper end closer to the start and goal
+        let wall = vec![AnyObstacle::Polygon(PolygonObstacle::new(vec![
+            (-0.1, -1.5),
+            (0.1, -1.5),
+            (0.1, 0.5),
+            (-0.1, 0.5),
+        ]))];
+        let start = (-1.0, -0.2);
+        let goal = (1.0, -0.2);
+
+        let unbounded = ObstacleMap::new(config(), wall.clone(), None).shortest_path(start, goal);
+        assert!(unbounded.iter().any(|(_, y)| *y > 0.0));
+
+        let bounds = NavigationBounds::try_new(None, None, None, Some(0.0)).unwrap();
+        let bounded = ObstacleMap::new(config(), wall, Some(bounds)).shortest_path(start, goal);
+        assert!(bounded.iter().all(|(_, y)| *y <= 0.0));
+        assert!(bounded.iter().any(|(_, y)| *y < -1.5));
+    }
+
+    #[test]
+    fn invalid_bounds_are_rejected() {
+        assert!(NavigationBounds::try_new(Some(1.0), Some(0.0), None, None).is_err());
+        assert!(NavigationBounds::try_new(Some(1.0), Some(1.0), None, None).is_err());
+        assert!(NavigationBounds::try_new(None, None, Some(1.0), Some(0.0)).is_err());
+        assert!(NavigationBounds::try_new(Some(f64::NAN), None, None, None).is_err());
+        assert!(NavigationBounds::try_new(None, None, None, Some(f64::INFINITY)).is_err());
+        assert!(NavigationBounds::try_new(None, None, None, None).is_ok());
     }
 }

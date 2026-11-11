@@ -1,21 +1,17 @@
-#SearchBall
-$DoOnce
-    NOT_DONE --> @ChangeAction + action:searching, @LookAtFieldFeatures, @WalkInPlace + duration:1, @TurnLastSeenBallSide + duration:6, @GoToAbsolutePositionFieldFraction + x:0.5 + blocking:false
-    DONE --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:0.5 + latch:true
-        NO --> @LookAtFieldFeatures, @GoToAbsolutePositionFieldFraction + x:0.5
-        YES --> $DoOnce
-            NOT_DONE --> @Turn + duration:15
-            DONE --> $DoOnce
-                NOT_DONE --> @GoToAbsolutePositionFieldFraction + y:1.0 + t:-90 + blocking:false
-                DONE --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:0.2 + latch:true
-                    YES --> @Stand
-                    NO --> @GoToAbsolutePositionFieldFraction + y:1.0 + t:-90
 
 #DoNothing
 @ChangeAction + action:waiting, @LookForward, @Stand
 
 #StandAndLook
 @ChangeAction + action:waiting, @LookAtFieldFeatures, @Stand
+
+
+#SearchBall
+$DoOnce
+    NOT_DONE --> @ChangeAction + action:searching, @LookAtFieldFeatures, @WalkInPlace + duration:1, @TurnLastSeenBallSide + duration:6, @GoToRolePosition + blocking:false
+    DONE --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:0.2 + latch:true
+        YES -->  #StandAndLook
+        NO --> @LookAtFieldFeatures, @GoToRolePosition
 
 #GetWalkreadyAndLocalize
 @ChangeAction + action:waiting + r:false, @LookAtFieldFeatures + r:false, @WalkInPlace
@@ -31,7 +27,7 @@ $DoOnce
         NO --> @LookAtFieldFeatures, @GoToRolePosition
 
 #KickWithAvoidance
-$KickOrDribble + threshold_upfield:2.0 + threshold_downfield:0.5
+$KickOrDribble + threshold_upfield:0.5 + threshold_downfield:0.5
     KICK --> $DoOnce
         NOT_DONE --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:rl_kick + blocking:false
         DONE --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:%rl_kick_approach_tolerance_pos + orientation_threshold:%rl_kick_approach_tolerance_deg
