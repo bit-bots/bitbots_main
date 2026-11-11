@@ -92,7 +92,8 @@ def generate_domain_bridge_config(robot_domain: int, output_dir: Path) -> Path:
 def launch_setup(context):
     """Dynamically set up launches based on num_robots."""
     num_robots_spec = LaunchConfiguration("num_robots").perform(context)
-    num_robots = sum(parse_num_robots(num_robots_spec))  # total robots across all teams
+    teams = parse_num_robots(num_robots_spec)
+    num_robots = sum(teams)  # total robots across all teams
     robot_type = str(LaunchConfiguration("robot_type").perform(context))
     field_name = LaunchConfiguration("fieldname").perform(context)
     use_web = LaunchConfiguration("web").perform(context).lower() == "true"
@@ -114,7 +115,7 @@ def launch_setup(context):
             teamplayer_args.append(f"{arg_name}:={value}")
 
     world_file = generate_world_xml(
-        num_robots_spec,
+        teams,
         package_share,
         robot_type,
         field_size["x"],
@@ -124,7 +125,7 @@ def launch_setup(context):
     # Compute individual game settings for every robot so that each robot gets its
     # own team affiliation, bot id and role instead of relying on hand-written
     # per-domain config files. Ordered the same as the robot domains below.
-    game_settings = compute_game_settings(parse_num_robots(num_robots_spec))
+    game_settings = compute_game_settings(teams)
 
     actions = []
 

@@ -92,23 +92,35 @@ def get_jersey_texture(
     return output_path
 
 
-def parse_num_robots(num_robots: str | int) -> list[int]:
+def parse_num_robots(num_robots: tuple[int, int] | str | int) -> tuple[int, int]:
     """Parse a ``num_robots`` specification into per-team robot counts.
 
-    Accepts either a single number (e.g. ``"3"`` -> a single team of three
-    robots) or a colon separated team setup (e.g. ``"2:2"`` -> two teams of two
-    robots each). Returns the robot count of every team in order.
+    Accepts a tuple of two ints, a single number (e.g. ``"3"`` -> a single team
+    of three robots on team 0, returning ``(3, 0)``), or a colon separated team
+    setup (e.g. ``"2:2"`` -> two teams of two robots each, returning ``(2, 2)``).
+    Returns the robot count of both teams as a ``(team_0_count, team_1_count)`` tuple.
     """
-    teams = [int(part) for part in str(num_robots).split(":")]
+    if isinstance(num_robots, (tuple, list)):
+        if len(num_robots) != 2:
+            raise ValueError(f"Invalid num_robots specification: {num_robots!r}")
+        teams = (int(num_robots[0]), int(num_robots[1]))
+    else:
+        parts = str(num_robots).split(":")
+        if len(parts) == 1:
+            teams = (int(parts[0]), 0)
+        elif len(parts) == 2:
+            teams = (int(parts[0]), int(parts[1]))
+        else:
+            raise ValueError(f"Invalid num_robots specification: {num_robots!r}")
     if any(count < 0 for count in teams) or sum(teams) < 1:
         raise ValueError(f"Invalid num_robots specification: {num_robots!r}")
     return teams
 
 
-def compute_game_settings(teams: list[int]) -> list[dict]:
+def compute_game_settings(teams: tuple[int, int]) -> list[dict]:
     """Compute the per-robot game settings for a team setup.
 
-    Given the per-team robot counts (e.g. ``[2, 2]`` for a 2 vs 2), this returns
+    Given the per-team robot counts (e.g. ``(2, 2)`` for a 2 vs 2), this returns
     one dict of game settings per robot, ordered team by team. ``bot_id`` is unique
     within a team (1-based) while ``team_id``/``team_color`` identify the team, so
     any team layout works without hand-maintained per-robot config files.
@@ -141,7 +153,7 @@ def compute_game_settings(teams: list[int]) -> list[dict]:
 
 
 def compute_robot_poses(
-    teams: list[int], field_length: float, field_width: float
+    teams: tuple[int, int], field_length: float, field_width: float
 ) -> list[tuple[float, float, float]]:
     """Compute the ``(x, y, yaw)`` placement for every robot.
 
@@ -257,7 +269,7 @@ def _find_replicate(root: ET.Element) -> tuple[ET.Element, ET.Element]:
 
 
 def generate_world_xml(
-    num_robots: str | int,
+    num_robots: tuple[int, int] | str | int,
     package_share: str,
     robot_type: str,
     field_length: float,
