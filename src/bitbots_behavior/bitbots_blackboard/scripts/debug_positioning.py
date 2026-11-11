@@ -135,7 +135,7 @@ def run_gui():
             ax.add_patch(
                 Circle(
                     state["ball"],
-                    params.opp_set_play_clearance,
+                    params.opponent_set_play_clearance,
                     fill=False,
                     color="yellow",
                     lw=1.5,
@@ -168,7 +168,7 @@ def run_gui():
             perp = np.array([-aim[1], aim[0]])
             b = np.asarray(state["ball"])
             far = b + params.kick_range * aim
-            corner = perp * params.kick_clear
+            corner = perp * params.kick_clearance
             lane = np.array([b + corner, far + corner, far - corner, b - corner])
             ax.add_patch(plt.Polygon(lane, closed=True, color="white", alpha=0.10, zorder=1))
             ax.arrow(
@@ -197,7 +197,7 @@ def run_gui():
                 [old_pose[0], p[0]], [old_pose[1], p[1]], ls=(0, (4, 2)), color="white", lw=1.7, alpha=0.95, zorder=3
             )
             ax.add_patch(Circle(tuple(old_pose[:2]), 0.07, fill=False, ec="white", lw=1.2, alpha=0.8, zorder=3))
-            ax.add_patch(Circle(tuple(p), params.min_sep / 2, color=c, alpha=0.18, zorder=2))
+            ax.add_patch(Circle(tuple(p), params.min_separation / 2, color=c, alpha=0.18, zorder=2))
             ax.add_patch(Circle(tuple(p), 0.16, color=c, ec="black", zorder=6))
             ax.plot(
                 [p[0], p[0] + 0.45 * np.cos(th)],

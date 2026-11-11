@@ -247,53 +247,53 @@ body_behavior:
     formation:
       # Goalie
       # How far the goalie comes out of the goal (dist from goal centre)
-      goalie_forward_dist: 0.55
+      goalie_forward_distance: 0.55
 
       # Defenders
       # Defender depth as a fraction of |ball-goal|  (push-up factor)
-      relativ_def_depth: 0.42
+      relative_defender_depth: 0.42
       # Extra defender depth: + = further forward, - = further back
-      def_depth_bias: 0.0
+      defender_depth_bias: 0.0
       # Min defender depth from goal (never tuck behind this)
-      def_min_depth: 0.9
+      defender_min_depth: 0.9
       # Max defender depth from goal (high-line cap)
-      def_max_depth: 3.8
+      defender_max_depth: 3.8
       # Keep defenders at least this far ahead of the goalie
-      def_to_goalie_depth: 0.45
+      defender_to_goalie_depth: 0.45
       # Keep defenders at least this far (goal-side) of the ball
       standoff: 1.0
       # Lateral spacing between adjacent defenders (ball at/beyond the centre circle)
-      def_side_gap: 1.7
+      defender_side_gap: 1.7
       # Lateral spacing when the ball is at our goal (defenders tuck in)
-      def_side_gap_close: 0.6
+      defender_side_gap_close: 0.6
       # Lateral offset for a lone defender (so it's not on the axis)
-      solo_def_side_gap: 0.9
+      solo_defender_side_gap: 0.9
 
       # Supporter
       # If False, no supporter is assigned; its slot becomes an extra defender
       include_supporter: False
       # How far in front of the ball (toward opp goal) the supporter sits
-      supp_forward_offset: 1.6
+      supporter_forward_offset: 1.6
       # Supporter lateral offset magnitude (auto-leans toward centre)
-      supp_side: 1.2
+      supporter_side: 1.2
       # Supporter never goes past this x (keeps it out of the opp corner)
-      relativ_supp_max_x: 0.7
+      relative_supporter_max_x: 0.7
 
       # Striker
       # Striker stands this far behind the ball (to push it forward)
-      kick_offset: 0.25
+      striker_kick_offset: 0.25
       # Safety margin inside each goal post for a straight shot
-      post_margin: 0.45
+      striker_post_margin: 0.45
       # Within this x of the opp goal & not aligned -> play back to our side
-      back_dist: 0.21
+      striker_back_distance: 0.21
       # Separation
       # No two robots closer than this
-      min_sep: 0.8
-      sep_iters: 8
+      min_separation: 0.8
+      separation_iterations: 8
       # Kick lane: keep teammates out of the corridor in front of the ball
       # Half-width of the cleared corridor
-      kick_clear: 0.7
+      kick_clearance: 0.7
       # How far in front of the ball the corridor extends
       kick_range: 3.0
       # Opponent set play: keep all robots outside this radius
-      opp_set_play_clearance: 1.1
+      opponent_set_play_clearance: 1.1
