@@ -186,6 +186,14 @@ def launch_setup(context):
                     ],
                 )
             )
+        else:
+            args = " ".join(teamplayer_args + robot_game_settings_args)
+            actions.append(LogInfo(msg=f"Will not start teamplayer stack for robot{robot_domain}"))
+            actions.append(
+                LogInfo(
+                    msg=f"ROS_DOMAIN_ID={robot_domain} pixi run ros2 launch bitbots_bringup teamplayer.launch {args}"
+                )
+            )
 
     return actions
 
