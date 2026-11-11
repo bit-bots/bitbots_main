@@ -1,4 +1,5 @@
 #include "robot.h"
+#include "joint_state.h"
 #include <chrono>
 #include <iomanip>
 #include <sstream>
@@ -162,28 +163,12 @@ void robot::publishJointStates()
 {
     send_get_motor_state_cmd();
 
-    sensor_msgs::msg::JointState js;
-    js.header.stamp = node_->now();
+    auto js = make_joint_state(Motors);
+    if (!js)
+        return;
 
-    //const double now_sec = std::chrono::duration<double>(
-    //    std::chrono::steady_clock::now().time_since_epoch()).count();
-
-    for (motor *m : Motors)
-    {
-        motor_back_t *data_ptr = m->get_current_motor_state();
-
-        // Drop motors with no recent data entirely — consumers must not
-        // assume every motor is always present in the message.
-        //if (data_ptr->time == 0.0 || now_sec - data_ptr->time > 0.1)
-        //    continue;
-
-        js.name.push_back(m->get_motor_name());
-        js.position.push_back(data_ptr->position);
-        js.velocity.push_back(data_ptr->velocity);
-        js.effort.push_back(data_ptr->torque);
-    }
-
-    joint_state_pub_->publish(js);
+    js->header.stamp = node_->now();
+    joint_state_pub_->publish(*js);
 }
 
 

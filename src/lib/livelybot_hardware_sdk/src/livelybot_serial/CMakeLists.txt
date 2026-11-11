@@ -78,6 +78,10 @@ if(BUILD_TESTING)
 
   ament_add_gtest(test_motor_conversion test/test_motor_conversion.cpp)
   # test_motor_conversion is fully self-contained (no ROS / hardware deps)
+
+  ament_add_gtest(test_joint_state test/test_joint_state.cpp)
+  target_link_libraries(test_joint_state livelybot_serial)
+  ament_target_dependencies(test_joint_state rclcpp sensor_msgs livelybot_msg)
 endif()
 
 ament_export_targets(livelybot_serialTargets HAS_LIBRARY_TARGET)
