@@ -294,8 +294,8 @@ class TeleopKeyboard(Node):
                 elif key == "p":
                     # push robot in simulation
                     push_request = SimulatorPush.Request()
-                    push_request.force.x = self.push_force_x
-                    push_request.force.y = self.push_force_y
+                    push_request.force.x = self.push_force_x * 10
+                    push_request.force.y = self.push_force_y * 10
                     push_request.relative = True
                     self.simulator_push.call_async(push_request)
                 elif key == "P":
