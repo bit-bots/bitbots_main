@@ -1,8 +1,11 @@
 #include <algorithm>
+#include <bitbots_vision/onnx_float16_conversion.hpp>
 #include <bitbots_vision/rfdetr_handler.hpp>
 #include <bitbots_vision/rfdetr_processing.hpp>
 #include <cstdlib>
 #include <filesystem>
+#include <fstream>
+#include <iterator>
 #include <rclcpp/logging.hpp>
 #include <stdexcept>
 #include <string>
@@ -117,9 +120,30 @@ void RfdetrHandler::init_session(const std::string& model_path) {
     // creation (e.g. a WebGPU shader requiring f16 on a device without f16
     // support). That failure throws out of the Session constructor itself,
     // so it has to be caught here rather than around AppendExecutionProvider.
-    RCLCPP_ERROR(logger_, "Session creation with GPU execution providers failed (%s) — retrying CPU-only", e.what());
-    Ort::SessionOptions cpu_only_options = build_session_options(true);
-    session_ = std::make_unique<Ort::Session>(env_, onnx_file.c_str(), cpu_only_options);
+    RCLCPP_WARN(logger_, "Session creation with GPU execution providers failed (%s)", e.what());
+
+    // The usual cause is a float16 model on a device whose GPU provider cannot
+    // run float16 kernels (e.g. WebGPU without shader-f16), so first retry the
+    // GPU providers with the model converted to float32.
+    std::ifstream file(onnx_file, std::ios::binary);
+    const std::string model_bytes((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    const auto float32 = onnx_rewrite::convert_float16_to_float32(model_bytes);
+    if (float32.num_tensors > 0 || float32.num_types > 0) {
+      RCLCPP_INFO(logger_, "Retrying the GPU execution providers with the model converted to float32");
+      try {
+        Ort::SessionOptions session_options = build_session_options(false);
+        session_ = std::make_unique<Ort::Session>(env_, float32.model.data(), float32.model.size(), session_options);
+        RCLCPP_INFO(logger_, "Running the float32-converted model on the GPU execution providers");
+      } catch (const Ort::Exception& e32) {
+        RCLCPP_WARN(logger_, "The float32-converted model failed as well (%s)", e32.what());
+      }
+    }
+
+    if (!session_) {
+      RCLCPP_ERROR(logger_, "No GPU execution provider can run the model — falling back to CPU-only inference");
+      Ort::SessionOptions cpu_only_options = build_session_options(true);
+      session_ = std::make_unique<Ort::Session>(env_, onnx_file.c_str(), cpu_only_options);
+    }
   }
 
   // ---- Introspect model I/O ----
