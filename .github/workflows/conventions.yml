@@ -1,0 +1,40 @@
+name: Conventions
+
+# Warns with a comment when an issue or PR title, or a PR branch name, does not
+# follow CONTRIBUTING.md. It never fails, so it cannot block a merge.
+on:
+  issues:
+    types: [opened, edited, reopened]
+  # pull_request_target runs the workflow and script from the base branch, so
+  # it also works for PRs from forks. It must never check out or run PR code.
+  pull_request_target:
+    types: [opened, edited, reopened]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: conventions-${{ github.event.issue.number || github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+    steps:
+      - name: Check out the guide and check script from the base branch
+        uses: actions/checkout@v7
+        with:
+          sparse-checkout: |
+            CONTRIBUTING.md
+            .github/scripts/check-conventions.js
+          sparse-checkout-cone-mode: false
+
+      - name: Check conventions
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const { run } = require(`${process.env.GITHUB_WORKSPACE}/.github/scripts/check-conventions.js`);
+            await run({ github, context, core });
