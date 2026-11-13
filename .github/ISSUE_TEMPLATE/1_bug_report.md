@@ -1,6 +1,7 @@
 ---
 name: "\U0001F41B Bug report"
 about: Report a misbehavior or other bug
+title: 'fix(<scope>): '
 labels: 'bug'
 ---
 # Summary

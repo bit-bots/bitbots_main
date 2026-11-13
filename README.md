@@ -70,6 +70,11 @@ To format all code in the repository, run
 pixi run format
 ```
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for our git workflow, including branch
+naming, pull requests, labels, and project triage.
+
 ## More documentation
 
 Our documentation is hosted on [docs.bit-bots.de](https://docs.bit-bots.de/).
