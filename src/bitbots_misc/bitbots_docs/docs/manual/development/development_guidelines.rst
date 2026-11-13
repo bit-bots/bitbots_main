@@ -49,9 +49,7 @@ We also have some conventions about how we want to use git. They are as follows:
 
 * Commits are written like ``when this commit is applied, it will <commit message>``.
 * Commits consist of a heading, newline and optional description.
-    * the heading is a short summary of the changes.
-    * the heading should start with a prefix like ``ci:``, ``walking:``, etc to show which part of the repository is affected.
+    * the heading follows `Conventional Commits <https://www.conventionalcommits.org>`_, such as ``fix(motion): ...``.
     * the description should not elaborate further on what was done but rather explain why something was done.
-* Any change should be done in a branch and then PRed to master.
-    * branch names should be prefixed with ``feature/``, ``fix/``, ``refactor/`` or none if not applicable.
-    * merged branches can be deleted to keep the repo clean of any clutter.
+* Branch naming, pull requests, labels, and project triage are described in
+  `CONTRIBUTING.md <https://github.com/bit-bots/bitbots_main/blob/main/CONTRIBUTING.md>`_.
