@@ -5,27 +5,13 @@ from dataclasses import replace
 from bitbots_auto_referee.core.state import MatchState
 
 
-class MessageBudget:
-    def __init__(self):
-        self._counts: dict[tuple[int, int, str], int] = {}
-
-    def update(self, state: MatchState, team_id: int, player_id: int, session: str, sent: int) -> MatchState:
-        if not isinstance(session, str) or not session or type(sent) is not int or sent < 0:
-            raise ValueError("Send report requires a session and a nonnegative cumulative count")
-        if team_id not in {team.team_number for team in state.teams}:
-            raise ValueError("Send report is outside the match")
-        key = (team_id, player_id, session)
-        previous = self._counts.get(key, 0)
-        if sent <= previous:
-            return state
-        self._counts[key] = sent
-        teams = tuple(
-            replace(team, message_budget=max(0, team.message_budget - (sent - previous)))
-            if team.team_number == team_id
-            else team
-            for team in state.teams
-        )
-        return replace(state, teams=teams)
+def count_team_messages(state: MatchState, counts: dict[int, int]) -> MatchState:
+    """Deduct received UDP datagrams from each team's shared budget."""
+    teams = tuple(
+        replace(team, message_budget=max(0, team.message_budget - counts.get(team.team_number, 0)))
+        for team in state.teams
+    )
+    return replace(state, teams=teams) if teams != state.teams else state
 
 
 def robot_connections(

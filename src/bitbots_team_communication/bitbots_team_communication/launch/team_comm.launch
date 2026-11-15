@@ -3,8 +3,13 @@
     <!-- Get launch params-->
     <arg name="sim" default="false" description="true: activates simulation time" />
 
-    <node pkg="bitbots_team_communication" exec="team_comm.py" output="screen">
+    <node unless="$(var sim)" pkg="bitbots_team_communication" exec="team_comm.py" output="screen">
         <param from="$(find-pkg-share bitbots_team_communication)/config/team_communication_config.yaml"/>
+        <param name="use_sim_time" value="$(var sim)" />
+    </node>
+    <node if="$(var sim)" pkg="bitbots_team_communication" exec="team_comm.py" output="screen">
+        <param from="$(find-pkg-share bitbots_team_communication)/config/team_communication_config.yaml"/>
+        <param name="local_target_ports" value="[4001, 4002, 4003, 4004, 4005, 4006, 4007, 4009]" />
         <param name="use_sim_time" value="$(var sim)" />
     </node>
 </launch>

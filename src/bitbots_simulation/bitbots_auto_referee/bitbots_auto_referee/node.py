@@ -3,7 +3,6 @@
 import json
 import time
 from dataclasses import replace
-from functools import partial
 
 import rclpy
 from rcl_interfaces.msg import ParameterDescriptor, SetParametersResult
@@ -11,15 +10,14 @@ from rclpy.clock import Clock, ClockType
 from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, HistoryPolicy, QoSProfile, ReliabilityPolicy
-from rclpy.subscription import Subscription
 from std_msgs.msg import String
 
 from bitbots_auto_referee.adapters.game_controller import GameControllerUDPAdapter
 from bitbots_auto_referee.adapters.simulation.commands import SimulationCommands
 from bitbots_auto_referee.adapters.simulation.observations import decode_observation
-from bitbots_auto_referee.adapters.simulation.roster import validate_roster
+from bitbots_auto_referee.adapters.simulation.team_messages import TeamMessageReceiver
 from bitbots_auto_referee.config import LIVE_PARAMETERS, PARAMETERS, RefereeConfig
-from bitbots_auto_referee.core.communication import MessageBudget, robot_connections
+from bitbots_auto_referee.core.communication import count_team_messages, robot_connections
 from bitbots_auto_referee.core.state import MatchState
 from bitbots_auto_referee.rules.check_rules import RuleChecker
 from bitbots_auto_referee.rules.double_touch import DoubleTouchConfig
@@ -35,6 +33,7 @@ class AutoReferee(Node):
         super().__init__("auto_referee")
         self.adapter: GameControllerUDPAdapter | None = None
         self.dashboard: Dashboard | None = None
+        self._team_messages: TeamMessageReceiver | None = None
         try:
             for name, spec in PARAMETERS.items():
                 if name != "use_sim_time":
@@ -53,13 +52,16 @@ class AutoReferee(Node):
             self._started_at = time.monotonic()
             self._connected: bool | None = None
             self._robot_connections: dict[tuple[int, int], bool | None] = {}
-            self._budget = MessageBudget()
             self._roster: dict[int, dict] = {}
-            self._send_subscriptions: dict[int, Subscription] = {}
-            self._roster_valid = not (self.config.num_robots or self.get_parameter("use_sim_time").value)
-            self._roster_status = "Standalone" if self._roster_valid else "Warte auf Simulator-Aufstellung"
+            self._roster_status = (
+                "Warte auf Simulator-Aufstellung"
+                if self.config.num_robots or self.get_parameter("use_sim_time").value
+                else "Standalone"
+            )
             self._rejected_packets = 0
             self._network_clock = Clock(clock_type=ClockType.STEADY_TIME)
+            self._team_messages = TeamMessageReceiver((self.config.home_team_id, self.config.away_team_id))
+            self.create_timer(0.01, self._receive_team_messages, clock=self._network_clock)
             self._startup = StartupSequence()
             self.simulation_commands = SimulationCommands(self, self._record_event)
             self.rule_checker = RuleChecker(
@@ -136,7 +138,7 @@ class AutoReferee(Node):
 
     def _on_simulation_step(self, message: SimulationState) -> None:
         """Evaluate rules in every phase whenever the simulator completes a step."""
-        if self.adapter is None or not self._roster_valid:
+        if self.adapter is None:
             return
         previous = self.adapter.state
         updated = self.rule_checker.check_rules(previous, decode_observation(message))
@@ -157,7 +159,7 @@ class AutoReferee(Node):
             self._send()
 
     def _advance_startup(self) -> None:
-        if self.adapter is None or not self._roster_valid or self._startup.finished:
+        if self.adapter is None or self._startup.finished:
             return
         if self.get_parameter("use_sim_time").value:
             now_ns = self.get_clock().now().nanoseconds
@@ -191,55 +193,24 @@ class AutoReferee(Node):
             )
 
     def _on_roster(self, message: String) -> None:
-        try:
-            roster = validate_roster(self.config, json.loads(message.data))
-        except (ValueError, TypeError, KeyError) as error:
-            self._roster_valid = False
-            status = f"Aufstellung ungültig: {error}"
-            if status != self._roster_status:
-                self._roster_status = status
-                self.get_logger().error(status)
-                self._record_event(status)
+        roster = {robot["index"]: robot for robot in json.loads(message.data)}
+        if roster == self._roster:
             return
-        if roster == self._roster and self._roster_valid:
-            return
-        for subscription in self._send_subscriptions.values():
-            self.destroy_subscription(subscription)
-        self._send_subscriptions.clear()
         self._roster = roster
-        self._roster_valid = True
-        self._roster_status = "Simulator-Aufstellung geprüft"
-        for index, robot in roster.items():
-            self._send_subscriptions[index] = self.create_subscription(
-                String,
-                f"/robot{robot['domain']}/team_communication/sent",
-                partial(self._on_team_message_count, index),
-                dashboard_qos(),
-            )
+        self._roster_status = "Simulator-Aufstellung übernommen"
         self._record_event(self._roster_status)
-        self._send()
 
-    def _on_team_message_count(self, index: int, message: String) -> None:
-        if self.adapter is None or not self._roster_valid or index not in self._roster:
+    def _receive_team_messages(self) -> None:
+        if self.adapter is None or self._team_messages is None:
             return
-        try:
-            report = json.loads(message.data)
-            robot = self._roster[index]
-            if (report["team_id"], report["player_id"]) != (robot["team_id"], robot["bot_id"]):
-                raise ValueError("Sender identity does not match the simulator roster")
-            previous = self.adapter.state
-            updated = self._budget.update(
-                previous, robot["team_id"], robot["bot_id"], report["session"], report["sent"]
-            )
-        except (ValueError, TypeError, KeyError) as error:
-            self.get_logger().error(f"Invalid team send report: {error}", throttle_duration_sec=5.0)
-            return
+        previous = self.adapter.state
+        updated = count_team_messages(previous, self._team_messages.receive_counts())
         if updated != previous:
             self.adapter.set_state(updated)
             self._send()
 
     def _send(self) -> None:
-        if self.adapter is None or not self._roster_valid:
+        if self.adapter is None:
             return
         try:
             self.adapter.send_state()
@@ -282,6 +253,9 @@ class AutoReferee(Node):
             self._connected = True
 
     def destroy_node(self):
+        if self._team_messages is not None:
+            self._team_messages.close()
+            self._team_messages = None
         if self.dashboard is not None:
             self.dashboard.close()
             self.dashboard = None

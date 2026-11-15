@@ -18,7 +18,6 @@ class RuleUpdateTest(unittest.TestCase):
         self.state = MatchState.initial(config)
         self.node = Mock()
         self.node.adapter.state = self.state
-        self.node._roster_valid = True
         self.node.rule_checker = RuleChecker(config.robot_teams)
         self.node._unmapped_robot_indices = set()
         self.message = SimulationState()

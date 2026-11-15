@@ -77,7 +77,7 @@ class DashboardTest(unittest.TestCase):
             None,
             False,
             {(home.team_number, 1): True, (away.team_number, 1): False},
-            "Simulator-Aufstellung geprüft",
+            "Simulator-Aufstellung übernommen",
         )
         message = self.node.create_publisher.return_value.publish.call_args.args[0]
         data = json.loads(message.data)
@@ -85,7 +85,7 @@ class DashboardTest(unittest.TestCase):
         self.assertIn("11998", home_text)
         self.assertIn("11993", away_text)
         self.assertIn("1 / 2 aktuell", details[1])
-        self.assertIn("Simulator-Aufstellung geprüft", details[1])
+        self.assertIn("Simulator-Aufstellung übernommen", details[1])
         connections = format_connections(data)
         self.assertIn(f"Team {home.team_number}: Spieler 1: OK", connections)
         self.assertIn(f"Team {away.team_number}: Spieler 1: fehlt", connections)

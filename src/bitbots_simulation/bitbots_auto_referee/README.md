@@ -233,39 +233,40 @@ simulator publishes this roster as retained JSON on `/simulation/roster`
 against the robot bodies before publishing. Regenerate older world files that
 do not contain this metadata.
 
-When using simulation time or `num_robots`, AutoRef waits for this roster before
-sending GameController packets, advancing the opening sequence, or evaluating
-observations. It validates the exact index-to-team/player assignments, roles,
-goalkeeper assignments, and palette against its own configuration. An unequal
-split with the same total population is therefore rejected as well. A mismatch
-is shown in the dashboard and log; restart AutoRef with the matching
-`num_robots` specification. Standalone operation without simulation time or a
-population specification does not require a simulator roster.
+AutoRef uses the published roster for informational status only. It does not
+validate the roster against its own configuration and does not wait for it before sending GameController packets,
+advancing the opening sequence, or evaluating observations. Start the simulator
+and AutoRef with matching configurations; their consistency is the responsibility
+of the launch setup.
 
 ## Team message budget
 
-Each team starts with the budget defined by `TeamState.message_budget`. A
-successful logical team message consumes a unit from that team's shared
-budget. Local fanout to multiple player ports is counted once; a failed send
-before any successful datagram and an oversized or disallowed message consume
-nothing. A partially successful fanout is counted.
+Each team starts with the budget defined by `TeamState.message_budget`. AutoRef
+listens on a separate loopback UDP counting port per team and deducts a unit for
+each received datagram. The destination port identifies the team; the payload is
+not decoded. The remaining budget is clamped at exhaustion, sent in the normal
+GameController packets, and displayed in the dashboard.
 
-In simulation, team communication publishes retained cumulative send statistics
-on `team_communication/sent` (`std_msgs/String`). Reports contain `team_id`,
-`player_id`, a sender-process `session`, and the cumulative `sent` count. The
-domain bridge forwards each robot's reports into its namespace in the main
-domain. AutoRef checks sender identity against the verified simulator roster
-and applies only counter increases. Duplicate, skipped, and out-of-order
-reports do not duplicate or lose the count within a sender session; a new
-process gets a new session without resetting the team budget.
+The simulation override in `bitbots_team_communication/launch/team_comm.launch`
+keeps the player destinations first and appends the counting destination to
+`local_target_ports`. The existing team offset in `SocketCommunication` keeps
+player and counting ports separate between teams. The receiver's matching port
+calculation is in `adapters/simulation/team_messages.py`. Update the launch list
+and receiver together when changing this layout. The player slots cover the
+largest supported simulation team, and the counting slot is outside those slots.
 
-The remaining budget is sent in GameController packets and displayed for both
-teams in the UI. Simulation senders may use the remaining budget down to
-exhaustion; the hardware sender's existing reserve is preserved. Budget updates
-travel asynchronously, so already in-flight messages can still arrive after
-exhaustion. The reported budget is clamped to the wire format's lower bound.
-Restarting AutoRef creates a fresh match budget and replays retained sender
-counts; restart the robot stacks as well when starting a fresh match.
+The normal TeamCom send loop sends the extra copy without any reporting hook or
+ROS statistics topic. No domain bridge is needed for counting. TeamCom's existing
+budget reserve remains unchanged. Robot status responses to the GameController
+continue over their separate return channel.
+
+Counting requires the default loopback simulation network mode. Explicit broadcast
+or other target addresses need a corresponding receiver configuration. Only
+copies received by AutoRef consume budget: a lost counting packet or an error
+before the counting destination is reached can undercount successful deliveries
+to players. Counting runs while physics is paused as well. Duplicate datagrams
+count separately, and restarting AutoRef starts a fresh budget without replaying
+past sends. Start AutoRef before the robots to include their first messages.
 
 ## Robot receiver configuration
 

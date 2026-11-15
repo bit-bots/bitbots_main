@@ -77,7 +77,6 @@ def test_early_set_transition_updates_opening_clock(use_sim_time):
     previous = replace(MatchState.initial(node.config), state="STATE_READY", stopped=False)
     updated = replace(previous, state="STATE_SET", secondary_time=5)
     node.adapter.state = previous
-    node._roster_valid = True
     node._startup.finished = False
     node.rule_checker.check_rules.return_value = updated
     node.rule_checker.unmapped_robot_indices = set()
