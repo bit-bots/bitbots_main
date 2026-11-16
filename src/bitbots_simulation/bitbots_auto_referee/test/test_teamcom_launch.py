@@ -36,12 +36,8 @@ def test_only_enabled_autoref_changes_the_teamcom_launch(simulation_launch, monk
     process = Mock()
     monkeypatch.setattr(module, "ExecuteProcess", process)
     module.launch_setup(context)
-    overrides = [arg for arg in process.call_args.kwargs["cmd"] if arg.startswith("teamcom_launch_file:=")]
-    assert overrides == (
-        [f"teamcom_launch_file:={tmp_path / 'bitbots_bringup/launch/auto_referee_team_comm.launch'}"]
-        if enabled
-        else []
-    )
+    options = [arg for arg in process.call_args.kwargs["cmd"] if arg.startswith("auto_referee:=")]
+    assert options == [f"auto_referee:={str(enabled).lower()}"]
 
 
 def test_autoref_integration_is_disabled_by_default(simulation_launch):
@@ -53,15 +49,40 @@ def test_autoref_integration_is_disabled_by_default(simulation_launch):
     assert "".join(value.perform(LaunchContext()) for value in argument.default_value) == "false"
 
 
-def test_robot_launches_default_to_original_teamcom_and_forward_the_selection():
-    original = "$(find-pkg-share bitbots_team_communication)/launch/team_comm.launch"
+def test_robot_launches_default_to_disabled_autoref_and_forward_the_flag():
     for name in ("teamplayer.launch", "highlevel.launch"):
         root = ET.parse(BRINGUP / "launch" / name).getroot()
-        assert root.find("arg[@name='teamcom_launch_file']").attrib["default"] == original
+        assert root.find("arg[@name='auto_referee']").attrib["default"] == "false"
+        assert root.find("arg[@name='teamcom_launch_file']") is None
     teamplayer = ET.parse(BRINGUP / "launch/teamplayer.launch").getroot()
-    assert teamplayer.find(".//include/arg[@name='teamcom_launch_file']").attrib["value"] == "$(var teamcom_launch_file)"
-    highlevel = ET.parse(BRINGUP / "launch/highlevel.launch").getroot()
-    assert highlevel.find(".//include[@file='$(var teamcom_launch_file)']") is not None
+    assert teamplayer.find(".//include/arg[@name='auto_referee']").attrib["value"] == "$(var auto_referee)"
+
+
+@pytest.mark.parametrize("sim,autoref", [(False, False), (False, True), (True, False), (True, True)])
+def test_only_autoref_simulation_selects_the_override(sim, autoref):
+    root = ET.parse(BRINGUP / "launch/highlevel.launch").getroot()
+    group = root.find("group[@if='$(var teamcom)']")
+    values = {"$(var sim)": sim, "$(var auto_referee)": autoref}
+    selected = []
+
+    def visit(element):
+        if "if" in element.attrib and not values[element.attrib["if"]]:
+            return
+        if "unless" in element.attrib and values[element.attrib["unless"]]:
+            return
+        if element.tag == "include":
+            selected.append(element.attrib["file"])
+        else:
+            for child in element:
+                visit(child)
+
+    for child in group:
+        visit(child)
+    assert selected == [
+        "$(find-pkg-share bitbots_bringup)/launch/auto_referee_team_comm.launch"
+        if sim and autoref
+        else "$(find-pkg-share bitbots_team_communication)/launch/team_comm.launch"
+    ]
 
 
 def test_autoref_launch_loads_override_after_the_regular_config():

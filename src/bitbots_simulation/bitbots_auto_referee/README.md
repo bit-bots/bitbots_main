@@ -250,8 +250,9 @@ GameController packets, and displayed in the dashboard.
 Pass `auto_referee:=true` to `mujoco_simulation.launch.py` to select the separate
 `bitbots_bringup/launch/auto_referee_team_comm.launch` for the robot stacks. It
 loads the regular TeamCom configuration followed by the AutoRef-only override
-`bitbots_bringup/config/auto_referee_team_communication.yaml`. The referee itself
-is still started separately. Without this option, simulation and hardware use
+`bitbots_bringup/config/auto_referee_team_communication.yaml`. The boolean option is forwarded through `teamplayer.launch` and
+`highlevel.launch`; the override is selected only when simulation and AutoRef
+are both enabled. The referee itself is still started separately. Without this option, simulation and hardware use
 the original TeamCom launch and configuration.
 
 The override keeps the player destinations first and appends the counting
