@@ -67,15 +67,23 @@ def test_goal_delay_acknowledgement_and_ready_set_playing():
     assert match.stopped and match.teams[1].score == 1
     commands.teleport_ball.assert_not_called()
     match = checker.check_rules(match, sample(6, (5.0, 0.0, 0.1)))
-    assert match.teams[1].score == 1 and match.stopped and match.kicking_team == 1
-    commands.teleport_ball.assert_called_once_with(0.0, 0.0, 0.0)
-    result.set_result(TeleportResult(True, "placed", applied_step=7000))
-    match = checker.check_rules(match, sample(6.5, (5.0, 0.0, 0.1)))
-    assert match.stopped
-    match = checker.check_rules(match, sample(7, (0.0, 0.0, 0.1), ball_teleported=True))
+    assert match.teams[1].score == 1 and not match.stopped and match.kicking_team == 1
     assert match.state == "STATE_READY"
-    match = checker.check_rules(match, sample(32, (0.0, 0.0, 0.1)))
+    commands.teleport_ball.assert_not_called()
+    match = checker.check_rules(match, sample(30.9, (5.0, 0.0, 0.1)))
+    assert match.state == "STATE_READY"
+    commands.teleport_ball.assert_not_called()
+    match = checker.check_rules(match, sample(31, (5.0, 0.0, 0.1)))
     assert match.state == "STATE_SET"
+    commands.teleport_ball.assert_not_called()
+    match = checker.check_rules(match, sample(31.001, (5.0, 0.0, 0.1)))
+    assert match.state == "STATE_SET" and match.stopped
+    commands.teleport_ball.assert_called_once_with(0.0, 0.0, 0.0)
+    result.set_result(TeleportResult(True, "placed", applied_step=32000))
+    match = checker.check_rules(match, sample(31.5, (5.0, 0.0, 0.1)))
+    assert match.stopped
+    match = checker.check_rules(match, sample(32, (0.0, 0.0, 0.1), ball_teleported=True))
+    assert match.state == "STATE_SET" and not match.stopped and match.secondary_time == 5
     match = checker.check_rules(match, sample(37, (0.0, 0.0, 0.1)))
     assert match.state == "STATE_PLAYING" and not match.stopped
     assert match.teams[1].score == 1
@@ -88,9 +96,9 @@ def test_failed_placement_does_not_repeat_score_or_command():
     commands.teleport_ball.return_value = result
     checker = RuleChecker({}, teleport_commands=commands, field=FieldGeometry(home_defends_negative_x=False))
     match = checker.check_rules(state(), sample(0, (4.0, 0.0, 0.1)))
-    for seconds in (1, 3, 4, 6, 10):
+    for seconds in (1, 3, 4, 6, 10, 31, 32, 100):
         match = checker.check_rules(match, sample(seconds, (5.0, 0.0, 0.1)))
-    assert match.stopped and match.teams[1].score == 1
+    assert match.state == "STATE_SET" and match.stopped and match.teams[1].score == 1
     assert commands.teleport_ball.call_count == 1
 
 

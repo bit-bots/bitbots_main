@@ -1,13 +1,16 @@
 """Early READY completion uses SET legality and continuous simulation-time stability."""
 
 import math
+from concurrent.futures import Future
 from dataclasses import replace
+from unittest.mock import Mock
 
 import pytest
 
 from bitbots_auto_referee.config import PARAMETERS, RefereeConfig
 from bitbots_auto_referee.core.observations import RobotBounds, RobotMotion, SimulationObservation
 from bitbots_auto_referee.core.state import MatchState
+from bitbots_auto_referee.core.teleport import TeleportResult
 from bitbots_auto_referee.rules.check_rules import RuleChecker
 
 STILL = RobotMotion(0, 0, 0, 0, 1, 1)
@@ -17,7 +20,11 @@ def setup():
     values = {name: spec.default for name, spec in PARAMETERS.items()}
     values.update(home_team_id=1, away_team_id=2)
     state = replace(MatchState.initial(RefereeConfig.from_parameters(values)), state="STATE_READY", stopped=False)
-    return state, RuleChecker({0: 1, 1: 2})
+    commands = Mock()
+    placed = Future()
+    placed.set_result(TeleportResult(True, "placed"))
+    commands.teleport_ball.return_value = placed
+    return state, RuleChecker({0: 1, 1: 2}, teleport_commands=commands)
 
 
 def sample(time, **changes):
@@ -124,9 +131,29 @@ def test_restart_sequences_preserve_full_set_after_early_ready(owner):
     for time in (10, 15):
         state = checker.check_rules(state, sample(time))
     assert state.state == "STATE_SET" and state.secondary_time == 5
+    state = checker.check_rules(state, sample(15))
     state = checker.check_rules(state, sample(19.999))
     assert state.state == "STATE_SET"
     state = checker.check_rules(state, sample(20))
+    assert state.state == "STATE_PLAYING"
+
+
+@pytest.mark.parametrize("owner", ["goal", "neutral"])
+def test_delayed_restart_update_cannot_skip_set_before_kickoff_placement(owner):
+    state, checker = setup()
+    if owner == "goal":
+        checker._restart_at = 0
+        checker._restart_is_goal = True
+    else:
+        state = replace(state, kicking_team=255)
+        checker.game_flow_rules._restart_at = 0
+    state = checker.check_rules(state, sample(0))
+    state = checker.check_rules(state, sample(60))
+    assert state.state == "STATE_SET" and state.secondary_time == 5
+    assert checker.kickoff_ball.future is None
+    state = checker.check_rules(state, sample(60))
+    assert checker.kickoff_ball.placed
+    state = checker.check_rules(state, sample(65))
     assert state.state == "STATE_PLAYING"
 
 

@@ -4,7 +4,11 @@ import unittest
 from dataclasses import replace
 from unittest.mock import Mock, patch
 
+from game_controller_hsl.data import GameControlDataStruct
+
+from bitbots_auto_referee.adapters.game_controller import encode_game_state
 from bitbots_auto_referee.config import PARAMETERS, RefereeConfig
+from bitbots_auto_referee.core.observations import SimulationObservation
 from bitbots_auto_referee.core.state import MatchState
 from bitbots_auto_referee.node import AutoReferee
 from bitbots_auto_referee.rules.check_rules import RuleChecker
@@ -46,4 +50,19 @@ class RuleUpdateTest(unittest.TestCase):
         with patch.object(self.node.rule_checker, "check_rules", return_value=updated):
             AutoReferee._on_simulation_step(self.node, self.message)
         self.node.adapter.set_state.assert_called_once_with(updated)
+        self.node._send.assert_called_once_with()
+
+    def test_clock_expiry_publishes_protocol_finished_immediately(self):
+        playing = replace(self.state, state="STATE_PLAYING", stopped=False, secs_remaining=1)
+        observation = SimulationObservation(0, 0, None, {}, frozenset())
+        self.node.adapter.state = self.node.rule_checker.check_rules(playing, observation)
+        with patch(
+            "bitbots_auto_referee.node.decode_observation",
+            return_value=replace(observation, time_ns=1_000_000_000, step_number=1),
+        ):
+            AutoReferee._on_simulation_step(self.node, self.message)
+        updated = self.node.adapter.set_state.call_args.args[0]
+        packet = GameControlDataStruct.parse(encode_game_state(updated, 0))
+        self.assertEqual(packet.state, "STATE_FINISHED")
+        self.assertEqual(packet.secs_remaining, 0)
         self.node._send.assert_called_once_with()

@@ -4,6 +4,9 @@ import unittest
 from dataclasses import replace
 from unittest.mock import Mock
 
+from game_controller_hsl.data import GameControlDataStruct
+
+from bitbots_auto_referee.adapters.game_controller import encode_game_state
 from bitbots_auto_referee.config import PARAMETERS, RefereeConfig
 from bitbots_auto_referee.core.observations import SimulationObservation
 from bitbots_auto_referee.core.state import MatchState
@@ -86,5 +89,21 @@ class MatchClockTest(unittest.TestCase):
         self.advance(20)
         self.advance(30)
         self.assertEqual(self.state.secs_remaining, 0)
-        self.assertEqual(self.state.state, "STATE_PLAYING")
+        self.assertEqual(self.state.state, "STATE_FINISHED")
+        self.assertEqual(self.state.set_play, "SET_PLAY_NONE")
+        self.assertEqual(self.state.secondary_time, 0)
+        packet = GameControlDataStruct.parse(encode_game_state(self.state, 0))
+        self.assertEqual(packet.state, "STATE_FINISHED")
+        self.assertEqual(packet.secs_remaining, 0)
         self.events.assert_called_once()
+
+    def test_expiry_discards_pending_restart_and_cannot_reenter_playing(self):
+        self.advance(0)
+        self.state = replace(self.state, set_play="SET_PLAY_THROW_IN", secondary_time=45)
+        self.checker._restart_at = 0
+        self.advance(10)
+        self.assertEqual(self.state.state, "STATE_FINISHED")
+        self.assertIsNone(self.checker._restart_at)
+        self.assertIsNone(self.checker._pending_outside)
+        self.advance(100)
+        self.assertEqual(self.state.state, "STATE_FINISHED")
