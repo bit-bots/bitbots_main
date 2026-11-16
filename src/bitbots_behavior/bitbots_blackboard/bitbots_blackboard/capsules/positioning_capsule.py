@@ -30,12 +30,12 @@ from the ball if we need to keep our distance from it because the opponent has s
 
 import math
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field, fields
 from enum import StrEnum
 from typing import TypedDict
 
 import numpy as np
-from bitbots_utils.utils import get_parameters_from_other_node
+from bitbots_utils.utils import get_parameter_dict, get_parameters_from_other_node
 from numpy.typing import NDArray
 from scipy.optimize import linear_sum_assignment
 
@@ -74,35 +74,183 @@ class Field:
 
 @dataclass
 class Params:
+    """Positioning params. Default values will be updated in __init__."""
+
     # goalie
-    d_g: float = 0.55  # how far the goalie comes out of the goal (dist from goal centre)
+    goalie_forward_distance: float = field(
+        default=0.5,
+        metadata={
+            "bounds": (0.0, 2.0),
+            "display_name": "Goalie Forward Distance",
+            "__doc__": "how far the goalie comes out of the goal (dist from goal centre)",
+        },
+    )
     # defenders
-    alpha: float = 0.42  # defender depth as a fraction of |ball-goal|  (push-up factor)
-    depth_bias: float = 0.0  # extra defender depth: + = further forward, - = further back
-    D_min: float = 0.9  # min defender depth from goal (never tuck behind this)
-    D_max: float = 3.8  # max defender depth from goal (high-line cap)
-    dz: float = 0.45  # keep defenders at least this far ahead of the goalie
-    standoff: float = 1.0  # keep defenders at least this far (goal-side) of the ball
-    gap: float = 1.7  # lateral spacing between adjacent defenders (ball at/beyond the centre circle)
-    gap_close: float = 0.6  # lateral spacing when the ball is at our goal (defenders tuck in)
-    def_side: float = 0.9  # lateral offset for a lone defender (so it's not on the axis)
+    relative_defender_depth: float = field(
+        default=0.5,
+        metadata={
+            "bounds": (0.1, 0.8),
+            "display_name": "Relative Defender Depth",
+            "__doc__": "Defender depth as a fraction of the ball-to-goal distance.",
+        },
+    )
+    defender_depth_bias: float = field(
+        default=0.0,
+        metadata={
+            "bounds": (-2.0, 3.0),
+            "display_name": "Defender Depth Bias",
+            "__doc__": "Additional forward or backward defender depth.",
+        },
+    )
+    defender_min_depth: float = field(
+        default=1.0,
+        metadata={
+            "bounds": (0.0, 2.0),
+            "display_name": "Defender Minimum Depth",
+            "__doc__": "Minimum defender depth from the goal.",
+        },
+    )
+    defender_max_depth: float = field(
+        default=4.5,
+        metadata={
+            "bounds": (2.0, 8.0),
+            "display_name": "Defender Maximum Depth",
+            "__doc__": "Maximum defender depth from the goal.",
+        },
+    )
+    defender_to_goalie_depth: float = field(
+        default=0.5,
+        metadata={
+            "bounds": (0.0, 2.0),
+            "display_name": "Defender to Goalie Depth",
+            "__doc__": "Minimum distance defenders stay ahead of the goalie.",
+        },
+    )
+    standoff: float = field(
+        default=1.0,
+        metadata={
+            "bounds": (0.0, 2.0),
+            "display_name": "Standoff",
+            "__doc__": "Minimum distance defenders stay goal-side of the ball.",
+        },
+    )
+    defender_side_gap: float = field(
+        default=1.0,
+        metadata={
+            "bounds": (0.5, 2.0),
+            "display_name": "Defender Side Gap",
+            "__doc__": "Lateral spacing between defenders when the ball is far from our goal.",
+        },
+    )
+    defender_side_gap_close: float = field(
+        default=0.5,
+        metadata={
+            "bounds": (0.2, 2.0),
+            "display_name": "Defender Side Gap Near Goal",
+            "__doc__": "Lateral spacing between defenders when the ball is at our goal.",
+        },
+    )
+    solo_defender_side_gap: float = field(
+        default=0.0,
+        metadata={
+            "bounds": (0.0, 2.0),
+            "display_name": "Solo Defender Side Gap",
+            "__doc__": "Lateral offset for a lone defender.",
+        },
+    )
     # supporter
-    include_supporter: bool = False  # if False, no supporter is assigned; its slot becomes an extra defender
-    f: float = 1.6  # how far in front of the ball (toward opp goal) the supporter sits
-    supp_side: float = 1.2  # supporter lateral offset magnitude (auto-leans toward centre)
-    supp_max_x: float = 3.0  # supporter never goes past this x (keeps it out of the opp corner)
+    include_supporter: bool = field(
+        default=False,
+        metadata={"display_name": "Include Supporter", "__doc__": "Assign a supporter instead of an extra defender."},
+    )
+    supporter_forward_offset: float = field(
+        default=1.0,
+        metadata={
+            "bounds": (0.0, 3.0),
+            "display_name": "Supporter Forward Offset",
+            "__doc__": "Distance the supporter sits in front of the ball toward the opponent goal.",
+        },
+    )
+    supporter_side: float = field(
+        default=1.0,
+        metadata={
+            "bounds": (0.0, 2.5),
+            "display_name": "Supporter Side Offset",
+            "__doc__": "Supporter lateral offset toward the centre.",
+        },
+    )
+    relative_supporter_max_x: float = field(
+        default=0.7,
+        metadata={
+            "bounds": (0.0, 4.2),
+            "display_name": "Relative Supporter Maximum X",
+            "__doc__": "Maximum supporter x position as a fraction of field length.",
+        },
+    )
     # striker
-    kick_offset: float = 0.25  # striker stands this far behind the ball (to push it forward)
-    post_margin: float = 0.45  # safety margin inside each goal post for a straight shot
-    back_dist: float = 0.21  # within this x of the opp goal & not aligned -> play back to our side
+    striker_kick_offset: float = field(
+        default=0.25,
+        metadata={
+            "bounds": (0.0, 2.0),
+            "display_name": "Kick Offset",
+            "__doc__": "Distance the striker stands behind the ball.",
+        },
+    )
+    striker_post_margin: float = field(
+        default=0.45,
+        metadata={
+            "bounds": (0.0, 1.3),
+            "display_name": "Post Margin",
+            "__doc__": "Safety margin inside each goal post for a straight shot.",
+        },
+    )
+    striker_back_distance: float = field(
+        default=0.5,
+        metadata={
+            "bounds": (0.0, 3.0),
+            "display_name": "Back Distance",
+            "__doc__": "Distance from the opponent goal within which an unaligned striker plays back.",
+        },
+    )
     # separation
-    min_sep: float = 0.8  # no two robots closer than this
-    sep_iters: int = 8
+    min_separation: float = field(
+        default=1.0,
+        metadata={
+            "bounds": (0.3, 2.0),
+            "display_name": "Minimum Separation",
+            "__doc__": "Minimum desired separation between robots.",
+        },
+    )
+    separation_iterations: int = field(
+        default=8,
+        metadata={"display_name": "Separation Iterations", "__doc__": "Number of separation relaxation iterations."},
+    )
     # kick lane: keep teammates out of the corridor in front of the ball
-    kick_clear: float = 0.7  # half-width of the cleared corridor
-    kick_range: float = 3.0  # how far in front of the ball the corridor extends
+    kick_clearance: float = field(
+        default=0.7,
+        metadata={
+            "bounds": (0.0, 1.5),
+            "display_name": "Kick Clearance",
+            "__doc__": "Half-width of the cleared kick corridor.",
+        },
+    )
+    kick_range: float = field(
+        default=3.0,
+        metadata={
+            "bounds": (0.0, 5.0),
+            "display_name": "Kick Range",
+            "__doc__": "Distance the cleared kick corridor extends in front of the ball.",
+        },
+    )
     # opponent set play: keep all robots outside this radius
-    opp_set_play_clearance: float = 1.1
+    opponent_set_play_clearance: float = field(
+        default=1.0,
+        metadata={
+            "bounds": (0.1, 2.0),
+            "display_name": "Opponent Set Play Clearance",
+            "__doc__": "Distance robots keep from the ball during an opponent set play.",
+        },
+    )
 
 
 class PositioningCapsule(AbstractBlackboardCapsule):
@@ -122,15 +270,18 @@ class PositioningCapsule(AbstractBlackboardCapsule):
             ],
         )
 
+        self.formation_config = get_parameter_dict(self._node, "formation")
+
         self._field = Field(
             length=parameters["field.size.x"],
             width=parameters["field.size.y"],
             goal_width=parameters["field.goal.width"],
         )
         self._params = Params()
-        # Whether the formation includes a supporter. Off by default; enabling it lets one
-        # field player push up as a supporter instead of being an extra defender.
-        self._params.include_supporter = bool(blackboard.config.get("formation_include_supporter", False))
+        for param in fields(self._params):
+            assert param.type in (float, bool)
+            setattr(self._params, param.name, param.type(self.formation_config[param.name]))
+
         self._inner = InnerPositioningCapsule()
 
     # Cached capsule functions can not have parameters or side effects,
@@ -296,15 +447,15 @@ class InnerPositioningCapsule:
         referee-enforced rule), even though separation wins within the loop."""
         fixed = {Role.STRIKER}
         names = list(positions.keys())
-        sep = params.min_sep
+        sep = params.min_separation
         # model the kick corridor as a row of fixed repulsors along the aim, each with
-        # keep-out radius kick_clear: radial pushes are smooth (no side-flip teleport)
+        # keep-out radius kick_clearance: radial pushes are smooth (no side-flip teleport)
         lane_pts, perp = [], None
         if aim is not None and ball is not None:
             perp = np.array([-aim[1], aim[0]])
-            step = max(params.kick_clear * 0.7, 0.3)
+            step = max(params.kick_clearance * 0.7, 0.3)
             lane_pts = [np.asarray(ball) + s * aim for s in np.arange(step, params.kick_range + 1e-9, step)]
-        for _ in range(params.sep_iters):
+        for _ in range(params.separation_iterations):
             # enforce set-play clearance first so this iteration's pairwise pass gets the
             # last word - otherwise robots bunched by the clearance push in the final
             # iteration would have no chance to be re-separated
@@ -336,9 +487,9 @@ class InnerPositioningCapsule:
                 for lp in lane_pts:
                     diff = positions[n] - lp
                     dist = np.linalg.norm(diff)
-                    if dist < params.kick_clear:
+                    if dist < params.kick_clearance:
                         dirv = self._normalize(diff, perp)  # exactly on the line -> step sideways
-                        disp[n] += (params.kick_clear - dist) * dirv
+                        disp[n] += (params.kick_clearance - dist) * dirv
             for n in names:
                 if n in fixed:
                     continue
@@ -462,10 +613,10 @@ class InnerPositioningCapsule:
             if opp_set_play:
                 # park at the clearance boundary on the goal side, facing the ball
                 dir_to_goal = self._normalize(goal - b, fallback=np.array([-1.0, 0.0]))
-                out[Role.STRIKER] = self._clamp_field(b + params.opp_set_play_clearance * dir_to_goal, field)
+                out[Role.STRIKER] = self._clamp_field(b + params.opponent_set_play_clearance * dir_to_goal, field)
                 # heading will be computed in the orientation pass (face ball)
             else:
-                h = max(field.goal_width / 2 - params.post_margin, 0.0)  # safe half-mouth
+                h = max(field.goal_width / 2 - params.striker_post_margin, 0.0)  # safe half-mouth
                 # aim at the goal, target clamped into the safe mouth: this gives a straight
                 # (+x) shot whenever the ball is aligned within the posts, angled otherwise
                 target = np.array([opp[0], np.clip(b[1], -h, h)])
@@ -473,7 +624,9 @@ class InnerPositioningCapsule:
                 # fallback: play back toward our side (field centre)
                 aim_back = self._normalize(np.array([0.0, 0.0]) - b, fallback=np.array([-1.0, 0.0]))
                 # blend to back-pass only when close to the opp goal AND not aligned
-                near_goal = self._smoothstep(b[0], opp[0] - params.back_dist - 1.0, opp[0] - params.back_dist)
+                near_goal = self._smoothstep(
+                    b[0], opp[0] - params.striker_back_distance - 1.0, opp[0] - params.striker_back_distance
+                )
                 not_aligned = self._smoothstep(abs(b[1]), h, h + 1.0)
                 w_back = near_goal * not_aligned
                 # rotate the aim around the ball at constant angular rate (shortest path) so
@@ -483,16 +636,16 @@ class InnerPositioningCapsule:
                 da = self._wrap_to_pi(a1 - a0)  # shortest signed turn
                 ang = a0 + w_back * da
                 aim = np.array([np.cos(ang), np.sin(ang)])
-                out[Role.STRIKER] = b - params.kick_offset * aim
+                out[Role.STRIKER] = b - params.striker_kick_offset * aim
                 head[Role.STRIKER] = ang  # striker faces where it kicks
                 kick_aim = aim
 
         # --- goalie: on the ball->goal axis, hugging the goal, clamped to the mouth -- #
         if Role.GOALIE in roles:
-            g = goal + params.d_g * to_ball
+            g = goal + params.goalie_forward_distance * to_ball
             g = np.array(
                 [
-                    np.clip(g[0], -field.length / 2 + 0.05, -field.length / 2 + params.d_g),
+                    np.clip(g[0], -field.length / 2 + 0.05, -field.length / 2 + params.goalie_forward_distance),
                     np.clip(g[1], -field.goal_width / 2, field.goal_width / 2),
                 ]
             )
@@ -503,23 +656,24 @@ class InnerPositioningCapsule:
         m = len(defender_roles)
         if m > 0:
             depth = np.clip(
-                params.alpha * d + params.depth_bias,  # push up + fwd/back bias
-                params.D_min,
-                params.D_max,
+                params.relative_defender_depth * d + params.defender_depth_bias,  # push up + fwd/back bias
+                params.defender_min_depth,
+                params.defender_max_depth,
             )
             depth = min(depth, max(d - params.standoff, 0.0))  # stay goal-side of the ball
-            depth = max(depth, params.d_g + params.dz)  # stay ahead of the goalie
+            # Stay ahead of the goalie
+            depth = max(depth, params.goalie_forward_distance + params.defender_to_goalie_depth)
             anchor = goal + depth * to_ball
             if m == 1:
                 # a single defender: shade to the centre side so it doesn't sit on the
                 # striker<->goalie line (otherwise all three are collinear)
                 side_dir = -1.0 if b[1] >= 0 else 1.0
-                offsets = [params.def_side * side_dir]
+                offsets = [params.solo_defender_side_gap * side_dir]
             else:
                 # tighten the defender line as the ball nears our goal: full `gap` at the
                 # centre circle (and beyond), shrinking smoothly to `gap_close` at the goal
                 t = self._smoothstep(d, 0.0, field.length / 2.0)
-                gap = params.gap_close + t * (params.gap - params.gap_close)
+                gap = params.defender_side_gap_close + t * (params.defender_side_gap - params.defender_side_gap_close)
                 offsets = [(k - (m - 1) / 2.0) * gap for k in range(m)]
             for r, off in zip(defender_roles, offsets, strict=True):
                 out[r] = self._clamp_field(anchor + off * perp, field)
@@ -529,13 +683,13 @@ class InnerPositioningCapsule:
             # always sit to the centre side of the ball; hard swap so it is never
             # directly in front of the striker, even when the ball is on the centre line
             side_dir = -1.0 if b[1] >= 0 else 1.0  # points toward y=0 (default: centre-ward)
-            sup = b + np.array([params.f, params.supp_side * side_dir])
-            sup[0] = min(sup[0], params.supp_max_x)  # don't drift into the opponent corner
+            sup = b + np.array([params.supporter_forward_offset, params.supporter_side * side_dir])
+            sup[0] = min(sup[0], field.length * params.relative_supporter_max_x)  # don't drift into the opponent corner
             out[Role.SUPPORTER] = self._clamp_field(sup, field)
 
         # --- min-separation repulsion + kick-lane clearance + set-play clearance -- #
         self._separate(
-            out, field, params, b, kick_aim, clear_radius=params.opp_set_play_clearance if opp_set_play else None
+            out, field, params, b, kick_aim, clear_radius=params.opponent_set_play_clearance if opp_set_play else None
         )
 
         # --- orientations (computed from the final positions) --------------------- #
