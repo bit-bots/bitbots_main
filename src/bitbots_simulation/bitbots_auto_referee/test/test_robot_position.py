@@ -4,8 +4,10 @@ from concurrent.futures import Future
 from dataclasses import replace
 from unittest.mock import Mock
 
+import pytest
+
 from bitbots_auto_referee.config import PARAMETERS, RefereeConfig
-from bitbots_auto_referee.core.observations import RobotBounds, SimulationObservation
+from bitbots_auto_referee.core.observations import RobotBounds, RobotMotion, SimulationObservation
 from bitbots_auto_referee.core.state import MatchState
 from bitbots_auto_referee.core.teleport import TeleportResult
 from bitbots_auto_referee.rules.check_rules import RuleChecker
@@ -27,10 +29,11 @@ def sample(time, positions, ball=(0.0, 0.0, 0.1)):
         positions,
         frozenset(),
         robot_bounds={robot: RobotBounds(x - 0.1, x + 0.1, y - 0.1, y + 0.1) for robot, (x, y, z) in positions.items()},
+        robot_motion={robot: RobotMotion(0, 0, 0, 0, 1, 1) for robot in positions},
     )
 
 
-def checker(teams, set_play_min_distance=None):
+def checker(teams, set_play_min_distance=None, field=None):
     commands = Mock()
     result = Future()
     result.set_result(TeleportResult(True, "placed"))
@@ -38,7 +41,7 @@ def checker(teams, set_play_min_distance=None):
     return RuleChecker(
         teams,
         teleport_commands=commands,
-        field=FieldGeometry(home_defends_negative_x=False),
+        field=field if field is not None else FieldGeometry(home_defends_negative_x=False),
         set_play_min_distance=set_play_min_distance,
     ), commands
 
@@ -68,7 +71,7 @@ def test_defender_retreat_and_tangent_are_allowed_but_standing_is_not():
         rules, _ = checker({0: 2})
         state = match(state="STATE_PLAYING", stopped=False, set_play="SET_PLAY_THROW_IN")
         for time in (0, 0.5, 1, 1.5):
-            state = rules.check_rules(state, sample(time, {0: (1 + direction[0] * time, direction[1] * time, 0.4)}))
+            state = rules.check_rules(state, sample(time, {0: (0.5 + direction[0] * time, direction[1] * time, 0.4)}))
         expected = "PENALTY_NONE" if direction in ((0.1, 0), (0, 0.1)) else "PENALTY_ILLEGAL_POSITIONING"
         assert state.teams[1].players[0].penalty == expected
 
@@ -97,9 +100,9 @@ def test_leaving_uses_whole_body_and_expires_after_placement():
 def test_reset_does_not_turn_position_jump_into_retreat():
     rules, _ = checker({0: 2})
     state = match(state="STATE_PLAYING", stopped=False, set_play="SET_PLAY_THROW_IN")
-    state = rules.check_rules(state, sample(10, {0: (0.5, 0, 0.4)}))
-    state = rules.check_rules(state, sample(0, {0: (1, 0, 0.4)}))
-    state = rules.check_rules(state, sample(1, {0: (1, 0, 0.4)}))
+    state = rules.check_rules(state, sample(10, {0: (0.2, 0, 0.4)}))
+    state = rules.check_rules(state, sample(0, {0: (0.5, 0, 0.4)}))
+    state = rules.check_rules(state, sample(1, {0: (0.5, 0, 0.4)}))
     assert state.teams[1].players[0].penalty == "PENALTY_ILLEGAL_POSITIONING"
 
 
@@ -110,6 +113,16 @@ def test_set_play_distance_is_configurable_and_uses_body_bounds():
         for time in (0, 1):
             state = rules.check_rules(state, sample(time, {0: (1, 0, 0.4)}))
         assert state.teams[1].players[0].penalty == expected
+
+
+@pytest.mark.parametrize("radius", [0.75, 1.2])
+def test_default_set_play_distance_uses_field_radius_and_body_bounds(radius):
+    rules, _ = checker({0: 2, 1: 2}, field=FieldGeometry(center_circle_radius=radius))
+    state = match(state="STATE_PLAYING", stopped=False, set_play="SET_PLAY_THROW_IN")
+    for time in (0, 1):
+        state = rules.check_rules(state, sample(time, {0: (radius + 0.2, 0, 0.4), 1: (radius, 0, 0.4)}))
+    assert state.teams[1].players[0].penalty == "PENALTY_NONE"
+    assert state.teams[1].players[1].penalty == "PENALTY_ILLEGAL_POSITIONING"
 
 
 def test_distance_update_restarts_position_grace_period():

@@ -39,10 +39,35 @@ class StartupTest(unittest.TestCase):
         ready = self.sequence.advance(self.state, self.origin + 5_000_000_000)
         self.assertEqual(self.sequence.advance(ready, self.origin + 5_000_000_000), ready)
 
+    def test_robot_placement_pause_preserves_preparation_phase(self):
+        ready = self.sequence.advance(self.state, self.origin + 5_000_000_000)
+        stopped = replace(ready, stopped=True)
+        self.assertEqual(self.sequence.advance(stopped, self.origin + 6_000_000_000, paused=True), stopped)
+        self.assertEqual(self.sequence.advance(stopped, self.origin + 60_000_000_000, paused=True), stopped)
+        resumed = self.sequence.advance(ready, self.origin + 61_000_000_000)
+        self.assertEqual(resumed.state, "STATE_READY")
+        self.assertEqual(resumed.secondary_time, ready.secondary_time)
+
     def test_delayed_callback_uses_elapsed_time(self):
         state = self.sequence.advance(self.state, self.origin + 32_000_000_000)
         self.assertEqual(state.state, "STATE_SET")
         self.assertEqual(state.secondary_time, 3)
+
+    def test_delayed_callback_cannot_skip_set_before_ball_placement(self):
+        state = self.sequence.advance(self.state, self.origin + 60_000_000_000, ready_for_play=False)
+        self.assertEqual(state.state, "STATE_SET")
+        self.assertFalse(self.sequence.finished)
+        paused = self.sequence.advance(state, self.origin + 100_000_000_000, paused=True, ready_for_play=False)
+        self.assertEqual(paused, state)
+        resumed = self.sequence.advance(state, self.origin + 101_000_000_000)
+        self.assertEqual(resumed.state, "STATE_SET")
+        finished = self.sequence.advance(resumed, self.origin + 106_000_000_000)
+        self.assertEqual(finished.state, "STATE_PLAYING")
+
+    def test_finished_state_cannot_be_overwritten_by_startup_timer(self):
+        finished = replace(self.state, state="STATE_FINISHED", secs_remaining=0)
+        self.assertEqual(self.sequence.advance(finished, self.origin + 1_000_000_000), finished)
+        self.assertTrue(self.sequence.finished)
 
     def test_backward_clock_jump_restarts_preparation(self):
         ready = self.sequence.advance(self.state, self.origin + 6_000_000_000)

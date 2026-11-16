@@ -4,6 +4,9 @@ import ipaddress
 import json
 import math
 from dataclasses import dataclass
+from pathlib import Path
+
+import yaml
 
 from bitbots_auto_referee.adapters.simulation.lineup import apply_simulation_lineup
 
@@ -25,6 +28,9 @@ PLAYERS_PER_TEAM = {
 }
 
 PARAMETERS = {
+    "field_config": ParameterSpec(
+        "", "Optional map-generator YAML path supplying the center-circle diameter; otherwise use center_circle_radius."
+    ),
     "double_touch_min_force": ParameterSpec(
         2.0, "Minimum peak robot-ball contact force in newtons for a significant touch."
     ),
@@ -44,6 +50,9 @@ PARAMETERS = {
         0.25, "Maximum ball offset from the pair midpoint in metres for a legal duel."
     ),
     "pushing_ball_reach": ParameterSpec(0.7, "Maximum robot-ball distance in metres for a legal duel."),
+    "pushing_free_kick_distance": ParameterSpec(
+        1.0, "Maximum incident-to-ball distance in metres for awarding a direct free kick after pushing."
+    ),
     "leagueSize": ParameterSpec(
         "small", "Competition size; together with lineup_mode sets the per-team limit.", LEAGUES
     ),
@@ -62,7 +71,9 @@ PARAMETERS = {
     "robot_player_mapping": ParameterSpec(
         "{}", "Optional JSON robot-index to player-number overrides; otherwise ordered within each team."
     ),
-    "set_play_min_distance": ParameterSpec(1.5, "Minimum defender body-to-ball distance in metres during set plays."),
+    "set_play_min_distance": ParameterSpec(
+        -1.0, "Minimum defender body-to-ball distance in metres; negative default selects the center-circle radius."
+    ),
     "center_circle_radius": ParameterSpec(0.75, "Center circle radius to the marking center in metres."),
     "penalty_area_width": ParameterSpec(4.0, "Penalty area width in metres."),
     "penalty_area_length": ParameterSpec(2.0, "Penalty area depth in metres."),
@@ -101,8 +112,22 @@ LIVE_PARAMETERS = (
 )
 
 
+def field_center_circle_radius(path: str) -> float:
+    """Read the map generator's circle diameter and convert it to a radius in metres."""
+    try:
+        with Path(path).open() as config_file:
+            data = yaml.safe_load(config_file)
+        diameter = data["parameters"]["center_circle_diameter"]
+    except (OSError, yaml.YAMLError, KeyError, TypeError) as error:
+        raise ValueError(f"Cannot read center-circle diameter from field config {path}: {error}") from error
+    if type(diameter) not in (int, float) or not math.isfinite(diameter) or diameter <= 0:
+        raise ValueError("Field config center_circle_diameter must be finite and positive")
+    return diameter / 200.0
+
+
 @dataclass(frozen=True)
 class RefereeConfig:
+    field_config: str
     num_robots: str
     robot_roles: dict[int, str]
     double_touch_min_force: float
@@ -116,6 +141,7 @@ class RefereeConfig:
     pushing_effect_window: float
     pushing_ball_center_tolerance: float
     pushing_ball_reach: float
+    pushing_free_kick_distance: float
     league_size: str
     lineup_mode: str
     home_team_id: int
@@ -211,6 +237,10 @@ class RefereeConfig:
                 raise ValueError(f"{name} must be one of {', '.join(spec.choices)}")
 
         values = dict(values)
+        if values["field_config"]:
+            values["center_circle_radius"] = field_center_circle_radius(values["field_config"])
+        if values["set_play_min_distance"] == PARAMETERS["set_play_min_distance"].default:
+            values["set_play_min_distance"] = values["center_circle_radius"]
         roles = apply_simulation_lineup(values)
         for name in ("home_team_id", "away_team_id"):
             if not 1 <= values[name] < 255:

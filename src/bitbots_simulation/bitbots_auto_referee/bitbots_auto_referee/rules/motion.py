@@ -41,6 +41,14 @@ class MotionRules:
         self._moving_since = {}
         self._penalties = {}
 
+    def pause_placement_penalties(self, robots, elapsed_ns):
+        """Start serving a placement's penalty only after the robot can be placed."""
+        for robot in robots:
+            key = (self.robot_teams.get(robot), self.robot_players.get(robot))
+            if key in self._penalties:
+                penalty, deadline = self._penalties[key]
+                self._penalties[key] = (penalty, deadline + elapsed_ns)
+
     def check(self, state: MatchState, observation: SimulationObservation) -> MatchState:
         now = observation.time_ns
         reset = self._last_time is not None and (now < self._last_time or observation.step_number < self._last_step)

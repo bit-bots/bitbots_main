@@ -70,7 +70,9 @@ def test_initial_never_penalizes_movement_position_recovery_or_pushing():
 )
 def test_penalized_sideline_player_gets_no_extra_penalty_or_teleport(phase, stopped):
     state, checker, commands, events = setup(phase, stopped)
+    state = checker.check_rules(state, sample(0))
     state = checker.motion_rules.penalize(state, sample(0), 0, "PENALTY_PUSHING")
+    state = checker.check_rules(state, sample(0))
     moving = replace(STILL, linear_speed=1.0, angular_speed=1.0, body_joint_speed=1.0, head_joint_speed=1.0)
     for time in (0, 1, 2, 10):
         state = checker.check_rules(state, sample(time, motion=moving))

@@ -112,7 +112,6 @@ class GameFlowRules:
                 raise RuntimeError(f"Ausgangsposition oder Blickrichtung fehlt für Roboter {sorted(missing)}")
             for robot in sorted(observation.robot_positions):
                 self._placements.append(self.teleport_robot(robot, *self.initial_poses[robot]))
-            self._placements.append(self.teleport_ball(0.0, 0.0, 0.0))
         except Exception as error:
             self._restart_failed = True
             self.event(f"Globaler Neustart angehalten: {error}")
@@ -123,7 +122,21 @@ class GameFlowRules:
         if self._restart_at is not None:
             self._restart_at = now_ns - PHASE_SECONDS["STATE_READY"] * NANOSECONDS_PER_SECOND
 
-    def _advance_restart(self, state, observation):
+    def pause_for_robot_placement(self, elapsed_ns: int) -> None:
+        """Exclude placement waits from neutral-restart and stuck-play timers."""
+        self._reset_play()
+        if self._restart_at is not None:
+            self._restart_at += elapsed_ns
+
+    def cancel_restart(self) -> None:
+        """Discard restart state when the match has finished."""
+        self._placements = None
+        self._restart_at = None
+        self._restart_failed = False
+        self._fallen.clear()
+        self._reset_play()
+
+    def _advance_restart(self, state, observation, *, ready_for_play=True):
         if self._restart_failed:
             return replace(state, stopped=True)
         if self._placements is not None:
@@ -153,12 +166,15 @@ class GameFlowRules:
             if elapsed < boundary:
                 remaining = (boundary - elapsed + NANOSECONDS_PER_SECOND - 1) // NANOSECONDS_PER_SECOND
                 return replace(state, state=phase, stopped=False, secondary_time=remaining, kicking_team=255)
+        if not ready_for_play:
+            self.finish_ready(observation.time_ns)
+            return replace(state, state="STATE_SET", stopped=False, secondary_time=PHASE_SECONDS["STATE_SET"])
         self._restart_at = None
         self._reset_play()
         self.event("Globaler Neustart: PLAYING ohne Anstoßteam.")
         return replace(state, state="STATE_PLAYING", stopped=False, secondary_time=0, kicking_team=255)
 
-    def check(self, state: MatchState, observation: SimulationObservation) -> MatchState:
+    def check(self, state: MatchState, observation: SimulationObservation, *, ready_for_play=True) -> MatchState:
         previous = self._previous
         reset = previous is not None and (
             observation.time_ns < previous.time_ns or observation.step_number < previous.step_number
@@ -181,11 +197,14 @@ class GameFlowRules:
         if state.state == "STATE_INITIAL":
             self._reset_play()
             self._fallen.clear()
+            self._placements = None
+            self._restart_at = None
+            self._restart_failed = False
             return state
         if restart_on_reset:
             return self._begin_restart(state, observation)
         if self._placements is not None or self._restart_at is not None:
-            state = self._advance_restart(state, observation)
+            state = self._advance_restart(state, observation, ready_for_play=ready_for_play)
             return self._check_incapable(state, observation) if not state.stopped else state
         state = self._check_incapable(state, observation)
         free = state.state == "STATE_PLAYING" and not state.stopped and state.set_play == "SET_PLAY_NONE"

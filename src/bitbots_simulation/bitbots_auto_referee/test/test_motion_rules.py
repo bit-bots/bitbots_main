@@ -74,10 +74,12 @@ def test_stop_includes_head_and_teleports_only_once():
         state = checker.check_rules(state, sample(time, moving))
     assert state.teams[0].players[0].penalty == "PENALTY_NONE"
     assert state.teams[0].players[1].penalty == "PENALTY_MOTION_IN_STOP"
+    commands.teleport_robot.assert_not_called()
+    state = checker.check_rules(state, sample(2.1))
     commands.teleport_robot.assert_called_once()
     robot, x, y, yaw = commands.teleport_robot.call_args.args
     assert robot == 0 and x < 0 and y > 0 and yaw < 0
-    state = checker.check_rules(state, sample(46.25))
+    state = checker.check_rules(state, sample(47.1))
     assert state.teams[0].players[1].penalty == "PENALTY_NONE"
 
 

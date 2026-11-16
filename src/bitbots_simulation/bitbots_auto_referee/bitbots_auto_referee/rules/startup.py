@@ -20,6 +20,7 @@ class StartupSequence:
     def __init__(self):
         self._started_at: int | None = None
         self._last_time: int | None = None
+        self._paused = False
         self.finished = False
 
     def finish_ready(self, now_ns: int) -> None:
@@ -29,13 +30,22 @@ class StartupSequence:
             self._started_at = now_ns - before_set * NANOSECONDS_PER_SECOND
             self._last_time = now_ns
 
-    def advance(self, state: MatchState, now_ns: int) -> MatchState:
+    def advance(
+        self, state: MatchState, now_ns: int, *, paused: bool = False, ready_for_play: bool = True
+    ) -> MatchState:
         """Use elapsed time since the first clock sample, preserving other match fields."""
+        if state.state == "STATE_FINISHED":
+            self.finished = True
         if self.finished:
             return state
         if self._started_at is None or (self._last_time is not None and now_ns < self._last_time):
             self._started_at = now_ns
+        elif self._last_time is not None and (paused or self._paused):
+            self._started_at += now_ns - self._last_time
         self._last_time = now_ns
+        self._paused = paused
+        if paused:
+            return state
         elapsed = now_ns - self._started_at
         boundary = 0
         for phase, duration in STARTUP_PHASES:
@@ -48,5 +58,8 @@ class StartupSequence:
                     stopped=phase == "STATE_INITIAL",
                     secondary_time=0 if phase == "STATE_INITIAL" else remaining,
                 )
+        if not ready_for_play:
+            self.finish_ready(now_ns)
+            return replace(state, state="STATE_SET", stopped=False, secondary_time=PHASE_SECONDS["STATE_SET"])
         self.finished = True
         return replace(state, state="STATE_PLAYING", stopped=False, secondary_time=0)

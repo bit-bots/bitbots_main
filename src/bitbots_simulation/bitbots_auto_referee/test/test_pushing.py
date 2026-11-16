@@ -1,9 +1,11 @@
-"""Pushing attribution, exemptions, effect windows and uninterrupted contact timing."""
+"""Pushing attribution, exemptions, effect windows and rolling contact timing."""
 
 import math
 from concurrent.futures import Future
 from dataclasses import replace
 from unittest.mock import Mock
+
+import pytest
 
 from bitbots_auto_referee.config import PARAMETERS, RefereeConfig
 from bitbots_auto_referee.core.observations import RobotContact, RobotMotion, SimulationObservation
@@ -59,7 +61,40 @@ def test_single_contact_requires_destabilization_and_correct_actor():
     assert commands.teleport_robot.call_args.args[0] == 0
 
 
-def test_sustained_contact_and_gap_reset():
+@pytest.mark.parametrize("sustained", [False, True])
+@pytest.mark.parametrize("moving", [False, True])
+def test_ready_pushing_near_ball_never_awards_free_kick(sustained, moving):
+    state, checker, commands = setup()
+    state = replace(state, state="STATE_READY", secondary_time=17)
+    ball = (0, 0.5, 0.1)
+    state = checker.check_rules(state, sample(0, ball_position=ball))
+    contact = RobotContact(0, 1, 3 if sustained else 30, 0.2, 0, (0, 0, 0.2))
+    finish = 5.1 if sustained else 0.2
+    victim = UP if sustained else replace(UP, upright=0.5)
+    for observation in (
+        sample(0.1, (contact,), ball_position=ball),
+        sample(finish, (contact,) if sustained else (), victim=victim, ball_position=ball),
+    ):
+        if moving:
+            observation = replace(
+                observation, robot_motion={0: replace(UP, body_joint_speed=1), 1: observation.robot_motion[1]}
+            )
+        state = checker.check_rules(state, observation)
+    assert penalty(state) == "PENALTY_PUSHING"
+    assert checker.pushing_rules.fouls[0].ball_distance <= checker.pushing_rules.config.free_kick_distance
+    assert state.state == "STATE_READY" and state.set_play == "SET_PLAY_NONE"
+    assert state.stopped == moving
+    if moving:
+        commands.teleport_robot.assert_not_called()
+    state = checker.check_rules(state, sample(finish + 0.1, victim=victim, ball_position=ball))
+    assert state.state == "STATE_READY" and not state.stopped
+    assert state.set_play == "SET_PLAY_NONE" and state.secondary_time == 17 and state.kicking_team == 1
+    assert checker._pending_outside is None and checker._restart_at is None
+    commands.teleport_robot.assert_called_once()
+    commands.teleport_ball.assert_not_called()
+
+
+def test_sustained_contact_waits_for_full_window():
     state, checker, _ = setup()
     contact = RobotContact(0, 1, 3, 0.2, 0)
     for time in (0, 4.9):
@@ -67,12 +102,59 @@ def test_sustained_contact_and_gap_reset():
     assert penalty(state) == "PENALTY_NONE"
     state = checker.check_rules(state, sample(5, (contact,)))
     assert penalty(state) == "PENALTY_PUSHING"
+
+
+@pytest.mark.parametrize("gap_force", [None, 1.0])
+@pytest.mark.parametrize("contact_duration, expected", [(3.499, "PENALTY_NONE"), (3.5, "PENALTY_PUSHING")])
+def test_sustained_contact_uses_elapsed_time_and_tolerates_gaps(gap_force, contact_duration, expected):
     state, checker, _ = setup()
+    contact = RobotContact(0, 1, 3, 0.2, 0)
+    gap = () if gap_force is None else (replace(contact, force=gap_force),)
+    state = checker.check_rules(state, sample(0, (contact,)))
+    state = checker.check_rules(state, sample(contact_duration, gap))
+    # Repeated gap observations must not change the time-weighted result.
+    for time in (3.6, 4.0, 4.2, 4.8):
+        state = checker.check_rules(state, sample(time, gap))
+    state = checker.check_rules(state, sample(5, (contact,)))
+    assert penalty(state) == expected
+
+
+def test_sustained_contact_tolerates_repeated_short_gaps():
+    state, checker, _ = setup()
+    contact = RobotContact(0, 1, 3, 0.2, 0)
+    for tick in range(51):
+        contacts = (contact,) if tick % 10 < 7 else ()
+        state = checker.check_rules(state, sample(tick / 10, contacts))
+        assert penalty(state) == ("PENALTY_PUSHING" if tick == 50 else "PENALTY_NONE")
+
+
+def test_sustained_contact_does_not_penalize_after_release():
+    state, checker, _ = setup()
+    contact = RobotContact(0, 1, 3, 0.2, 0)
     state = checker.check_rules(state, sample(0, (contact,)))
     state = checker.check_rules(state, sample(4))
-    for time in (4.1, 5.1):
-        state = checker.check_rules(state, sample(time, (contact,)))
+    state = checker.check_rules(state, sample(5))
     assert penalty(state) == "PENALTY_NONE"
+
+
+def test_sustained_contact_expires_old_pressure_in_rolling_window():
+    state, checker, _ = setup()
+    contact = RobotContact(0, 1, 3, 0.2, 0)
+    for time, contacts in ((0, (contact,)), (3.5, ()), (6, (contact,)), (6.9, (contact,))):
+        state = checker.check_rules(state, sample(time, contacts))
+    assert penalty(state) == "PENALTY_NONE"
+    state = checker.check_rules(state, sample(9.5, (contact,)))
+    assert penalty(state) == "PENALTY_PUSHING"
+
+
+def test_changing_actor_discards_sustained_contact_history():
+    state, checker, _ = setup()
+    contact = RobotContact(0, 1, 3, 0.2, 0)
+    state = checker.check_rules(state, sample(0, (contact,)))
+    other_actor = replace(contact, approach_a=0, approach_b=0.2)
+    for time in (4, 5):
+        state = checker.check_rules(state, sample(time, (other_actor,)))
+    assert all(player.penalty == "PENALTY_NONE" for team in state.teams for player in team.players)
 
 
 def test_mutual_pushing_and_central_ball_duels_are_exempt():

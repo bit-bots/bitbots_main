@@ -1,5 +1,6 @@
 """Field geometry and decisions captured at the first complete ball exit."""
 
+import math
 from dataclasses import dataclass, fields
 
 from bitbots_auto_referee.config import RefereeConfig
@@ -45,6 +46,16 @@ class FieldGeometry:
     def outside(self, position: Position) -> bool:
         x_limit, y_limit = self.boundaries
         return abs(position[0]) > x_limit or abs(position[1]) > y_limit
+
+    def in_goal(self, position: Position | None) -> bool:
+        """Use the goal-decision geometry to recognize a ball already behind a goal line."""
+        return (
+            position is not None
+            and all(math.isfinite(value) for value in position)
+            and abs(position[0]) > self.boundaries[0]
+            and abs(position[1]) + self.ball_radius < self.goal_width / 2
+            and position[2] + self.ball_radius < self.goal_height
+        )
 
     def classify(
         self,

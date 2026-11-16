@@ -26,7 +26,10 @@ counts down using simulation timestamps only during PLAYING with `stopped=false`
 Fractional seconds accumulate across updates and are preserved across stops;
 preparation and paused intervals are not charged. Clock resets or an external
 remaining-time correction discard an old fractional remainder. The clock stops
-at zero and records expiry, without automatically changing half or game phase.
+at zero and transitions to `STATE_FINISHED`, which is sent immediately through
+the GameController adapter and retained in subsequent heartbeat packets. Active
+set plays and pending restarts are discarded, and preparation timers cannot
+return the match to PLAYING. Half and game phase are not changed automatically.
 Ball exits trigger goals or set plays and automatic ball placement. Motion in SET
 and STOP, illegal positioning and leaving the field trigger player penalties
 with simulation-time expiry.
@@ -101,7 +104,8 @@ Team message budgets initially remain empty until a rule engine manages them.
 | `robot_team_mapping` | JSON object mapping simulator robot indices to `home` or `away` |
 | `robot_player_mapping` | Optional simulator-index to protocol player-number overrides |
 | `penalty_area_length` | Penalty area depth used for position rules |
-| `set_play_min_distance` | Live-adjustable defender body-to-ball distance during set plays, in metres |
+| `field_config` | Optional path to a field map-generator YAML supplying the center-circle diameter |
+| `set_play_min_distance` | Live-adjustable defender body-to-ball distance during set plays; defaults to the center-circle radius |
 | `home_color`, `away_color` | Distinct field-player jersey colors |
 | `home_goalkeeper_color`, `away_goalkeeper_color` | Independently selected goalkeeper colors |
 | `broadcast` | Enable delivery to all receivers sharing the GameController port |
@@ -466,9 +470,15 @@ team at that instant. The decision delay and set-play duration are defined in
 `rules/outside.py` and use simulation time. A ball already outside on the first
 observation, or moved outside by teleport, does not create a fictitious crossing.
 
-Goals increment the scoring team's score, give kickoff to the conceding team,
-and place the ball at the center before repeating READY, SET and PLAYING using
-the opening sequence's phase durations. Throw-ins go to the team opposite the
+Goals increment the scoring team's score and give kickoff to the conceding team.
+After the stopped decision interval, READY starts without teleporting the ball.
+The kickoff ball is placed at center only after SET has been published, including the initial opening
+sequence and neutral restarts. SET remains stopped until placement is acknowledged
+and the observation stream reaches the applied simulation step. Its countdown
+pauses while waiting; failures keep SET stopped without repeated commands. A
+blocked center uses the existing clearance search. Preparation uses the opening
+sequence's phase durations, and even delayed updates cannot skip SET while kickoff
+placement is outstanding. Throw-ins go to the team opposite the
 last touch, corners to the attacking team after a defending touch, and goal kicks
 to the defending team after an attacking touch. Throw-ins use the crossing's
 nearest touchline point; corners and goal kicks use the corresponding field or
@@ -476,7 +486,9 @@ goal-area corner. Unknown last-touch teams are reported without inventing a rest
 
 After the outside-decision delay, the match first enters STOP. The stopped
 interval defined by `RESTART_STOP_NS` in `rules/check_rules.py` must elapse in
-simulation time before a ball teleport is submitted. The match remains stopped
+simulation time before a set-play ball teleport is submitted. Goals instead enter
+READY after that interval and defer their ball teleport to SET. For set plays,
+the match remains stopped
 while waiting for ball placement acknowledgement and its corresponding simulation
 observation. A placement failure leaves it stopped and
 records an event. After successful placement, set plays remain PLAYING with
@@ -530,7 +542,9 @@ Use `robot_player_mapping` to override that mapping to match each receiver's
 `player_id`. Numbers must be unique within their team and fit the roster.
 Existing penalties are not overwritten. Only penalties issued by the motion or position
 rules are cleared by their shared deadlines; repeated motion does not extend them.
-Deadlines use simulation time even when the match clock is stopped. A simulation
+Deadlines use simulation time even when the match clock is stopped, except that
+an outstanding robot placement pauses the affected player's penalty countdown.
+A simulation
 clock reset clears owned motion penalties and restarts observation grace periods.
 
 Motion in STOP teleports the robot just outside the nearest touchline, facing
@@ -538,7 +552,20 @@ toward the field. Each configured teammate has a stable separate slot along
 that team's own half, ordered by player number. Simultaneous penalties therefore
 do not place teammates on the same point, even before teleport acknowledgements
 arrive. Team side and half determine the own-goal direction, including after a
-halftime side change. Teleport failure is logged without clearing the penalty.
+halftime side change.
+
+Robot placements wait until the observed root linear/angular speeds and both
+body and head joint speeds are within the existing motion limits in
+`rules/motion.py`. Missing or nonfinite motion telemetry cannot confirm standstill.
+While a robot is still moving or its placement is outstanding, the match stays
+in STOP. Each robot is evaluated independently, and play resumes only after all
+pending placements succeed and the observation stream reaches their acknowledged
+simulation steps. Match time, restart countdowns, and the opening sequence pause
+during this wait. A pre-existing STOP remains in effect; otherwise the previous
+phase and normal restart flow resume. Placement failures are logged and keep the
+match stopped without repeatedly issuing the same command. INITIAL or a simulation
+reset discards stale placement requests.
+
 Expiry releases the penalty without teleporting the robot back onto the field.
 
 `SimulationRobotState` now includes motion telemetry. Rebuild `bitbots_msgs` and
@@ -562,9 +589,24 @@ with simulator index as tie breaker; the selection remains until that robot leav
 the circle or is no longer eligible. Other attacking robots in the circle are illegal.
 
 During an active, non-stopped PLAYING set play, defenders must keep `set_play_min_distance`
-between their body bounds and the ball center. This positive, finite distance is
-independent of center-circle geometry and can be changed live in the GUI. Moving away,
-or moving tangentially without appreciable inward progress, is exempt. Standing
+between their body bounds and the ball center. By default the distance is derived
+from `center_circle_radius`; an explicit positive distance overrides this default
+and can be changed live in the GUI. The negative startup default in `config.py`
+selects automatic radius derivation, and the node exposes the resolved positive
+distance to the GUI and ROS parameter clients.
+
+Pass `field_config` to read the radius from an existing map-generator YAML, such as
+`bitbots_parameter_blackboard/config/fields/small_division_2026/gui-config.yaml`
+or `config/fields/hsl_kid/hsl_kid.yaml` in that package. This file's
+`parameters.center_circle_diameter` takes precedence over `center_circle_radius`;
+it is converted from a diameter in centimetres to a radius in metres. Other field
+dimensions retain their existing AutoRef parameters. The parameter-blackboard
+`config.yaml` files do not contain the circle diameter and cannot supply it.
+An unset `field_config` uses the AutoRef geometry parameters. Missing files,
+invalid YAML and missing or invalid diameters fail startup rather than silently
+using a different field. The file is read without modifying it.
+
+Moving away, or moving tangentially without appreciable inward progress, is exempt. Standing
 still and approaching are violations after a short continuous grace interval.
 Robot displacement is measured in world coordinates so ball movement alone does
 not count as retreat. For goal kicks, defenders must also be completely outside
@@ -605,9 +647,9 @@ Global Gamestuck starts a neutral restart with the protocol's no-team kickoff
 value. The first observed pose and heading of each robot are retained as its
 initial placement. Starts inside the field are projected to the nearest touchline;
 existing sideline spawns are preserved. Robots currently present are returned to
-those placements and the ball is placed at center. The referee waits for all
-service acknowledgements and corresponding observations before READY, SET and
-PLAYING. Preparation uses the existing phase durations. Scores and remaining match
+those placements. The referee waits for their service acknowledgements and
+corresponding observations before READY. Ball placement follows in SET and must
+be acknowledged before PLAYING. Preparation uses the existing phase durations. Scores and remaining match
 time are preserved, as are penalties, whose normal simulation-time expiry continues.
 Missing initial headings or failed teleports leave the restart stopped with a
 logged reason. A simulator reset re-captures initial placements and retries an
@@ -638,12 +680,18 @@ magnitudes of active robot-to-robot contacts per robot pair and reports contact-
 approach speeds. The actor is inferred from one-sided approach, with observed root
 displacement as an additional signal. Equal-and-opposite contact forces alone cannot
 identify an actor. Ambiguous contacts without an identifiable initiator are not
-penalized. An established initiator is retained through continuous pressure.
+penalized. An established initiator is retained across brief contact gaps.
 
 A sufficiently strong contact must also visibly destabilize a previously upright
 victim: decreased upright projection, a fall in relative height, or increased
-angular speed within the configured effect window. Weaker contact must persist
-continuously for `SUSTAINED_NS` in `rules/pushing.py`. Contact gaps reset that timer.
+angular speed within the configured effect window. Weaker contact is evaluated
+over a rolling window defined by `SUSTAINED_NS` in `rules/pushing.py`, with the
+required contact-time fraction defined by `SUSTAINED_CONTACT_RATIO`. Evaluation
+waits for a full window and requires current contact above the sustained force
+threshold. Missing and below-threshold contacts count as gaps rather than resetting
+the history. Durations use simulation timestamps, holding each observation's
+contact state until the next observation; the observation count does not affect
+the contact-time fraction. Old contact intervals expire as the window advances.
 Mutual approach and an upright, ball-facing duel with the ball centrally between
 both robots are exempt. Contacts between teammates do not produce pushing
 penalties or free kicks. Teleports and simulation resets discard old episodes.
@@ -672,6 +720,7 @@ by the launch script:
 | `pushing_effect_window` | Time allowed between strong contact and destabilization |
 | `pushing_ball_center_tolerance` | Allowed ball offset from the robot-pair midpoint |
 | `pushing_ball_reach` | Maximum distance from each robot to the ball for the duel exemption |
+| `pushing_free_kick_distance` | Maximum distance between the incident location and ball for a direct free kick |
 
 These defaults are initial tuning values, not calibrated referee thresholds.
 `SimulationRobotContact` is a new message embedded in `SimulationState`; rebuild
@@ -702,13 +751,30 @@ search without submitting an unsafe teleport. Adjusted targets and blocked or
 failed placements are logged to the console and dashboard. This avoids placing
 restart balls into robots both after fouls and after ball exits.
 
-Pushing during active play awards a direct free kick to the victim's team in
-addition to penalizing the actor. The simulator reports the strongest contact's
+Pushing during active play awards a direct free kick to the victim's team only
+when the incident is within `pushing_free_kick_distance` of the ball. The actor
+receives the player penalty regardless of ball proximity. The simulator reports the strongest contact's
 world location per pair; the rule retains the latest incident location even if
-destabilization is detected after contact ends. If contact location is unavailable,
-the pair midpoint is used as a fallback. Fouls detected outside active PLAYING
+destabilization is detected after contact ends. The planar ball distance is
+captured with that contact, so later ball movement does not change the decision.
+If contact location is unavailable, the pair midpoint is used as a fallback.
+Ball-distant incidents and contacts without a known ball position do not award a
+free kick: after the penalty placement, regular play resumes, preserving existing
+set plays and pending ball-exit or goal decisions. A ball exit observed during a placement-induced
+STOP is retained and processed after robot placement, before regular play resumes.
+Fouls detected outside active PLAYING
 still incur their player penalty but do not interrupt preparation with a free kick.
-If several fouls are detected in one update, the first recorded foul determines
+In READY, pushing never awards a free kick, regardless of ball proximity or the
+pushing trigger. After any required placement wait, the regular READY sequence
+continues with its existing kicking team.
+The ball position and simulation timestamp at the start of each pushing episode
+are retained separately from its latest contact location. If the ball was already
+fully behind a goal line inside the goal opening when pushing began, no free kick
+is awarded, including during the delayed goal-decision interval. A goal crossing
+captured before or at the episode start also remains authoritative if the ball
+rebounds. Pushing that started before the goal crossing still follows the normal
+ball-proximity criteria; a later goal crossing alone does not suppress its free kick.
+If several fouls are detected in one update, the first recorded ball-near foul determines
 the restart while all corresponding player penalties remain applied.
 
 Indirect free kicks and throw-ins arm a separate goal restriction after placement.

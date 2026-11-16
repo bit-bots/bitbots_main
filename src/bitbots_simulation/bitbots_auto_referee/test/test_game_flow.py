@@ -61,7 +61,7 @@ def test_global_restart_waits_for_ack_and_preserves_match():
     state, checker, commands = setup()
     state = replace(state, teams=tuple(replace(team, score=2) for team in state.teams))
     pending = Future()
-    commands.teleport_ball.return_value = pending
+    commands.teleport_robot.return_value = pending
     for time in (0, 30):
         state = checker.check_rules(state, sample(time, position=(2, -3.25, 0.4)))
     assert state.stopped and state.kicking_team == 255
@@ -74,9 +74,13 @@ def test_global_restart_waits_for_ack_and_preserves_match():
     assert state.stopped
     state = checker.check_rules(state, sample(32, position=(2, -3.25, 0.4), ball_teleported=True))
     assert state.state == "STATE_READY" and state.kicking_team == 255
+    commands.teleport_ball.assert_not_called()
     state = checker.check_rules(state, sample(57, position=(2, -3.25, 0.4)))
     assert state.state == "STATE_SET"
-    state = checker.check_rules(state, sample(62, position=(2, -3.25, 0.4)))
+    commands.teleport_ball.assert_not_called()
+    state = checker.check_rules(state, sample(57.001, position=(2, -3.25, 0.4)))
+    commands.teleport_ball.assert_called_once_with(0.0, 0.0, 0.0)
+    state = checker.check_rules(state, sample(62.001, position=(2, -3.25, 0.4)))
     assert state.state == "STATE_PLAYING" and not state.stopped and state.secs_remaining == 570
     assert state.teams[0].score == 2
 
@@ -96,6 +100,20 @@ def test_local_stuck_does_not_penalize_a_closer_newcomer():
     assert state.teams[1].players[0].penalty == "PENALTY_NONE"
     commands.teleport_robot.assert_called_once()
     assert commands.teleport_robot.call_args.args[0] == 0
+
+
+def test_global_restart_waits_for_robot_standstill_before_sideline_placement():
+    state, checker, commands = setup()
+    moving = replace(UP, body_joint_speed=1.0)
+    for time in (0, 30, 31):
+        state = checker.check_rules(state, sample(time, moving, position=(2, -3.25, 0.4)))
+    assert state.stopped and state.kicking_team == 255
+    commands.teleport_robot.assert_not_called()
+    remaining = state.secs_remaining
+    state = checker.check_rules(state, sample(32, position=(2, -3.25, 0.4)))
+    commands.teleport_robot.assert_called_once_with(0, 2, -3.25, math.pi)
+    assert state.state == "STATE_READY" and not state.stopped
+    assert state.secs_remaining == remaining
 
 
 def test_set_play_does_not_accumulate_stuck_time():
@@ -157,17 +175,19 @@ def test_failed_global_placement_remains_stopped_without_repeated_commands():
     state, checker, commands = setup()
     failed = Future()
     failed.set_result(TeleportResult(False, "unavailable"))
-    commands.teleport_ball.return_value = failed
+    commands.teleport_robot.return_value = failed
     for time in (0, 30, 31, 32):
         state = checker.check_rules(state, sample(time, position=(2, -3.25, 0.4)))
     assert state.stopped and state.kicking_team == 255
-    assert commands.teleport_ball.call_count == 1
+    assert commands.teleport_robot.call_count == 1
+    commands.teleport_ball.assert_not_called()
 
 
 def test_clock_reset_retries_incomplete_global_restart():
     state, checker, commands = setup()
-    commands.teleport_ball.return_value = Future()
+    commands.teleport_robot.return_value = Future()
     for time in (0, 30, 0):
         state = checker.check_rules(state, sample(time, position=(2, -3.25, 0.4)))
     assert state.stopped
-    assert commands.teleport_ball.call_count == 2
+    assert commands.teleport_robot.call_count == 2
+    commands.teleport_ball.assert_not_called()

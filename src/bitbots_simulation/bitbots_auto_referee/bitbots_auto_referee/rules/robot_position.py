@@ -22,7 +22,7 @@ class RobotPositionRules:
         self.field = field
         self.penalties = penalties
         self.set_play_min_distance = (
-            2 * field.center_circle_radius if set_play_min_distance is None else set_play_min_distance
+            field.center_circle_radius if set_play_min_distance is None else set_play_min_distance
         )
         self._previous = None
         self._context = None

@@ -9,6 +9,7 @@ from rcl_interfaces.msg import ParameterDescriptor, SetParametersResult
 from rclpy.clock import Clock, ClockType
 from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
+from rclpy.parameter import Parameter
 from rclpy.qos import DurabilityPolicy, HistoryPolicy, QoSProfile, ReliabilityPolicy
 from std_msgs.msg import String
 
@@ -16,7 +17,7 @@ from bitbots_auto_referee.adapters.game_controller import GameControllerUDPAdapt
 from bitbots_auto_referee.adapters.simulation.commands import SimulationCommands
 from bitbots_auto_referee.adapters.simulation.observations import decode_observation
 from bitbots_auto_referee.adapters.simulation.team_messages import TeamMessageReceiver
-from bitbots_auto_referee.config import LIVE_PARAMETERS, PARAMETERS, RefereeConfig
+from bitbots_auto_referee.config import LIVE_PARAMETERS, PARAMETERS, RefereeConfig, field_center_circle_radius
 from bitbots_auto_referee.core.communication import count_team_messages, robot_connections
 from bitbots_auto_referee.core.state import MatchState
 from bitbots_auto_referee.rules.check_rules import RuleChecker
@@ -37,12 +38,17 @@ class AutoReferee(Node):
         try:
             for name, spec in PARAMETERS.items():
                 if name != "use_sim_time":
+                    default = spec.default
+                    if name == "center_circle_radius" and self.get_parameter("field_config").value:
+                        default = field_center_circle_radius(self.get_parameter("field_config").value)
                     self.declare_parameter(
                         name,
-                        spec.default,
+                        default,
                         ParameterDescriptor(description=spec.description, read_only=name not in LIVE_PARAMETERS),
+                        ignore_override=name == "center_circle_radius" and bool(self.get_parameter("field_config").value),
                     )
             self.config = RefereeConfig.from_parameters({name: self.get_parameter(name).value for name in PARAMETERS})
+            self.set_parameters([Parameter("set_play_min_distance", value=self.config.set_play_min_distance)])
             self.adapter = GameControllerUDPAdapter(
                 target=(self.config.target_host, self.config.target_port),
                 bind=(self.config.bind_host, self.config.return_port),
@@ -110,6 +116,11 @@ class AutoReferee(Node):
             raise
 
     def _validate_live_parameters(self, parameters) -> SetParametersResult:
+        for parameter in parameters:
+            if parameter.name == "set_play_min_distance" and (
+                type(parameter.value) is not float or not parameter.value > 0
+            ):
+                return SetParametersResult(successful=False, reason="Set-play distance must be positive")
         values = {name: self.get_parameter(name).value for name in PARAMETERS}
         values.update({parameter.name: parameter.value for parameter in parameters})
         try:
@@ -168,7 +179,15 @@ class AutoReferee(Node):
         else:
             now_ns = self._network_clock.now().nanoseconds
         previous = self.adapter.state
-        updated = self._startup.advance(previous, now_ns)
+        if previous.state in ("STATE_INITIAL", "STATE_READY"):
+            self.rule_checker.kickoff_ball.arm()
+        updated = self._startup.advance(
+            previous,
+            now_ns,
+            paused=bool(self.rule_checker.robot_placements.pending)
+            or (previous.state == "STATE_SET" and self.rule_checker.kickoff_ball.waiting),
+            ready_for_play=not self.rule_checker.kickoff_ball.waiting,
+        )
         if updated != previous:
             self.adapter.set_state(updated)
             if updated.state != previous.state:

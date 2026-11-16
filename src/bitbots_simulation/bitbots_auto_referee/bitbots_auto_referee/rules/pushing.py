@@ -1,12 +1,14 @@
 """Contact-force pushing heuristics with explicit actor and legal-duel checks."""
 
 import math
-from dataclasses import dataclass, fields
+from collections import deque
+from dataclasses import dataclass, field, fields
 
-from bitbots_auto_referee.core.observations import SimulationObservation
+from bitbots_auto_referee.core.observations import Position, SimulationObservation
 from bitbots_auto_referee.core.state import MatchState
 
 SUSTAINED_NS = 5_000_000_000
+SUSTAINED_CONTACT_RATIO = 0.7
 
 
 @dataclass(frozen=True)
@@ -19,6 +21,7 @@ class PushingConfig:
     effect_window: float = 0.5
     ball_center_tolerance: float = 0.25
     ball_reach: float = 0.7
+    free_kick_distance: float = 1.0
 
     @classmethod
     def from_config(cls, config):
@@ -30,6 +33,9 @@ class PushingFoul:
     actor: int
     victim: int
     position: tuple[float, float]
+    ball_distance: float | None
+    ball_at_start: Position | None = None
+    started_at: int = 0
 
 
 @dataclass
@@ -37,13 +43,17 @@ class PushEpisode:
     actor: int
     victim: int
     last_contact: int
-    sustained_since: int | None
+    started_at: int
     upright: float | None
     height: float | None
     angular_speed: float | None
     peak_force: float
     strong_at: int | None
     position: tuple[float, float]
+    ball_distance: float | None = None
+    ball_at_start: Position | None = None
+    contact_intervals: deque[tuple[int, int]] = field(default_factory=deque)
+    active: bool = False
 
 
 class PushingRules:
@@ -109,8 +119,22 @@ class PushingRules:
             previous = None
         self._previous = observation
         self.contact_forces = {}
-        active = set()
         now = observation.time_ns
+        for episode in self._episodes.values():
+            # Hold each observation's contact state until the next observation.
+            if episode.active and previous is not None and now > previous.time_ns:
+                if episode.contact_intervals and episode.contact_intervals[-1][1] == previous.time_ns:
+                    start, _ = episode.contact_intervals.pop()
+                else:
+                    start = previous.time_ns
+                episode.contact_intervals.append((start, now))
+            cutoff = now - SUSTAINED_NS
+            while episode.contact_intervals and episode.contact_intervals[0][1] <= cutoff:
+                episode.contact_intervals.popleft()
+            if episode.contact_intervals and episode.contact_intervals[0][0] < cutoff:
+                _, end = episode.contact_intervals.popleft()
+                episode.contact_intervals.appendleft((cutoff, end))
+            episode.active = False
         for contact in observation.robot_contacts:
             pair = (contact.robot_a, contact.robot_b)
             if pair[0] >= pair[1] or not all(
@@ -150,8 +174,6 @@ class PushingRules:
             episode = self._episodes.get(pair)
             actor = pair[moving.index(True)] if any(moving) else (episode.actor if episode is not None else None)
             if actor is None or contact.force < self.config.sustained_force_threshold:
-                if episode is not None:
-                    episode.sustained_since = None
                 continue
             victim = pair[1] if actor == pair[0] else pair[0]
             if contact.position is not None and all(math.isfinite(value) for value in contact.position):
@@ -174,12 +196,18 @@ class PushingRules:
                     contact.force,
                     None,
                     position,
+                    ball_at_start=observation.ball_position,
                 )
                 self._episodes[pair] = episode
-            if episode.sustained_since is None:
-                episode.sustained_since = now
+            episode.active = True
             episode.last_contact = now
             episode.position = position
+            ball = observation.ball_position
+            episode.ball_distance = (
+                math.dist(position, ball[:2])
+                if ball is not None and all(math.isfinite(value) for value in ball[:2])
+                else None
+            )
             episode.peak_force = max(episode.peak_force, contact.force)
             if contact.force >= self.config.force_threshold:
                 if episode.strong_at is None or now - episode.strong_at > self.config.effect_window * 1e9:
@@ -189,7 +217,6 @@ class PushingRules:
                         episode.height = baseline.relative_height
                         episode.angular_speed = baseline.angular_speed
                 episode.strong_at = now
-            active.add(pair)
         for pair, episode in list(self._episodes.items()):
             if (
                 not self._opponents(pair)
@@ -203,8 +230,6 @@ class PushingRules:
             ):
                 del self._episodes[pair]
                 continue
-            if pair not in active:
-                episode.sustained_since = None
             motion = observation.robot_motion.get(episode.victim)
             recent_strong = episode.strong_at is not None and now - episode.strong_at <= self.config.effect_window * 1e9
             destabilized = (
@@ -218,7 +243,12 @@ class PushingRules:
                     or motion.angular_speed - episode.angular_speed >= self.config.angular_speed
                 )
             )
-            sustained = episode.sustained_since is not None and now - episode.sustained_since >= SUSTAINED_NS
+            contact_ns = sum(end - start for start, end in episode.contact_intervals)
+            sustained = (
+                episode.active
+                and now - episode.started_at >= SUSTAINED_NS
+                and contact_ns >= SUSTAINED_NS * SUSTAINED_CONTACT_RATIO
+            )
             if destabilized or sustained:
                 reason = "zu intensiver Einzelkontakt mit Destabilisierung" if destabilized else "anhaltender Kontakt"
                 self.event(
@@ -228,9 +258,18 @@ class PushingRules:
                 )
                 updated = self.penalties.penalize(state, observation, episode.actor, "PENALTY_PUSHING")
                 if updated != state:
-                    self.fouls.append(PushingFoul(episode.actor, episode.victim, episode.position))
+                    self.fouls.append(
+                        PushingFoul(
+                            episode.actor,
+                            episode.victim,
+                            episode.position,
+                            episode.ball_distance,
+                            episode.ball_at_start,
+                            episode.started_at,
+                        )
+                    )
                 state = updated
                 del self._episodes[pair]
-            elif pair not in active and now - episode.last_contact > self.config.effect_window * 1e9:
+            elif not episode.active and now - episode.last_contact > max(SUSTAINED_NS, self.config.effect_window * 1e9):
                 del self._episodes[pair]
         return state

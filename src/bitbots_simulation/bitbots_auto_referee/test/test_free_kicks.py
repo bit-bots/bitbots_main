@@ -4,12 +4,15 @@ from concurrent.futures import Future
 from dataclasses import replace
 from unittest.mock import Mock
 
+import pytest
+
 from bitbots_auto_referee.config import PARAMETERS, RefereeConfig
 from bitbots_auto_referee.core.observations import RobotBounds, RobotContact, RobotMotion, SimulationObservation
 from bitbots_auto_referee.core.state import MatchState
 from bitbots_auto_referee.core.teleport import TeleportResult
 from bitbots_auto_referee.rules.check_rules import RuleChecker
 from bitbots_auto_referee.rules.outside import FieldGeometry
+from bitbots_auto_referee.rules.pushing import PushingConfig, PushingFoul
 
 
 def sample(time, ball=(0.0, 0.0, 0.1), touches=(), **changes):
@@ -156,6 +159,198 @@ def test_pushing_awards_direct_free_kick_at_contact_location():
     state = checker.check_rules(state, sample(3.2))
     commands.teleport_ball.assert_called_once_with(0.4, 0.7, 0.0)
     assert state.teams[0].score == state.teams[1].score == 0
+
+
+@pytest.mark.parametrize("distance, free_kick", [(0.999, True), (1.0, True), (1.001, False), (3.0, False)])
+def test_pushing_free_kick_requires_incident_near_ball(distance, free_kick):
+    state, checker, commands = setup()
+    upright = RobotMotion(0, 0, 0, 0, 1, 1)
+    state = checker.check_rules(state, sample(0.1, robot_motion={0: upright, 2: upright}))
+    contact = RobotContact(0, 2, 30, 0.2, 0, (distance, 0, 0.2))
+    state = checker.check_rules(
+        state,
+        sample(0.2, robot_motion={0: upright, 2: replace(upright, upright=0.5)}, robot_contacts=(contact,)),
+    )
+    assert state.teams[0].players[0].penalty == "PENALTY_PUSHING"
+    assert state.set_play == ("SET_PLAY_DIRECT_FREE_KICK" if free_kick else "SET_PLAY_NONE")
+    assert state.stopped == free_kick
+    commands.teleport_robot.assert_called_once()
+    commands.teleport_ball.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "contact_ball, later_ball, free_kick",
+    [((0, 0, 0.1), (3, 0, 0.1), True), ((3, 0, 0.1), (0, 0, 0.1), False), (None, (0, 0, 0.1), False)],
+)
+def test_pushing_ball_proximity_is_captured_at_contact(contact_ball, later_ball, free_kick):
+    state, checker, _ = setup()
+    upright = RobotMotion(0, 0, 0, 0, 1, 1)
+    state = checker.check_rules(state, sample(0.1, contact_ball, robot_motion={0: upright, 2: upright}))
+    state = checker.check_rules(
+        state,
+        sample(
+            0.2,
+            contact_ball,
+            robot_motion={0: upright, 2: upright},
+            robot_contacts=(RobotContact(0, 2, 30, 0.2, 0, (0, 0, 0.2)),),
+        ),
+    )
+    state = checker.check_rules(
+        state, sample(0.3, later_ball, robot_motion={0: upright, 2: replace(upright, upright=0.5)})
+    )
+    assert state.teams[0].players[0].penalty == "PENALTY_PUSHING"
+    assert state.set_play == ("SET_PLAY_DIRECT_FREE_KICK" if free_kick else "SET_PLAY_NONE")
+
+
+def test_pushing_free_kick_uses_configured_distance_and_skips_distant_fouls():
+    state, checker, _ = setup()
+    checker.pushing_rules.configure(PushingConfig(free_kick_distance=0.5))
+    checker.pushing_rules.check = Mock(return_value=state)
+    checker.pushing_rules.fouls = [PushingFoul(0, 2, (0.8, 0), 0.8), PushingFoul(1, 2, (0.4, 0), 0.4)]
+    state = checker.pushing_check(state, sample(0))
+    assert state.set_play == "SET_PLAY_DIRECT_FREE_KICK"
+    assert checker._pending_outside.position == (0.4, 0)
+
+
+@pytest.mark.parametrize("side", [-1, 1])
+@pytest.mark.parametrize("start", ["before_goal", "at_goal", "after_goal"])
+def test_pushing_free_kick_depends_on_ball_position_at_episode_start(side, start):
+    state, checker, commands = setup()
+    upright = RobotMotion(0, 0, 0, 0, 1, 1)
+    inside, outside = (side * 4, 0, 0.1), (side * 5, 0, 0.1)
+    contact = RobotContact(0, 2, 30, 0.2, 0, (side * 4.4, 0, 0.2))
+    state = checker.check_rules(state, sample(0.1, inside, robot_motion={0: upright, 2: upright}))
+    if start == "after_goal":
+        state = checker.check_rules(state, sample(0.2, outside, robot_motion={0: upright, 2: upright}))
+    state = checker.check_rules(
+        state,
+        sample(
+            0.3,
+            inside if start == "before_goal" else outside,
+            robot_motion={0: upright, 2: upright},
+            robot_contacts=(contact,),
+        ),
+    )
+    state = checker.check_rules(
+        state,
+        sample(
+            0.4,
+            outside,
+            robot_motion={0: upright, 2: replace(upright, upright=0.5)},
+            robot_contacts=(contact,),
+        ),
+    )
+    assert state.teams[0].players[0].penalty == "PENALTY_PUSHING"
+    assert checker.pushing_rules.fouls[0].started_at == 300_000_000
+    assert checker.pushing_rules.fouls[0].ball_at_start == (inside if start == "before_goal" else outside)
+    decision = checker._pending_outside
+    assert decision.kind == ("SET_PLAY_DIRECT_FREE_KICK" if start == "before_goal" else "GOAL")
+    commands.teleport_robot.assert_called_once()
+    if start != "before_goal":
+        assert not state.stopped
+        assert state.teams[0].score == state.teams[1].score == 0
+        state = checker.check_rules(state, sample(2.4, outside))
+        assert state.stopped
+        scorer = next(team for team in state.teams if team.team_number == decision.team_id)
+        assert scorer.score == 1
+        assert state.set_play == "SET_PLAY_NONE"
+
+
+def test_pushing_started_in_goal_stays_without_free_kick_after_ball_rebounds():
+    state, checker, _ = setup()
+    upright = RobotMotion(0, 0, 0, 0, 1, 1)
+    contact = RobotContact(0, 2, 30, 0.2, 0, (4.4, 0, 0.2))
+    state = checker.check_rules(state, sample(0.1, (4, 0, 0.1), robot_motion={0: upright, 2: upright}))
+    state = checker.check_rules(
+        state, sample(0.2, (5, 0, 0.1), robot_motion={0: upright, 2: upright}, robot_contacts=(contact,))
+    )
+    goal = checker._pending_outside
+    state = checker.check_rules(
+        state,
+        sample(0.3, (4, 0, 0.1), robot_motion={0: upright, 2: replace(upright, upright=0.5)}),
+    )
+    assert state.teams[0].players[0].penalty == "PENALTY_PUSHING"
+    assert state.set_play == "SET_PLAY_NONE"
+    assert checker._pending_outside == goal and goal.kind == "GOAL"
+
+
+@pytest.mark.parametrize("goal", [False, True])
+def test_distant_pushing_preserves_pending_ball_exit_or_goal(goal):
+    state, checker, commands = setup()
+    upright = RobotMotion(0, 0, 0, 0, 1, 1)
+    inside = (4, 0 if goal else 2, 0.1)
+    outside = (5, 0, 0.1) if goal else (4, 4, 0.1)
+    state = checker.check_rules(state, sample(0.1, inside, touches=(0,), robot_motion={0: upright, 2: upright}))
+    state = checker.check_rules(
+        state,
+        sample(
+            0.2,
+            outside,
+            robot_motion={0: upright, 2: replace(upright, upright=0.5)},
+            robot_contacts=(RobotContact(0, 2, 30, 0.2, 0, (0, 0, 0.2)),),
+        ),
+    )
+    decision = checker._pending_outside
+    assert decision is not None
+    assert decision.kind == ("GOAL" if goal else "SET_PLAY_THROW_IN")
+    assert state.teams[0].players[0].penalty == "PENALTY_PUSHING"
+    state = checker.check_rules(state, sample(2.2, outside))
+    assert checker._pending_outside == decision
+    assert state.stopped
+    if goal:
+        assert state.teams[1].score == 1
+    else:
+        assert state.set_play == "SET_PLAY_THROW_IN"
+    commands.teleport_ball.assert_not_called()
+
+
+def test_ball_distant_pushing_resumes_existing_set_play_after_robot_placement():
+    state, checker, commands = setup()
+    upright = RobotMotion(0, 0, 0, 0, 1, 1)
+    moving = replace(upright, body_joint_speed=1)
+    state = replace(state, set_play="SET_PLAY_THROW_IN", kicking_team=1, secondary_time=45)
+    checker._restart_at = 0
+    state = checker.check_rules(state, sample(0.1, robot_motion={0: upright, 2: upright}))
+    state = checker.check_rules(
+        state,
+        sample(
+            0.2,
+            robot_motion={0: moving, 2: replace(upright, upright=0.5)},
+            robot_contacts=(RobotContact(0, 2, 30, 0.2, 0, (3, 0, 0.2)),),
+        ),
+    )
+    assert state.stopped and state.set_play == "SET_PLAY_THROW_IN"
+    commands.teleport_robot.assert_not_called()
+    state = checker.check_rules(state, sample(2, robot_motion={0: upright, 2: upright}))
+    assert not state.stopped and state.set_play == "SET_PLAY_THROW_IN"
+    assert state.kicking_team == 1 and state.secondary_time == 45
+    commands.teleport_robot.assert_called_once()
+    commands.teleport_ball.assert_not_called()
+
+
+def test_ball_exit_during_distant_pushing_placement_wait_is_handled_after_standstill():
+    state, checker, commands = setup()
+    upright = RobotMotion(0, 0, 0, 0, 1, 1)
+    moving = replace(upright, body_joint_speed=1)
+    state = checker.check_rules(state, sample(0.1, (4, 0, 0.1), touches=(0,), robot_motion={0: upright, 2: upright}))
+    state = checker.check_rules(
+        state,
+        sample(
+            0.2,
+            (4, 0, 0.1),
+            robot_motion={0: moving, 2: replace(upright, upright=0.5)},
+            robot_contacts=(RobotContact(0, 2, 30, 0.2, 0, (0, 0, 0.2)),),
+        ),
+    )
+    assert state.stopped
+    state = checker.check_rules(state, sample(0.3, (5, 0, 0.1), robot_motion={0: moving, 2: upright}))
+    assert checker._pending_outside.kind == "GOAL"
+    assert state.teams[1].score == 0
+    commands.teleport_robot.assert_not_called()
+    state = checker.check_rules(state, sample(3, (5, 0, 0.1), robot_motion={0: upright, 2: upright}))
+    commands.teleport_robot.assert_called_once()
+    assert state.stopped and state.teams[1].score == 1
+    assert state.set_play == "SET_PLAY_NONE"
 
 
 def test_later_touch_cannot_change_captured_no_goal_decision():
