@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<launch>
+    <arg name="sim" default="true" description="Whether the robot is running in simulation" />
+
+    <node pkg="bitbots_team_communication" exec="team_comm.py" output="screen">
+        <param from="$(find-pkg-share bitbots_team_communication)/config/team_communication_config.yaml" />
+        <param from="$(find-pkg-share bitbots_bringup)/config/auto_referee_team_communication.yaml" />
+        <param name="use_sim_time" value="$(var sim)" />
+    </node>
+</launch>

@@ -9,6 +9,7 @@
     <arg name="path_planning" default="true" description="Whether the path planning should be started"/>
     <arg name="sim" default="false" description="Whether the robot is running in simulation or on real hardware" />
     <arg name="teamcom" default="false" description="Whether the team communication system should be started" />
+    <arg name="teamcom_launch_file" default="$(find-pkg-share bitbots_team_communication)/launch/team_comm.launch" description="Launch file used for team communication" />
     <arg name="vision" default="true" description="Whether the vision system should be started" />
     <arg name="workspace_status" default="true" description="Whether to publish the current workspace status"/>
     <arg name="world_model" default="true" description="Whether the world model should be started"/>
@@ -45,7 +46,7 @@
 
     <!-- launch teamcom -->
     <group if="$(var teamcom)">
-        <include file="$(find-pkg-share bitbots_team_communication)/launch/team_comm.launch">
+        <include file="$(var teamcom_launch_file)">
             <arg name="sim" value="$(var sim)"/>
         </include>
     </group>

@@ -1,0 +1,13 @@
+team_comm:
+  ros__parameters:
+    # Keep player destinations first and the AutoRef counting destination last.
+    # SocketCommunication applies the team offset to every destination.
+    local_target_ports:
+      - 4001
+      - 4002
+      - 4003
+      - 4004
+      - 4005
+      - 4006
+      - 4007
+      - 4009

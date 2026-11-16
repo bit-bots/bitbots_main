@@ -101,6 +101,10 @@ def launch_setup(context):
 
     # Get teamplayer argument values - only pass if explicitly set (not empty)
     teamplayer_args = ["sim:=true"]  # sim is always true for mujoco simulation
+    if LaunchConfiguration("auto_referee").perform(context).lower() == "true":
+        bringup_share = Path(get_package_share_directory("bitbots_bringup"))
+        teamcom_launch = bringup_share / "launch" / "auto_referee_team_comm.launch"
+        teamplayer_args.append(f"teamcom_launch_file:={teamcom_launch}")
     for arg_name, _ in TEAMPLAYER_ARGS:
         value = LaunchConfiguration(arg_name).perform(context)
         if value:  # Only pass if not empty string
@@ -180,6 +184,12 @@ def generate_launch_description():
     """Launch MuJoCo simulation with domain bridge for multi-robot support."""
 
     declared_args = [
+        DeclareLaunchArgument(
+            "auto_referee",
+            default_value="false",
+            choices=["true", "false"],
+            description="Enable UDP team-message counting for the separately started AutoRef",
+        ),
         DeclareLaunchArgument(
             "teamplayer",
             default_value="true",

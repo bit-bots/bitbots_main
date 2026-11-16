@@ -203,7 +203,7 @@ robot domain. The robot stacks and their existing domain bridges remain unchange
 
 ```sh
 pixi run -e default ros2 launch bitbots_bringup mujoco_simulation.launch.py \
-  num_robots:="$NUM_ROBOTS"
+  num_robots:="$NUM_ROBOTS" auto_referee:=true
 ```
 
 In another terminal in the same environment:
@@ -247,13 +247,20 @@ each received datagram. The destination port identifies the team; the payload is
 not decoded. The remaining budget is clamped at exhaustion, sent in the normal
 GameController packets, and displayed in the dashboard.
 
-The simulation override in `bitbots_team_communication/launch/team_comm.launch`
-keeps the player destinations first and appends the counting destination to
-`local_target_ports`. The existing team offset in `SocketCommunication` keeps
-player and counting ports separate between teams. The receiver's matching port
-calculation is in `adapters/simulation/team_messages.py`. Update the launch list
-and receiver together when changing this layout. The player slots cover the
-largest supported simulation team, and the counting slot is outside those slots.
+Pass `auto_referee:=true` to `mujoco_simulation.launch.py` to select the separate
+`bitbots_bringup/launch/auto_referee_team_comm.launch` for the robot stacks. It
+loads the regular TeamCom configuration followed by the AutoRef-only override
+`bitbots_bringup/config/auto_referee_team_communication.yaml`. The referee itself
+is still started separately. Without this option, simulation and hardware use
+the original TeamCom launch and configuration.
+
+The override keeps the player destinations first and appends the counting
+destination to `local_target_ports`. The existing team offset in
+`SocketCommunication` keeps player and counting ports separate between teams.
+The receiver's matching port calculation is in
+`adapters/simulation/team_messages.py`. Update the override and receiver together
+when changing this layout. The player slots cover the largest supported
+simulation team, and the counting slot is outside those slots.
 
 The normal TeamCom send loop sends the extra copy without any reporting hook or
 ROS statistics topic. No domain bridge is needed for counting. TeamCom's existing

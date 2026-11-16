@@ -1,12 +1,11 @@
 """Count actual loopback datagrams independently of robot code and ROS domains."""
 
-import ast
 import socket
-import xml.etree.ElementTree as ET
 from pathlib import Path
 from unittest.mock import Mock, patch
 
 import pytest
+import yaml
 from bitbots_auto_referee.adapters.simulation import team_messages
 from bitbots_auto_referee.config import PARAMETERS, RefereeConfig
 from bitbots_auto_referee.core.state import MatchState
@@ -14,12 +13,11 @@ from bitbots_auto_referee.node import AutoReferee
 
 
 def test_counting_ports_do_not_overlap_player_ports_across_teams():
-    launch = (
+    config = (
         Path(__file__).resolve().parents[3]
-        / "bitbots_team_communication/bitbots_team_communication/launch/team_comm.launch"
+        / "bitbots_misc/bitbots_bringup/config/auto_referee_team_communication.yaml"
     )
-    simulation_ports = ET.parse(launch).getroot().find("node[@if]/param[@name='local_target_ports']")
-    destinations = ast.literal_eval(simulation_ports.attrib["value"])
+    destinations = yaml.safe_load(config.read_text())["team_comm"]["ros__parameters"]["local_target_ports"]
     players, counter = destinations[:-1], destinations[-1]
     assert len(players) == 7
     occupied = set()

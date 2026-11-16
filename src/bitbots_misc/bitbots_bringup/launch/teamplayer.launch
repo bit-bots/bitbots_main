@@ -10,6 +10,7 @@
     <arg name="path_planning" default="true" description="Whether the path planning should be started"/>
     <arg name="sim" default="false" description="Whether the robot is running in simulation or on real hardware" />
     <arg name="teamcom" default="true" description="Whether the team communication system should be started" />
+    <arg name="teamcom_launch_file" default="$(find-pkg-share bitbots_team_communication)/launch/team_comm.launch" description="Launch file used for team communication" />
     <arg name="vision" default="true" description="Whether the vision system should be started" />
     <arg name="world_model" default="true" description="Whether the world model should be started"/>
     <arg name="monitoring" default="false" description="Whether the system monitor and udp bridge should be started" />
@@ -69,6 +70,7 @@
         <arg name="path_planning" value="$(var path_planning)" />
         <arg name="sim" value="$(var sim)" />
         <arg name="teamcom" value="$(var teamcom)" />
+        <arg name="teamcom_launch_file" value="$(var teamcom_launch_file)" />
         <arg name="vision" value="$(var vision)" />
         <arg name="world_model" value="$(var world_model)" />
         <arg name="whistle_detector" value="$(var whistle_detector)" />
