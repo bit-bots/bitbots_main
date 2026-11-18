@@ -152,6 +152,16 @@ class TargetCandidate:
 
 
 _KNOWN_ROBOT_KEYS = {"name", "number", "aliases", "ips"}
+_ALL_TARGETS = "ALL"
+
+
+def _is_ip_address(value: str) -> bool:
+    """Whether the value is interpreted as a literal IP address when given as a target."""
+    try:
+        ipaddress.ip_address(value.strip())
+    except ValueError:
+        return False
+    return True
 
 
 def _parse_known_robots(data: Any) -> list[KnownRobot]:
@@ -166,7 +176,9 @@ def _parse_known_robots(data: Any) -> list[KnownRobot]:
         raise ValueError("Expected a list of robots.")
 
     robots: list[KnownRobot] = []
-    seen_names: dict[str, str] = {}
+    # Maps each casefolded name and alias to the index of the entry that owns it.
+    # The index is used instead of the name, so that two entries with the same name are detected.
+    seen_names: dict[str, int] = {}
     seen_numbers: dict[int, str] = {}
     seen_ips: dict[str, str] = {}
     for index, entry in enumerate(data):
@@ -199,11 +211,17 @@ def _parse_known_robots(data: Any) -> list[KnownRobot]:
             raise ValueError(f"Robot '{name}' has an invalid IP address: {e}") from e
 
         for robot_name in (name, *aliases):
-            if robot_name.isdigit():
+            if robot_name.removeprefix("-").isdigit():
                 raise ValueError(f"Name '{robot_name}' of robot '{name}' would be ambiguous with robot numbers.")
-            other = seen_names.setdefault(robot_name.casefold(), name)
-            if other != name:
-                raise ValueError(f"Name '{robot_name}' of robot '{name}' is already used by robot '{other}'.")
+            if robot_name.casefold() == _ALL_TARGETS.casefold():
+                raise ValueError(f"Name '{robot_name}' of robot '{name}' is reserved for targeting all robots.")
+            if _is_ip_address(robot_name):
+                raise ValueError(f"Name '{robot_name}' of robot '{name}' would be ambiguous with IP addresses.")
+            owner = seen_names.setdefault(robot_name.casefold(), index)
+            if owner != index:
+                raise ValueError(
+                    f"Name '{robot_name}' of robot '{name}' is already used by robot '{robots[owner].name}'."
+                )
         if number in seen_numbers:
             raise ValueError(f"Number {number} of robot '{name}' is already used by robot '{seen_numbers[number]}'.")
         seen_numbers[number] = name
@@ -243,7 +261,7 @@ def print_known_targets() -> None:
     def add_row(number: str, name: str, aliases: str, ips: str) -> None:
         table.add_row(number, name, *([aliases] if show_aliases else []), ips)
 
-    add_row("", "ALL", "", "")
+    add_row("", _ALL_TARGETS, "", "")
     for robot in KNOWN_ROBOTS:
         add_row(str(robot.number), robot.name, ", ".join(robot.aliases), ", ".join(robot.ips))
     print_info("You can enter the following values as targets (names are case-insensitive), or any other IP address:")
@@ -431,7 +449,7 @@ def get_connections_from_targets(targets: list[str], user: str, connection_timeo
     :param connection_timeout: Timeout for establishing the connection
     :return: The connections to the targets
     """
-    if "ALL" in targets:
+    if _ALL_TARGETS in targets:
         print_info(f"Connecting to all known robots: {', '.join(robot.name for robot in KNOWN_ROBOTS)}")
         target_candidates = [
             TargetCandidate(target=robot.name, ips=list(robot.ips), robot=robot) for robot in KNOWN_ROBOTS

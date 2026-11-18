@@ -98,6 +98,7 @@ def test_parse_targets_exits_for_unknown_target(known_robots):
         ([{"name": "Kalliope", "number": "1", "ips": ["10.0.6.1"]}], "integer 'number'"),
         ([{"name": "Kalliope", "number": 1, "ip": ["10.0.6.1"]}], "unknown keys: ip"),
         ([{"name": "Kalliope", "number": 1, "aliases": ["2"], "ips": ["10.0.6.1"]}], "ambiguous"),
+        ([{"name": "Kalliope", "number": 1, "aliases": ["-1"], "ips": ["10.0.6.1"]}], "ambiguous"),
         (
             [
                 {"name": "Kalliope", "number": 1, "ips": ["10.0.6.1"]},
@@ -119,6 +120,18 @@ def test_parse_targets_exits_for_unknown_target(known_robots):
             ],
             "IP address 10.0.6.1",
         ),
+        (
+            [
+                {"name": "Kalliope", "number": 1, "ips": ["10.0.6.1"]},
+                {"name": "Kalliope", "number": 2, "ips": ["10.0.6.2"]},
+            ],
+            "already used by robot 'Kalliope'",
+        ),
+        ([{"name": "ALL", "number": 1, "ips": ["10.0.6.1"]}], "reserved"),
+        ([{"name": "Kalliope", "number": 1, "aliases": ["all"], "ips": ["10.0.6.1"]}], "reserved"),
+        ([{"name": "10.0.6.1", "number": 1, "ips": ["10.0.6.1"]}], "ambiguous with IP addresses"),
+        ([{"name": "Kalliope", "number": 1, "aliases": ["10.0.6.2"], "ips": ["10.0.6.1"]}], "ambiguous with IP"),
+        ([{"name": "Kalliope", "number": 1, "aliases": ["::1"], "ips": ["10.0.6.1"]}], "ambiguous with IP"),
     ],
 )
 def test_parse_known_robots_rejects_invalid_entries(robots, error):

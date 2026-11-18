@@ -28,7 +28,7 @@ All IP addresses of a robot are tried in parallel and the first reachable one is
 Each robot is only deployed to once, even if it is given multiple times, e.g. by name and by number.
 Run `./deploy_robots.py --show-targets` to list all known robots.
 
-To add a robot, append an entry to `known_targets.yaml`. The file is validated on startup, and invalid or ambiguous entries, such as a name or IP address used by two robots, are reported as errors.
+To add a robot, append an entry to `known_targets.yaml`. The file is validated on startup, and invalid or ambiguous entries, such as a name or IP address used by two robots, or a name or alias that could be mistaken for a number, an IP address or `ALL`, are reported as errors.
 
 ### Example usage
 
