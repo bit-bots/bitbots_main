@@ -7,7 +7,8 @@ This tool is also callable via `pixi run deploy <arguments>`.
 ## `deploy_robots.py`
 
 Deploy, configure, and launch the Bit-Bots software remotely on a robot.
-This tool can target all, multiple, or single robots at once, specified by their hostname, robot name, or IP address.
+This tool can target all, multiple, or single robots at once, specified by their number, name or alias (case-insensitive), or IP address.
+Known robots are defined in [`deploy/known_targets.yaml`](deploy/known_targets.yaml).
 These different tasks can be performed:
 
 1. Synchronize the local source code to the target workspace

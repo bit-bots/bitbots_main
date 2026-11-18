@@ -1,4 +1,5 @@
 import importlib.util
+import re
 import subprocess
 import sys
 import time
@@ -16,39 +17,47 @@ _SPEC.loader.exec_module(misc)
 
 
 @pytest.fixture
-def known_targets(monkeypatch):
-    targets = {
-        "172.20.1.11": {"hostname": "kalliope", "robot_name": "Kalliope", "robot_number": 1},
-        "10.0.6.1": {"hostname": "kalliope", "robot_name": "Kalliope", "robot_number": 1},
-        "10.1.24.125": {"hostname": "kalliope", "robot_name": "Kalliope", "robot_number": 1},
-        "172.20.1.12": {"hostname": "mickey", "robot_name": "mickey", "robot_number": 2},
-        "172.20.1.14": {"hostname": "romeo", "robot_name": "Romeo", "robot_number": 4},
-    }
-    monkeypatch.setattr(misc, "KNOWN_TARGETS", targets)
-    return targets
+def known_robots(monkeypatch):
+    robots = misc._parse_known_robots(
+        [
+            {"name": "Kalliope", "number": 1, "ips": ["172.20.1.11", "10.0.6.1", "10.1.24.125"]},
+            {"name": "Mickey", "number": 2, "aliases": ["mouse"], "ips": ["172.20.1.12"]},
+            {"name": "Romeo", "number": 4, "ips": ["172.20.1.14"]},
+        ]
+    )
+    monkeypatch.setattr(misc, "KNOWN_ROBOTS", robots)
+    return robots
 
 
-def test_parse_targets_returns_all_ips_for_duplicate_hostname(known_targets):
-    assert misc._parse_targets(["kalliope"]) == ["172.20.1.11", "10.0.6.1", "10.1.24.125"]
+def test_known_targets_file_is_valid():
+    path = Path(misc.__file__).parent / "known_targets.yaml"
+    assert misc._load_known_robots(str(path))
 
 
-def test_parse_targets_returns_all_ips_for_duplicate_robot_name(known_targets):
-    assert misc._parse_targets(["Kalliope"]) == ["172.20.1.11", "10.0.6.1", "10.1.24.125"]
+@pytest.mark.parametrize("target", ["Kalliope", "kalliope", "KALLIOPE", " kalliope ", "1"])
+def test_parse_targets_returns_all_ips_of_robot(known_robots, target):
+    assert misc._parse_targets([target]) == ["172.20.1.11", "10.0.6.1", "10.1.24.125"]
 
 
-def test_parse_targets_returns_all_ips_for_duplicate_robot_number(known_targets):
-    assert misc._parse_targets(["1"]) == ["172.20.1.11", "10.0.6.1", "10.1.24.125"]
+@pytest.mark.parametrize("target", ["mouse", "Mouse"])
+def test_parse_targets_resolves_alias(known_robots, target):
+    assert misc._parse_targets([target]) == ["172.20.1.12"]
 
 
-def test_parse_targets_keeps_literal_ip_as_single_target(known_targets):
-    assert misc._parse_targets(["10.0.6.1"]) == ["10.0.6.1"]
+def test_parse_targets_keeps_literal_ip_as_single_target(known_robots):
+    [candidate] = misc._parse_target_candidates(["10.0.6.1"])
+    assert candidate.ips == ["10.0.6.1"]
+    assert candidate.label == "Kalliope"
 
 
-def test_parse_targets_does_not_duplicate_ip_when_hostname_and_robot_name_match(known_targets):
-    assert misc._parse_targets(["mickey"]) == ["172.20.1.12"]
+def test_parse_targets_accepts_unknown_ip(known_robots):
+    [candidate] = misc._parse_target_candidates(["192.168.1.5"])
+    assert candidate.ips == ["192.168.1.5"]
+    assert candidate.robot is None
+    assert candidate.label == "192.168.1.5"
 
 
-def test_parse_targets_handles_space_separated_mixed_targets(known_targets):
+def test_parse_targets_handles_mixed_targets(known_robots):
     assert misc._parse_targets(["1", "romeo", "2"]) == [
         "172.20.1.11",
         "10.0.6.1",
@@ -58,7 +67,7 @@ def test_parse_targets_handles_space_separated_mixed_targets(known_targets):
     ]
 
 
-def test_parse_targets_skips_aliases_of_already_given_target(known_targets):
+def test_parse_targets_skips_aliases_of_already_given_robot(known_robots):
     assert misc._parse_targets(["1", "kalliope", "172.20.1.11"]) == [
         "172.20.1.11",
         "10.0.6.1",
@@ -66,13 +75,81 @@ def test_parse_targets_skips_aliases_of_already_given_target(known_targets):
     ]
 
 
-def test_parse_targets_skips_alias_overlapping_with_literal_ip(known_targets):
+def test_parse_targets_skips_robot_already_given_by_ip(known_robots):
     assert misc._parse_targets(["10.0.6.1", "kalliope", "4"]) == ["10.0.6.1", "172.20.1.14"]
 
 
-def test_parse_targets_exits_for_unknown_target(known_targets):
+def test_parse_targets_skips_repeated_unknown_ip(known_robots):
+    assert misc._parse_targets(["192.168.1.5", "192.168.1.5"]) == ["192.168.1.5"]
+
+
+def test_parse_targets_exits_for_unknown_target(known_robots):
     with pytest.raises(SystemExit):
         misc._parse_targets(["unknown"])
+
+
+@pytest.mark.parametrize(
+    ("robots", "error"),
+    [
+        ({"name": "Kalliope"}, "list of robots"),
+        ([{"name": "Kalliope", "number": 1}], "'ips'"),
+        ([{"name": "Kalliope", "number": 1, "ips": []}], "'ips'"),
+        ([{"name": "Kalliope", "number": 1, "ips": ["not-an-ip"]}], "invalid IP"),
+        ([{"name": "Kalliope", "number": "1", "ips": ["10.0.6.1"]}], "integer 'number'"),
+        ([{"name": "Kalliope", "number": 1, "ip": ["10.0.6.1"]}], "unknown keys: ip"),
+        ([{"name": "Kalliope", "number": 1, "aliases": ["2"], "ips": ["10.0.6.1"]}], "ambiguous"),
+        (
+            [
+                {"name": "Kalliope", "number": 1, "ips": ["10.0.6.1"]},
+                {"name": "Mickey", "number": 2, "aliases": ["KALLIOPE"], "ips": ["10.0.6.2"]},
+            ],
+            "already used by robot 'Kalliope'",
+        ),
+        (
+            [
+                {"name": "Kalliope", "number": 1, "ips": ["10.0.6.1"]},
+                {"name": "Mickey", "number": 1, "ips": ["10.0.6.2"]},
+            ],
+            "Number 1",
+        ),
+        (
+            [
+                {"name": "Kalliope", "number": 1, "ips": ["10.0.6.1"]},
+                {"name": "Mickey", "number": 2, "ips": ["10.0.6.1"]},
+            ],
+            "IP address 10.0.6.1",
+        ),
+    ],
+)
+def test_parse_known_robots_rejects_invalid_entries(robots, error):
+    with pytest.raises(ValueError, match=re.escape(error)):
+        misc._parse_known_robots(robots)
+
+
+def test_get_connections_names_connections_after_robot_or_hostname(monkeypatch, known_robots):
+    monkeypatch.setattr(misc, "Connection", _fake_connection_factory(failing_hosts=set()))
+    monkeypatch.setattr(misc.ThreadingGroup, "from_connections", lambda connections: list(connections))
+
+    connections = misc._get_connections_from_target_candidates(
+        misc._parse_target_candidates(["romeo", "192.168.1.5"]), user="bitbots"
+    )
+
+    assert [connection.original_host for connection in connections] == ["Romeo", "192.168.1.5-hostname"]
+    assert connections[0].commands == []
+    assert connections[1].commands == ["hostname"]
+
+
+def test_get_connections_for_all_uses_one_connection_per_robot(monkeypatch, known_robots):
+    monkeypatch.setattr(misc, "Connection", _fake_connection_factory(failing_hosts={"172.20.1.11"}))
+    monkeypatch.setattr(misc.ThreadingGroup, "from_connections", lambda connections: list(connections))
+
+    connections = misc.get_connections_from_targets(["ALL"], user="bitbots")
+
+    assert [(connection.original_host, connection.host) for connection in connections] == [
+        ("Kalliope", "10.0.6.1"),
+        ("Mickey", "172.20.1.12"),
+        ("Romeo", "172.20.1.14"),
+    ]
 
 
 def test_get_connections_uses_reachable_candidate_ip(monkeypatch):
@@ -83,7 +160,9 @@ def test_get_connections_uses_reachable_candidate_ip(monkeypatch):
     monkeypatch.setattr(misc, "print_warning", warnings.append)
     monkeypatch.setattr(misc, "print_info", infos.append)
 
-    connections = misc._get_connections_from_target_candidates([("mickey", ["172.20.1.12", "10.0.6.2"])], user="nvidia")
+    connections = misc._get_connections_from_target_candidates(
+        [_candidate("mickey", ["172.20.1.12", "10.0.6.2"])], user="nvidia"
+    )
 
     assert [connection.host for connection in connections] == ["10.0.6.2"]
     assert warnings == []
@@ -103,7 +182,7 @@ def test_get_connections_tests_candidate_ips_in_parallel(monkeypatch):
 
     start_time = time.monotonic()
     connections = misc._get_connections_from_target_candidates(
-        [("mickey", ["172.20.1.12", "10.0.6.2", "10.1.24.153"])], user="nvidia"
+        [_candidate("mickey", ["172.20.1.12", "10.0.6.2", "10.1.24.153"])], user="nvidia"
     )
 
     assert [connection.host for connection in connections] == ["10.1.24.153"]
@@ -119,7 +198,7 @@ def test_get_connections_warns_when_all_candidate_ips_fail(monkeypatch):
     monkeypatch.setattr(misc, "print_error", errors.append)
 
     with pytest.raises(SystemExit):
-        misc._get_connections_from_target_candidates([("mickey", ["172.20.1.12", "10.0.6.2"])], user="nvidia")
+        misc._get_connections_from_target_candidates([_candidate("mickey", ["172.20.1.12", "10.0.6.2"])], user="nvidia")
 
     assert len(warnings) == 1
     assert errors == ["Could not establish any connection to the given targets. Exiting..."]
@@ -133,14 +212,18 @@ def test_get_connections_continues_when_another_target_has_reachable_ip(monkeypa
 
     connections = misc._get_connections_from_target_candidates(
         [
-            ("mickey", ["172.20.1.12", "10.0.6.2"]),
-            ("kalliope", ["172.20.1.11"]),
+            _candidate("mickey", ["172.20.1.12", "10.0.6.2"]),
+            _candidate("kalliope", ["172.20.1.11"]),
         ],
         user="nvidia",
     )
 
     assert [connection.host for connection in connections] == ["172.20.1.11"]
     assert len(warnings) == 1
+
+
+def _candidate(target: str, ips: list[str]):
+    return misc.TargetCandidate(target=target, ips=ips, robot=None)
 
 
 def _fake_connection_factory(failing_hosts: set[str], failing_host_delay: float = 0.0):
@@ -150,6 +233,8 @@ def _fake_connection_factory(failing_hosts: set[str], failing_host_delay: float 
             self.user = user
             self.connect_timeout = connect_timeout
             self.closed = False
+            self.original_host = host
+            self.commands = []
 
         def open(self):
             if self.host in failing_hosts:
@@ -159,6 +244,7 @@ def _fake_connection_factory(failing_hosts: set[str], failing_host_delay: float 
 
         def run(self, command, hide):
             assert command == "hostname"
+            self.commands.append(command)
             return _FakeRunResult(stdout=f"{self.host}-hostname\n")
 
         def close(self):

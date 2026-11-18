@@ -1,51 +1,39 @@
-# Lab
-"172.20.1.11":
-  hostname: "kalliope"
-  robot_name: "Kalliope"
-  robot_number: 1
-"172.20.1.12":
-  hostname: "mickey"
-  robot_name: "Mickey"
-  robot_number: 2
-"172.20.1.13":
-  hostname: "pink"
-  robot_name: "Pink"
-  robot_number: 3
-"172.20.1.14":
-  hostname: "romeo"
-  robot_name: "Romeo"
-  robot_number: 4
-"172.20.1.15":
-  hostname: "carrie"
-  robot_name: "Carrie"
-  robot_number: 5
-"172.20.1.16":
-  hostname: "peter"
-  robot_name: "Peter"
-  robot_number: 6
+# Robots that can be targeted by the deploy tool.
+# A robot can be addressed by its number, its name or any of its aliases (case-insensitive), or any of its IPs.
+# All IPs of a robot are tried in parallel and the first reachable one is used.
+#
+# - name: Display name of the robot
+#   number: Robot number
+#   aliases: Optional additional names
+#   ips: IP addresses of the robot
 
-# Field
-"10.0.6.1":
-  hostname: "kalliope"
-  robot_name: "Kalliope"
-  robot_number: 1
-"10.0.6.2":
-  hostname: "mickey"
-  robot_name: "Mickey"
-  robot_number: 2
-"10.0.6.3":
-  hostname: "pink"
-  robot_name: "Pink"
-  robot_number: 3
-"10.0.6.4":
-  hostname: "romeo"
-  robot_name: "Romeo"
-  robot_number: 4
-"10.0.6.5":
-  hostname: "carrie"
-  robot_name: "Carrie"
-  robot_number: 5
-"10.0.6.6":
-  hostname: "peter"
-  robot_name: "Peter"
-  robot_number: 6
+- name: "Kalliope"
+  number: 1
+  ips:
+    - "172.20.1.11"  # Lab
+    - "10.0.6.1"  # Field
+- name: "Mickey"
+  number: 2
+  ips:
+    - "172.20.1.12"  # Lab
+    - "10.0.6.2"  # Field
+- name: "Pink"
+  number: 3
+  ips:
+    - "172.20.1.13"  # Lab
+    - "10.0.6.3"  # Field
+- name: "Romeo"
+  number: 4
+  ips:
+    - "172.20.1.14"  # Lab
+    - "10.0.6.4"  # Field
+- name: "Carrie"
+  number: 5
+  ips:
+    - "172.20.1.15"  # Lab
+    - "10.0.6.5"  # Field
+- name: "Peter"
+  number: 6
+  ips:
+    - "172.20.1.16"  # Lab
+    - "10.0.6.6"  # Field

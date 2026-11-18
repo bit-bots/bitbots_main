@@ -6,6 +6,7 @@ import re
 import subprocess
 import sys
 from collections.abc import Iterable
+from dataclasses import dataclass
 from typing import Any
 
 import yaml
@@ -116,132 +117,208 @@ def check_ssh_configuration(user: str, host: str) -> None:
     result.check_returncode()
 
 
-# Read the known targets
-_known_targets_path: str = os.path.join(os.path.dirname(__file__), "known_targets.yaml")
-try:
-    with open(_known_targets_path) as f:
-        KNOWN_TARGETS: dict[str, dict[str, str | int]] = yaml.safe_load(f)
-except FileNotFoundError:
-    print_error(f"Could not find known_targets.yaml in {_known_targets_path}")
+@dataclass(frozen=True)
+class KnownRobot:
+    """A robot from known_targets.yaml."""
+
+    name: str
+    number: int
+    aliases: tuple[str, ...]
+    ips: tuple[str, ...]
+
+    def is_called(self, identifier: str) -> bool:
+        """
+        Whether the identifier is this robot's number, name or one of its aliases.
+        Names and aliases are compared case-insensitively.
+        """
+        identifier = identifier.strip().casefold()
+        return identifier == str(self.number) or any(
+            identifier == name.casefold() for name in (self.name, *self.aliases)
+        )
+
+
+@dataclass(frozen=True)
+class TargetCandidate:
+    """A target given by the user, with the IP addresses that may reach it."""
+
+    target: str
+    ips: list[str]
+    robot: KnownRobot | None
+
+    @property
+    def label(self) -> str:
+        """The robot name if the target is a known robot, otherwise the user input."""
+        return self.robot.name if self.robot is not None else self.target
+
+
+_KNOWN_ROBOT_KEYS = {"name", "number", "aliases", "ips"}
+
+
+def _parse_known_robots(data: Any) -> list[KnownRobot]:
+    """
+    Parses and validates the content of known_targets.yaml.
+
+    :param data: The loaded YAML content.
+    :return: The known robots.
+    :raises ValueError: If the content is malformed or ambiguous.
+    """
+    if not isinstance(data, list):
+        raise ValueError("Expected a list of robots.")
+
+    robots: list[KnownRobot] = []
+    seen_names: dict[str, str] = {}
+    seen_numbers: dict[int, str] = {}
+    seen_ips: dict[str, str] = {}
+    for index, entry in enumerate(data):
+        if not isinstance(entry, dict):
+            raise ValueError(f"Entry {index} is not a mapping.")
+        unknown_keys = set(entry) - _KNOWN_ROBOT_KEYS
+        if unknown_keys:
+            raise ValueError(f"Entry {index} has unknown keys: {', '.join(sorted(map(str, unknown_keys)))}.")
+
+        name = entry.get("name")
+        if not isinstance(name, str) or not name.strip():
+            raise ValueError(f"Entry {index} needs a non-empty 'name'.")
+        name = name.strip()
+
+        number = entry.get("number")
+        if not isinstance(number, int) or isinstance(number, bool):
+            raise ValueError(f"Robot '{name}' needs an integer 'number'.")
+
+        aliases = entry.get("aliases", [])
+        if not isinstance(aliases, list) or not all(isinstance(alias, str) and alias.strip() for alias in aliases):
+            raise ValueError(f"Robot '{name}' has 'aliases' that are not a list of non-empty strings.")
+        aliases = [alias.strip() for alias in aliases]
+
+        raw_ips = entry.get("ips")
+        if not isinstance(raw_ips, list) or not raw_ips:
+            raise ValueError(f"Robot '{name}' needs a non-empty list of 'ips'.")
+        try:
+            ips = [str(ipaddress.ip_address(str(ip))) for ip in raw_ips]
+        except ValueError as e:
+            raise ValueError(f"Robot '{name}' has an invalid IP address: {e}") from e
+
+        for robot_name in (name, *aliases):
+            if robot_name.isdigit():
+                raise ValueError(f"Name '{robot_name}' of robot '{name}' would be ambiguous with robot numbers.")
+            other = seen_names.setdefault(robot_name.casefold(), name)
+            if other != name:
+                raise ValueError(f"Name '{robot_name}' of robot '{name}' is already used by robot '{other}'.")
+        if number in seen_numbers:
+            raise ValueError(f"Number {number} of robot '{name}' is already used by robot '{seen_numbers[number]}'.")
+        seen_numbers[number] = name
+        for ip in ips:
+            if ip in seen_ips:
+                raise ValueError(f"IP address {ip} of robot '{name}' is already used by robot '{seen_ips[ip]}'.")
+            seen_ips[ip] = name
+
+        robots.append(KnownRobot(name=name, number=number, aliases=tuple(aliases), ips=tuple(ips)))
+    return robots
+
+
+def _load_known_robots(path: str) -> list[KnownRobot]:
+    """Loads the known robots or exits the program if the file is missing or malformed."""
+    try:
+        with open(path) as f:
+            return _parse_known_robots(yaml.safe_load(f))
+    except FileNotFoundError:
+        print_error(f"Could not find known_targets.yaml in {path}")
+    except (yaml.YAMLError, ValueError) as e:
+        print_error(f"Invalid known targets in {path}: {e}")
     sys.exit(1)
 
 
-def print_known_targets() -> None:
-    table = Table()
-    table.add_column("Hostname")
-    table.add_column("Robot name")
-    table.add_column("Robot number")
-    table.add_column("IP address")
+KNOWN_ROBOTS: list[KnownRobot] = _load_known_robots(os.path.join(os.path.dirname(__file__), "known_targets.yaml"))
 
-    known_targets = get_known_targets()
-    table.add_row("ALL", "", "", "")
-    for ip, values in known_targets.items():
-        table.add_row(values.get("hostname", ""), values.get("robot_name", ""), str(values.get("robot_number", "")), ip)
-    print_info("You can enter the following values as targets:")
+
+def print_known_targets() -> None:
+    show_aliases = any(robot.aliases for robot in KNOWN_ROBOTS)
+    table = Table()
+    table.add_column("Number")
+    table.add_column("Name")
+    if show_aliases:
+        table.add_column("Aliases")
+    table.add_column("IP addresses")
+
+    def add_row(number: str, name: str, aliases: str, ips: str) -> None:
+        table.add_row(number, name, *([aliases] if show_aliases else []), ips)
+
+    add_row("", "ALL", "", "")
+    for robot in KNOWN_ROBOTS:
+        add_row(str(robot.number), robot.name, ", ".join(robot.aliases), ", ".join(robot.ips))
+    print_info("You can enter the following values as targets (names are case-insensitive), or any other IP address:")
     CONSOLE.print(table)
     sys.exit(0)
 
 
-def get_known_targets() -> dict[str, dict[str, str | int]]:
+def _identify_target(identifier: str) -> TargetCandidate | None:
     """
-    Returns the known targets.
-
-    :return: The known targets.
-    """
-    return KNOWN_TARGETS
-
-
-# Keys of a known target that can be used to identify it, with a human readable label
-_TARGET_IDENTIFIER_KEYS: tuple[tuple[str, str], ...] = (
-    ("hostname", "hostname"),
-    ("robot_name", "robot name"),
-    ("robot_number", "robot number"),
-)
-
-
-def _identify_ips(identifier: str) -> list[str]:
-    """
-    Identifies IP addresses from an identifier.
-    The identifier can be an IP address, a hostname, a robot name or a robot number.
+    Identifies a target from an identifier.
+    The identifier can be an IP address, or the number, name or an alias of a known robot.
+    A known robot resolves to all of its IP addresses, an IP address only to itself.
 
     :param identifier: The identifier to identify the target from.
-    :return: IP addresses of the identified targets.
+    :return: The identified target, or None if the identifier is unknown.
     """
-    print_debug(f"Identifying IP address from identifier: '{identifier}'.")
-
-    def append_target_ip(target_ips: list[str], ip: str) -> None:
-        target_ip = str(ipaddress.ip_address(ip))
-        if target_ip not in target_ips:
-            target_ips.append(target_ip)
-
-    # Is the identifier an IP address?
     try:
-        print_debug(f"Checking if {identifier} is an IP address")
-        ip = ipaddress.ip_address(identifier)
-        print_debug(f"Identified {ip} as an IP address")
-        return [str(ip)]
+        ip = str(ipaddress.ip_address(identifier.strip()))
     except ValueError:
-        print_debug("Entered target is not an IP-address.")
+        print_debug(f"'{identifier}' is not an IP address. Looking for a known robot.")
+    else:
+        robot = next((robot for robot in KNOWN_ROBOTS if ip in robot.ips), None)
+        print_debug(f"Identified IP address {ip}" + (f" of robot '{robot.name}'." if robot else "."))
+        return TargetCandidate(target=identifier, ips=[ip], robot=robot)
 
-    # It was not an IP address, so we try to find a known target
-    target_ips: list[str] = []
-    for ip, values in KNOWN_TARGETS.items():
-        for key, label in _TARGET_IDENTIFIER_KEYS:
-            known_value = values.get(key, None)
-            if known_value is None:
-                continue
-            if str(known_value).strip() == identifier.strip():
-                print_debug(f"Identified {label} '{known_value}' for '{identifier}'. Using its IP {ip}.")
-                append_target_ip(target_ips, ip)
-            else:
-                print_debug(f"{label.capitalize()} '{known_value}' does not match identifier '{identifier}'.")
-
-    return target_ips
+    for robot in KNOWN_ROBOTS:
+        if robot.is_called(identifier):
+            print_debug(f"Identified robot '{robot.name}' for '{identifier}' with IPs {', '.join(robot.ips)}.")
+            return TargetCandidate(target=identifier, ips=list(robot.ips), robot=robot)
+    return None
 
 
 def _parse_targets(targets: list[str]) -> list[str]:
     """
     Parse target input into usable target IP addresses.
 
-    :param targets: Targets as a list of strings of either hostnames, robot names, robot numbers or IPs.
+    :param targets: Targets as a list of strings of either robot numbers, names, aliases or IPs.
     :return: List of target IP addresses.
     """
-    return [target_ip for _, target_ips in _parse_target_candidates(targets) for target_ip in target_ips]
+    return [target_ip for candidate in _parse_target_candidates(targets) for target_ip in candidate.ips]
 
 
-def _parse_target_candidates(targets: list[str]) -> list[tuple[str, list[str]]]:
+def _parse_target_candidates(targets: list[str]) -> list[TargetCandidate]:
     """
     Parse target input into candidate target IP addresses grouped by user input.
-    Targets that resolve to an IP address of an already given target refer to the same robot and are skipped.
+    Targets that refer to an already given robot or IP address are skipped.
 
-    :param targets: Targets as a list of strings of either hostnames, robot names, robot numbers or IPs.
-    :return: List of target names and their candidate IP addresses.
+    :param targets: Targets as a list of strings of either robot numbers, names, aliases or IPs.
+    :return: The targets and their candidate IP addresses.
     """
-    target_candidates: list[tuple[str, list[str]]] = []
-    requested_target_ips: set[str] = set()
+    target_candidates: list[TargetCandidate] = []
+    given_targets: set[str] = set()
     for target in targets:
-        try:
-            target_ips = _identify_ips(target)
-        except ValueError:
-            target_ips = []
-        if not target_ips:
+        candidate = _identify_target(target)
+        if candidate is None:
             print_error(f"Could not determine IP address from input: '{target}'")
             sys.exit(1)
 
-        if requested_target_ips.intersection(target_ips):
-            print_info(f"Target '{target}' refers to an already given target. Skipping it.")
+        key = candidate.robot.name if candidate.robot is not None else candidate.ips[0]
+        if key in given_targets:
+            print_info(f"Target '{target}' refers to the already given target '{candidate.label}'. Skipping it.")
             continue
 
-        requested_target_ips.update(target_ips)
-        target_candidates.append((target, target_ips))
+        given_targets.add(key)
+        target_candidates.append(candidate)
     return target_candidates
 
 
 def _get_connections_from_target_candidates(
-    target_candidates: list[tuple[str, list[str]]], user: str, connection_timeout: int | None = 10
+    target_candidates: list[TargetCandidate], user: str, connection_timeout: int | None = 10
 ) -> ThreadingGroup:
     """
     Get connections to the given target IP address candidates using the given username.
+    For each target, the first reachable candidate IP address is used.
+    Each connection's original_host is set to the robot name, or to the remote hostname for unknown targets.
 
     :param target_candidates: The target names and candidate IP addresses to connect to
     :param user: The username to connect with
@@ -257,16 +334,19 @@ def _get_connections_from_target_candidates(
                 reason += f"{arg} "
         return reason
 
-    def _try_connect(target_ip: str) -> tuple[str, Connection | None, str | None]:
+    def _try_connect(target_ip: str, robot: KnownRobot | None) -> tuple[str, Connection | None, str | None]:
         connection = Connection(target_ip, user=user, connect_timeout=connection_timeout)
         try:
             print_debug(f"Connecting to {connection.user}@{connection.host}...")
             connection.open()
             print_debug(f"Connected to {connection.user}@{connection.host}...")
-            print_debug(f"Getting hostname of {connection.host}...")
-            hostname: str = connection.run("hostname", hide=hide_output()).stdout.strip()
-            print_debug(f"Got hostname of {connection.host}: {hostname}. Setting is as original hostname.")
-            connection.original_host = hostname
+            if robot is not None:
+                connection.original_host = robot.name
+            else:
+                print_debug(f"Getting hostname of unknown target {connection.host}...")
+                hostname: str = connection.run("hostname", hide=hide_output()).stdout.strip()
+                print_debug(f"Got hostname of {connection.host}: {hostname}. Using it as name.")
+                connection.original_host = hostname
             return target_ip, connection, None
         except AuthenticationException as e:
             reason = (
@@ -280,13 +360,15 @@ def _get_connections_from_target_candidates(
     open_connections: list[Connection] = []
     failed_targets: list[tuple[str, list[tuple[str, str]]]] = []
 
-    for target, target_ips in target_candidates:
+    for candidate in target_candidates:
+        target = candidate.label
+        target_ips = candidate.ips
         if len(target_ips) > 1:
             print_debug(f"Target '{target}' resolved to multiple candidate IPs: {', '.join(target_ips)}.")
 
         results_by_ip: dict[str, tuple[Connection | None, str | None]] = {}
         with concurrent.futures.ThreadPoolExecutor(max_workers=len(target_ips)) as executor:
-            futures = [executor.submit(_try_connect, target_ip) for target_ip in target_ips]
+            futures = [executor.submit(_try_connect, target_ip, candidate.robot) for target_ip in target_ips]
             for future in concurrent.futures.as_completed(futures):
                 target_ip, connection, reason = future.result()
                 results_by_ip[target_ip] = (connection, reason)
@@ -339,56 +421,26 @@ def _get_connections_from_target_candidates(
     return ThreadingGroup.from_connections(open_connections)
 
 
-def _get_connections_from_all_known_targets(user: str, connection_timeout: int | None = 10) -> ThreadingGroup:
-    """
-    Get connections to all known targets using the given username.
-    NOTE: This still continues if not all connections could be established.
-
-    :param user: The username to connect with
-    :param connection_timeout: Timeout for establishing the connection
-    :return: The connections
-    """
-    # Get all known target IP addresses
-    target_ips: list[str] = list(KNOWN_TARGETS.keys())
-
-    # Create connections
-    connections: list[Connection] = [
-        Connection(host, user=user, connect_timeout=connection_timeout) for host in target_ips
-    ]
-
-    # Connect to all hosts
-    open_connections: list[Connection] = []
-    for connection in connections:
-        try:
-            print_debug(f"Connecting to {connection.host}...")
-            connection.open()
-            print_debug(f"Connected to {connection.host}...")
-        except Exception as e:
-            print_error(f"Could not establish connection to {connection.host}. Ignoring this host.")
-            print_debug(e)
-        open_connections.append(connection)
-    if len(open_connections) == 0:
-        print_error("Could not establish any connection to the known targets. Exiting...")
-        sys.exit(1)
-    return ThreadingGroup.from_connections(open_connections)
-
-
 def get_connections_from_targets(targets: list[str], user: str, connection_timeout: int | None = 10) -> ThreadingGroup:
     """
     Parses the given targets, then creates connections to the parsed hosts.
     NOTE: If targets is 'ALL', all known targets will be used and failed connections will be ignored.
 
-    :param targets: List of target strings (either hostnames, robot names, robot numbers or IPs, or 'ALL'). If 'ALL' is included, it will be expanded to all known targets.
+    :param targets: List of target strings (either robot numbers, names, aliases or IPs, or 'ALL'). If 'ALL' is included, it will be expanded to all known robots.
     :param user: The username to connect with
     :param connection_timeout: Timeout for establishing the connection
     :return: The connections to the targets
     """
     if "ALL" in targets:
-        print_info(f"Connecting to targets: {KNOWN_TARGETS.keys()}")
-        return _get_connections_from_all_known_targets(user=user, connection_timeout=connection_timeout)
+        print_info(f"Connecting to all known robots: {', '.join(robot.name for robot in KNOWN_ROBOTS)}")
+        target_candidates = [
+            TargetCandidate(target=robot.name, ips=list(robot.ips), robot=robot) for robot in KNOWN_ROBOTS
+        ]
+    else:
+        target_candidates = _parse_target_candidates(targets)
 
     return _get_connections_from_target_candidates(
-        target_candidates=_parse_target_candidates(targets), user=user, connection_timeout=connection_timeout
+        target_candidates=target_candidates, user=user, connection_timeout=connection_timeout
     )
 
 

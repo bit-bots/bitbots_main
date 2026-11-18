@@ -62,7 +62,7 @@ class DeployRobots:
             "targets",
             type=str,
             nargs="+",
-            help="The targets to deploy to. Multiple space-separated targets can be specified. Targets can be hostnames, robot names, robot numbers or IP addresses. 'ALL' can be used to target all known robots.",
+            help="The targets to deploy to. Multiple space-separated targets can be specified. Targets can be robot numbers, names or aliases (case-insensitive) or IP addresses. 'ALL' can be used to target all known robots.",
         )
 
         parser.add_argument("--show-targets", action="store_true", help="Show all known targets and exit.")
