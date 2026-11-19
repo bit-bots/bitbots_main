@@ -1,0 +1,241 @@
+"""Pushing attribution, exemptions, effect windows and rolling contact timing."""
+
+import math
+from concurrent.futures import Future
+from dataclasses import replace
+from unittest.mock import Mock
+
+import pytest
+
+from bitbots_auto_referee.config import PARAMETERS, RefereeConfig
+from bitbots_auto_referee.core.observations import RobotContact, RobotMotion, SimulationObservation
+from bitbots_auto_referee.core.state import MatchState
+from bitbots_auto_referee.core.teleport import TeleportResult
+from bitbots_auto_referee.rules.check_rules import RuleChecker
+from bitbots_auto_referee.rules.pushing import PushingConfig
+
+UP = RobotMotion(0, 0, 0, 0, 1, 1)
+
+
+def setup(config=None):
+    values = {key: spec.default for key, spec in PARAMETERS.items()}
+    values.update(home_team_id=1, away_team_id=2)
+    state = replace(MatchState.initial(RefereeConfig.from_parameters(values)), state="STATE_PLAYING", stopped=False)
+    commands = Mock()
+    completed = Future()
+    completed.set_result(TeleportResult(True, "placed"))
+    commands.teleport_robot.return_value = completed
+    commands.teleport_ball.return_value = completed
+    return state, RuleChecker({0: 1, 1: 2}, teleport_commands=commands, pushing_config=config), commands
+
+
+def sample(time, contacts=(), victim=UP, **changes):
+    return SimulationObservation(
+        int(time * 1e9),
+        int(time * 1000),
+        changes.pop("ball_position", (3, 2, 0.1)),
+        {0: (-0.25, 0, 0.4), 1: (0.25, 0, 0.4)},
+        frozenset(),
+        robot_motion={0: UP, 1: victim},
+        robot_yaws={0: 0, 1: math.pi},
+        robot_contacts=contacts,
+        **changes,
+    )
+
+
+def penalty(state):
+    return state.teams[0].players[0].penalty
+
+
+def test_single_contact_requires_destabilization_and_correct_actor():
+    state, checker, commands = setup()
+    state = checker.check_rules(state, sample(0))
+    contact = RobotContact(0, 1, 30, 0.2, 0)
+    state = checker.check_rules(state, sample(0.1, (contact,)))
+    assert penalty(state) == "PENALTY_NONE"
+    state = checker.check_rules(state, sample(0.2, victim=replace(UP, upright=0.5)))
+    assert penalty(state) == "PENALTY_PUSHING"
+    assert state.teams[0].players[0].secs_till_unpenalized == 45
+    assert state.teams[1].players[0].penalty == "PENALTY_NONE"
+    commands.teleport_robot.assert_called_once()
+    assert commands.teleport_robot.call_args.args[0] == 0
+
+
+@pytest.mark.parametrize("sustained", [False, True])
+@pytest.mark.parametrize("moving", [False, True])
+def test_ready_pushing_near_ball_never_awards_free_kick(sustained, moving):
+    state, checker, commands = setup()
+    state = replace(state, state="STATE_READY", secondary_time=17)
+    ball = (0, 0.5, 0.1)
+    state = checker.check_rules(state, sample(0, ball_position=ball))
+    contact = RobotContact(0, 1, 3 if sustained else 30, 0.2, 0, (0, 0, 0.2))
+    finish = 5.1 if sustained else 0.2
+    victim = UP if sustained else replace(UP, upright=0.5)
+    for observation in (
+        sample(0.1, (contact,), ball_position=ball),
+        sample(finish, (contact,) if sustained else (), victim=victim, ball_position=ball),
+    ):
+        if moving:
+            observation = replace(
+                observation, robot_motion={0: replace(UP, body_joint_speed=1), 1: observation.robot_motion[1]}
+            )
+        state = checker.check_rules(state, observation)
+    assert penalty(state) == "PENALTY_PUSHING"
+    assert checker.pushing_rules.fouls[0].ball_distance <= checker.pushing_rules.config.free_kick_distance
+    assert state.state == "STATE_READY" and state.set_play == "SET_PLAY_NONE"
+    assert state.stopped == moving
+    if moving:
+        commands.teleport_robot.assert_not_called()
+    state = checker.check_rules(state, sample(finish + 0.1, victim=victim, ball_position=ball))
+    assert state.state == "STATE_READY" and not state.stopped
+    assert state.set_play == "SET_PLAY_NONE" and state.secondary_time == 17 and state.kicking_team == 1
+    assert checker._pending_outside is None and checker._restart_at is None
+    commands.teleport_robot.assert_called_once()
+    commands.teleport_ball.assert_not_called()
+
+
+def test_sustained_contact_waits_for_full_window():
+    state, checker, _ = setup()
+    contact = RobotContact(0, 1, 3, 0.2, 0)
+    for time in (0, 4.9):
+        state = checker.check_rules(state, sample(time, (contact,)))
+    assert penalty(state) == "PENALTY_NONE"
+    state = checker.check_rules(state, sample(5, (contact,)))
+    assert penalty(state) == "PENALTY_PUSHING"
+
+
+@pytest.mark.parametrize("gap_force", [None, 1.0])
+@pytest.mark.parametrize("contact_duration, expected", [(3.499, "PENALTY_NONE"), (3.5, "PENALTY_PUSHING")])
+def test_sustained_contact_uses_elapsed_time_and_tolerates_gaps(gap_force, contact_duration, expected):
+    state, checker, _ = setup()
+    contact = RobotContact(0, 1, 3, 0.2, 0)
+    gap = () if gap_force is None else (replace(contact, force=gap_force),)
+    state = checker.check_rules(state, sample(0, (contact,)))
+    state = checker.check_rules(state, sample(contact_duration, gap))
+    # Repeated gap observations must not change the time-weighted result.
+    for time in (3.6, 4.0, 4.2, 4.8):
+        state = checker.check_rules(state, sample(time, gap))
+    state = checker.check_rules(state, sample(5, (contact,)))
+    assert penalty(state) == expected
+
+
+def test_sustained_contact_tolerates_repeated_short_gaps():
+    state, checker, _ = setup()
+    contact = RobotContact(0, 1, 3, 0.2, 0)
+    for tick in range(51):
+        contacts = (contact,) if tick % 10 < 7 else ()
+        state = checker.check_rules(state, sample(tick / 10, contacts))
+        assert penalty(state) == ("PENALTY_PUSHING" if tick == 50 else "PENALTY_NONE")
+
+
+def test_sustained_contact_does_not_penalize_after_release():
+    state, checker, _ = setup()
+    contact = RobotContact(0, 1, 3, 0.2, 0)
+    state = checker.check_rules(state, sample(0, (contact,)))
+    state = checker.check_rules(state, sample(4))
+    state = checker.check_rules(state, sample(5))
+    assert penalty(state) == "PENALTY_NONE"
+
+
+def test_sustained_contact_expires_old_pressure_in_rolling_window():
+    state, checker, _ = setup()
+    contact = RobotContact(0, 1, 3, 0.2, 0)
+    for time, contacts in ((0, (contact,)), (3.5, ()), (6, (contact,)), (6.9, (contact,))):
+        state = checker.check_rules(state, sample(time, contacts))
+    assert penalty(state) == "PENALTY_NONE"
+    state = checker.check_rules(state, sample(9.5, (contact,)))
+    assert penalty(state) == "PENALTY_PUSHING"
+
+
+def test_changing_actor_discards_sustained_contact_history():
+    state, checker, _ = setup()
+    contact = RobotContact(0, 1, 3, 0.2, 0)
+    state = checker.check_rules(state, sample(0, (contact,)))
+    other_actor = replace(contact, approach_a=0, approach_b=0.2)
+    for time in (4, 5):
+        state = checker.check_rules(state, sample(time, (other_actor,)))
+    assert all(player.penalty == "PENALTY_NONE" for team in state.teams for player in team.players)
+
+
+def test_mutual_pushing_and_central_ball_duels_are_exempt():
+    for mutual in (True, False):
+        state, checker, commands = setup()
+        contact = RobotContact(0, 1, 30, 0.2, 0.2 if mutual else 0)
+        for time in (0, 1, 6):
+            state = checker.check_rules(
+                state, sample(time, (contact,), ball_position=(3, 2, 0.1) if mutual else (0, 0, 0.1))
+            )
+        assert penalty(state) == "PENALTY_NONE"
+        commands.teleport_robot.assert_not_called()
+
+
+def test_force_threshold_and_expired_effect_window():
+    for config, delay in ((PushingConfig(force_threshold=100), 0.2), (PushingConfig(), 1.0)):
+        state, checker, _ = setup(config)
+        state = checker.check_rules(state, sample(0))
+        state = checker.check_rules(state, sample(0.1, (RobotContact(0, 1, 30, 0.2, 0),)))
+        state = checker.check_rules(state, sample(delay, victim=replace(UP, upright=0.4)))
+        assert penalty(state) == "PENALTY_NONE"
+
+
+def test_teleport_cancels_contact_episode():
+    state, checker, _ = setup()
+    contact = RobotContact(0, 1, 3, 0.2, 0)
+    state = checker.check_rules(state, sample(0, (contact,)))
+    state = checker.check_rules(state, sample(4, (contact,), teleported_robots=frozenset({1})))
+    state = checker.check_rules(state, sample(5, (contact,)))
+    assert penalty(state) == "PENALTY_NONE"
+
+
+def test_teammate_contacts_do_not_award_penalties_or_free_kicks():
+    state, _, commands = setup()
+    checker = RuleChecker({0: 1, 1: 1}, teleport_commands=commands)
+    contact = RobotContact(0, 1, 30, 0.2, 0)
+    state = checker.check_rules(state, sample(0))
+    for time in (0.1, 0.2, 5.2):
+        state = checker.check_rules(state, sample(time, (contact,), victim=replace(UP, upright=0.5)))
+    assert all(player.penalty == "PENALTY_NONE" for team in state.teams for player in team.players)
+    assert state.set_play == "SET_PLAY_NONE"
+    assert checker.pushing_rules.fouls == []
+    commands.teleport_robot.assert_not_called()
+    commands.teleport_ball.assert_not_called()
+
+
+def test_pushing_events_identify_the_trigger():
+    for sustained, reason in (
+        (True, "anhaltender Kontakt"),
+        (False, "zu intensiver Einzelkontakt mit Destabilisierung"),
+    ):
+        state, checker, _ = setup()
+        events = []
+        checker._event_callback = events.append
+        state = checker.check_rules(state, sample(0))
+        contact = RobotContact(0, 1, 3 if sustained else 30, 0.2, 0)
+        state = checker.check_rules(state, sample(0.1, (contact,)))
+        state = checker.check_rules(
+            state,
+            sample(5.1, (contact,)) if sustained else sample(0.2, victim=replace(UP, upright=0.5)),
+        )
+        assert penalty(state) == "PENALTY_PUSHING"
+        assert any(f"Auslöser: {reason}" in event for event in events)
+
+
+def test_live_update_restarts_sustained_contact_timing():
+    state, checker, _ = setup()
+    contact = RobotContact(0, 1, 3, 0.2, 0)
+    state = checker.check_rules(state, sample(0, (contact,)))
+    state = checker.check_rules(state, sample(4, (contact,)))
+    checker.pushing_rules.configure(PushingConfig(sustained_force_threshold=2.5))
+    state = checker.check_rules(state, sample(5, (contact,)))
+    assert penalty(state) == "PENALTY_NONE"
+    state = checker.check_rules(state, sample(10, (contact,)))
+    assert penalty(state) == "PENALTY_PUSHING"
+
+
+def test_live_update_discards_pending_single_push():
+    state, checker, _ = setup()
+    state = checker.check_rules(state, sample(0))
+    state = checker.check_rules(state, sample(0.1, (RobotContact(0, 1, 30, 0.2, 0),)))
+    checker.pushing_rules.configure(PushingConfig(force_threshold=40.0))
+    state = checker.check_rules(state, sample(0.2, victim=replace(UP, upright=0.5)))
+    assert penalty(state) == "PENALTY_NONE"

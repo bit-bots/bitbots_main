@@ -1,0 +1,98 @@
+"""Dashboard data transport and display formatting without opening a window."""
+
+import json
+import unittest
+from dataclasses import replace
+from unittest.mock import Mock
+
+from bitbots_auto_referee.config import LIVE_PARAMETERS, PARAMETERS, RefereeConfig
+from bitbots_auto_referee.core.state import MatchState
+from bitbots_auto_referee.ui.application import DashboardSubscriber, format_connections, format_snapshot
+from bitbots_auto_referee.ui.dashboard import Dashboard
+from std_msgs.msg import String
+
+
+class DashboardTest(unittest.TestCase):
+    def setUp(self):
+        config = RefereeConfig.from_parameters({name: spec.default for name, spec in PARAMETERS.items()})
+        self.state = replace(MatchState.initial(config), state="STATE_PLAYING", stopped=False, secs_remaining=65)
+        self.node = Mock()
+        self.dashboard = Dashboard(self.node)
+
+    def snapshot(self):
+        self.dashboard.update(self.state, 12_000_000_000, None, True)
+        message = self.node.create_publisher.return_value.publish.call_args.args[0]
+        return json.loads(message.data)
+
+    def test_snapshot_contains_match_and_history_for_reopened_window(self):
+        self.dashboard.record("Startablauf: STATE_SET → STATE_PLAYING")
+        self.dashboard.record("Ballkontakt: Team 1", 12_000_000_000)
+        data = self.snapshot()
+        self.assertEqual(data["match"]["secs_remaining"], 65)
+        self.assertEqual(
+            [event["message"] for event in data["events"]],
+            ["Ballkontakt: Team 1", "Startablauf: STATE_SET → STATE_PLAYING"],
+        )
+        self.assertEqual(self.snapshot()["events"], data["events"])
+
+    def test_display_uses_received_time_without_extrapolation(self):
+        data = self.snapshot()
+        _, _, phase, clock, details, _ = format_snapshot(data)
+        self.assertEqual(phase, "PLAYING")
+        self.assertEqual(clock, "01:05")
+        self.assertIn("Unterbrochen: Nein", details[0])
+        self.assertIn("12.00 s", details[2])
+        self.assertEqual(format_snapshot(data)[3], clock)
+
+    def test_empty_history_and_missing_robot_are_displayable(self):
+        self.dashboard.update(self.state, None, None, None)
+        message = self.node.create_publisher.return_value.publish.call_args.args[0]
+        *_, details, events = format_snapshot(json.loads(message.data))
+        self.assertIn("Warte auf Antwort", details[1])
+        self.assertIn("Noch keine Daten", details[2])
+        self.assertEqual(events, [])
+
+    def test_invalid_snapshot_keeps_last_good_state(self):
+        subscriber = Mock()
+        subscriber.snapshot = self.snapshot()
+        subscriber.received_at = 1.0
+        previous = subscriber.snapshot
+        DashboardSubscriber._receive(subscriber, String(data='{"match": {}}'))
+        self.assertIs(subscriber.snapshot, previous)
+        self.assertEqual(subscriber.received_at, 1.0)
+        subscriber.get_logger.return_value.warning.assert_called_once()
+
+    def test_invalid_published_timestamp_is_rejected(self):
+        data = self.snapshot()
+        data["published_at"] = float("nan")
+        with self.assertRaises(ValueError):
+            format_snapshot(data)
+
+    def test_team_budgets_and_individual_receiver_status_are_displayed(self):
+        home, away = self.state.teams
+        state = replace(self.state, teams=(replace(home, message_budget=11998), replace(away, message_budget=11993)))
+        self.dashboard.update(
+            state,
+            None,
+            None,
+            False,
+            {(home.team_number, 1): True, (away.team_number, 1): False},
+            "Simulator-Aufstellung übernommen",
+        )
+        message = self.node.create_publisher.return_value.publish.call_args.args[0]
+        data = json.loads(message.data)
+        home_text, away_text, _, _, details, _ = format_snapshot(data)
+        self.assertIn("11998", home_text)
+        self.assertIn("11993", away_text)
+        self.assertIn("1 / 2 aktuell", details[1])
+        self.assertIn("Simulator-Aufstellung übernommen", details[1])
+        connections = format_connections(data)
+        self.assertIn(f"Team {home.team_number}: Spieler 1: OK", connections)
+        self.assertIn(f"Team {away.team_number}: Spieler 1: fehlt", connections)
+
+
+    def test_snapshot_includes_active_runtime_parameters(self):
+        values = {name: PARAMETERS[name].default for name in LIVE_PARAMETERS}
+        self.dashboard.update(self.state, None, None, None, runtime_parameters=values)
+        message = self.node.create_publisher.return_value.publish.call_args.args[0]
+        self.assertEqual(json.loads(message.data)["runtime_parameters"], values)

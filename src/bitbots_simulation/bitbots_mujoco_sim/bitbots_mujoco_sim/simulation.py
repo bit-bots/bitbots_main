@@ -1,23 +1,32 @@
+import json
+import re
 import time
+import xml.etree.ElementTree as ET
 from collections.abc import Callable
 from pathlib import Path
+from threading import Lock
 
 import mujoco
 import numpy as np
 from ament_index_python.packages import get_package_share_directory
 from mujoco import viewer
+from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.node import Node
+from rclpy.qos import DurabilityPolicy, HistoryPolicy, QoSProfile, ReliabilityPolicy
 from rclpy.time import Time
 from rosgraph_msgs.msg import Clock
 from sensor_msgs.msg import CameraInfo, Image, Imu, JointState
-from std_msgs.msg import Float32
+from std_msgs.msg import Float32, String
 from std_srvs.srv import Empty
 from transforms3d.euler import euler2quat, quat2euler
 from transforms3d.quaternions import qmult
 
-from bitbots_msgs.msg import JointCommand
-from bitbots_msgs.srv import MoveBall, SimulatorPush
+from bitbots_msgs.msg import JointCommand, SimulationState
+from bitbots_msgs.srv import MoveBall, SimulatorPush, Teleport
+from bitbots_mujoco_sim import teleport
+from bitbots_mujoco_sim.referee import RefereeObservationBuilder, RefereeStepState
 from bitbots_mujoco_sim.robot import Robot
+from bitbots_mujoco_sim.world import generate_world_xml
 
 BALL_JOINT_NAME = "ball-root"
 
@@ -71,6 +80,7 @@ class Simulation(Node):
         self._rng = np.random.default_rng()
 
         self.model: mujoco.MjModel = mujoco.MjModel.from_xml_path(world_file)
+        self._apply_jersey_overrides()
         self.data: mujoco.MjData = mujoco.MjData(self.model)
         self.robots: list[RobotSimulation] = [
             RobotSimulation(
@@ -93,6 +103,23 @@ class Simulation(Node):
             for idx in self._find_robot_indices()
         ]
 
+        self.roster_publisher = self.create_publisher(
+            String,
+            "/simulation/roster",
+            QoSProfile(depth=1, reliability=ReliabilityPolicy.RELIABLE, durability=DurabilityPolicy.TRANSIENT_LOCAL),
+        )
+        roster_text = ET.parse(world_file).getroot().find("./custom/text[@name='simulation_roster']")
+        if roster_text is None:
+            self.get_logger().error("World has no simulation roster; regenerate it before using AutoRef.")
+        else:
+            roster = json.loads(roster_text.attrib["data"])
+            domains = {robot.robot.index: robot.domain for robot in self.robots}
+            if {entry["index"] for entry in roster} != set(domains) or len(roster) != len(domains):
+                raise ValueError("World roster does not match its robot bodies")
+            for entry in roster:
+                entry["domain"] = domains[entry["index"]]
+            self.roster_publisher.publish(String(data=json.dumps(roster)))
+
         self._apply_home_keyframe()
 
         self.time = 0.0
@@ -103,12 +130,37 @@ class Simulation(Node):
         self.real_time_factor = 1.0 / 0.94  # add a small buffer to try to achieve the requested RTF
         self.measured_rtf = 1.0
         self.clock_publisher = self.create_publisher(Clock, "clock", 1)
+        self.referee_step_publisher = self.create_publisher(
+            SimulationState,
+            "/simulation/step",
+            QoSProfile(
+                history=HistoryPolicy.KEEP_ALL,
+                reliability=ReliabilityPolicy.RELIABLE,
+                durability=DurabilityPolicy.VOLATILE,
+            ),
+        )
         self.create_subscription(Float32, "real_time_factor", self.real_time_factor_callback, 1)
 
         # The ball is a free-floating body shared by all robots, so its reset lives on the
         # simulation node rather than per-robot. Use a global topic so the teleop keyboard
         # script reaches it regardless of any node namespace.
         self.ball_joint_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_JOINT, BALL_JOINT_NAME)
+        self.referee_observations = RefereeObservationBuilder(
+            self.model,
+            {robot.robot.index: robot.robot.base_body_id for robot in self.robots},
+            self.ball_joint_id,
+        )
+        self.teleports = teleport.TeleportController(
+            self.model,
+            {robot.robot.index: robot.robot.base_body_id for robot in self.robots},
+            self.ball_joint_id,
+        )
+        self._teleported_robots: set[int] = set()
+        self._ball_teleported = False
+        self._teleport_callback_group = ReentrantCallbackGroup()
+        self.create_service(
+            Teleport, "/simulation/teleport", self.teleports.callback, callback_group=self._teleport_callback_group
+        )
         self.create_service(Empty, "/reset_ball", self.reset_ball_callback)
         self.create_service(MoveBall, "/move_ball", self.move_ball_callback)
 
@@ -122,6 +174,17 @@ class Simulation(Node):
             {"frequency": 4, "handler": lambda: self.publish(lambda robot: robot.publish_imu_event())},
             {"frequency": 32, "handler": lambda: self.publish(lambda robot: robot.publish_camera_event())},
         ]
+
+    def _apply_jersey_overrides(self) -> None:
+        """Replace default robot materials with dynamically generated jersey overrides if present."""
+        for geom_id in range(self.model.ngeom):
+            cur_mat_id = self.model.geom_matid[geom_id]
+            if cur_mat_id >= 0:
+                cur_mat_name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_MATERIAL, cur_mat_id)
+                override_mat_name = f"{cur_mat_name}_override"
+                override_mat_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_MATERIAL, override_mat_name)
+                if override_mat_id != -1:
+                    self.model.geom_matid[geom_id] = override_mat_id
 
     def _apply_home_keyframe(self) -> None:
         """Apply the 'home' keyframe joint values to all robots, leaving freejoints untouched.
@@ -149,7 +212,7 @@ class Simulation(Node):
         for robot_sim in self.robots:
             # Set z spawn height from keyframe while preserving x/y placement and orientation
             if home_z is not None:
-                freejoint_name = f"robot_floating_base_joint_{robot_sim.robot.index}"
+                freejoint_name = f"robot_{robot_sim.robot.index}_floating_base_joint"
                 freejoint_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_JOINT, freejoint_name)
                 if freejoint_id >= 0:
                     self.data.qpos[self.model.joint(freejoint_id).qposadr[0] + 2] = home_z
@@ -165,25 +228,13 @@ class Simulation(Node):
         mujoco.mj_forward(self.model, self.data)
 
     def _generate_default_world(self) -> str:
-        template_path = Path(self.package_path) / "xml" / "kid_field.xml"
-        output_path = Path(self.package_path) / "xml" / "generated_world.xml"
-        with open(template_path) as f:
-            template = f.read()
-        world_xml = (
-            template.replace("{{NUM_ROBOTS}}", "1").replace("{{OFFSET}}", "6.0").replace("{{ROBOT_TYPE}}", "piplus")
-        )
-        with open(output_path, "w") as f:
-            f.write(world_xml)
-        return str(output_path)
+        return str(generate_world_xml("1", self.package_path, "piplus"))
 
     def _find_robot_indices(self) -> list[int]:
-        """Find all robot instances by looking for bodies named 'robot_base_link_X'."""
+        """Find all robot instances by looking for bodies named 'robot_<index>_base_link'."""
         body_names = [self.model.body(i).name for i in range(self.model.nbody)]
-        return sorted(
-            int(name.split("_")[-1])
-            for name in body_names
-            if name.startswith("robot_base_link_") and name.split("_")[-1].isdigit()
-        )
+        pattern = re.compile(r"^robot_(\d+)_base_link$")
+        return sorted(int(match.group(1)) for name in body_names if (match := pattern.match(name)))
 
     def _key_callback(self, key: int) -> None:
         # Exceptions in this callback completly deadlock the process.
@@ -239,6 +290,8 @@ class Simulation(Node):
         self._drag_targets: dict[tuple[int, int], np.ndarray] = {}
         # Full free-joint poses for robots rotated in place with Shift + drag.
         self._rotation_targets: dict[tuple[int, int], np.ndarray] = {}
+        self._drag_versions: dict[tuple[int, int], int] = {}
+        self._drag_lock = Lock()
         # Pin dragged bodies to their target every step so they follow the cursor
         # instead of racing with mj_step (mirrors the reset/move_ball early events).
         self.early_events.append({"frequency": 1, "handler": self._apply_drag_targets})
@@ -363,10 +416,7 @@ class Simulation(Node):
         free joint of its kinematic root (a robot's floating base, or the ball
         itself) and drag that whole articulated system as a rigid unit.
         """
-        robot_keys = {
-            self._free_joint_key_for_body(self.model.body(f"robot_base_link_{robot_sim.robot.index}").id)
-            for robot_sim in self.robots
-        }
+        robot_keys = {self._free_joint_key_for_body(robot_sim.robot.base_body_id) for robot_sim in self.robots}
         robot_keys.discard(None)
         for mesh_group in scene._mesh_groups:
             body_ids = mesh_group.body_ids
@@ -420,24 +470,29 @@ class Simulation(Node):
 
         @handle.on_drag
         async def _(event) -> None:
-            if event.phase == "start":
-                key = resolve_key(event)
-                if key is None:
-                    return
-                state["key"] = key
-                # start_position and end_position share the same (camera-tracking)
-                # frame, so their x-y difference is a pure ground-plane displacement.
-                state["grab_xy"] = np.array(event.start_position[:2], dtype=float)
-                state["obj_xy"] = self.data.qpos[key[0] : key[0] + 2].copy()
-            elif event.phase == "update":
-                if "key" not in state:
-                    return
-                delta_xy = np.array(event.end_position[:2], dtype=float) - state["grab_xy"]
-                self._drag_targets[state["key"]] = state["obj_xy"] + delta_xy
-            elif event.phase == "end":
-                if "key" in state:
-                    self._drag_targets.pop(state["key"], None)
-                state.clear()
+            with self._drag_lock:
+                if event.phase == "start":
+                    key = resolve_key(event)
+                    if key is None:
+                        return
+                    state["key"] = key
+                    state["version"] = self._drag_versions.get(key, 0)
+                    # start_position and end_position share the same (camera-tracking)
+                    # frame, so their x-y difference is a pure ground-plane displacement.
+                    state["grab_xy"] = np.array(event.start_position[:2], dtype=float)
+                    state["obj_xy"] = self.data.qpos[key[0] : key[0] + 2].copy()
+                elif event.phase == "update":
+                    if "key" not in state:
+                        return
+                    if state["version"] != self._drag_versions.get(state["key"], 0):
+                        state.clear()
+                        return
+                    delta_xy = np.array(event.end_position[:2], dtype=float) - state["grab_xy"]
+                    self._drag_targets[state["key"]] = state["obj_xy"] + delta_xy
+                elif event.phase == "end":
+                    if "key" in state:
+                        self._drag_targets.pop(state["key"], None)
+                    state.clear()
 
         if not rotation_keys:
             return
@@ -446,35 +501,54 @@ class Simulation(Node):
 
         @handle.on_drag("left", modifier="shift")
         async def _(event) -> None:
-            if event.phase == "start":
-                key = resolve_key(event)
-                if key not in rotation_keys:
-                    return
-                rotation_state["key"] = key
-                rotation_state["grab_xy"] = np.array(event.start_position[:2], dtype=float)
-                pose = self.data.qpos[key[0] : key[0] + 7].copy()
-                rotation_state["pose"] = pose
-                # MuJoCo free-joint quaternions use (w, x, y, z); forward is +x.
-                _, _, rotation_state["yaw"] = quat2euler(pose[3:7])
-                self._rotation_targets[key] = pose.copy()
-            elif event.phase == "update":
-                if "key" not in rotation_state:
-                    return
-                delta_xy = np.array(event.end_position[:2], dtype=float) - rotation_state["grab_xy"]
-                # A zero-length drag has no heading: keep the last orientation.
-                if np.linalg.norm(delta_xy) < 1e-6:
-                    return
-                yaw = np.arctan2(delta_xy[1], delta_xy[0])
-                delta_yaw = yaw - rotation_state["yaw"]
-                delta_quat = euler2quat(0, 0, delta_yaw)
-                pose = rotation_state["pose"].copy()
-                # Left-multiply by a world-z rotation, preserving roll and pitch.
-                pose[3:7] = qmult(delta_quat, pose[3:7])
-                self._rotation_targets[rotation_state["key"]] = pose
-            elif event.phase == "end":
-                if "key" in rotation_state:
-                    self._rotation_targets.pop(rotation_state["key"], None)
-                rotation_state.clear()
+            with self._drag_lock:
+                if event.phase == "start":
+                    key = resolve_key(event)
+                    if key not in rotation_keys:
+                        return
+                    rotation_state["key"] = key
+                    rotation_state["version"] = self._drag_versions.get(key, 0)
+                    rotation_state["grab_xy"] = np.array(event.start_position[:2], dtype=float)
+                    pose = self.data.qpos[key[0] : key[0] + 7].copy()
+                    rotation_state["pose"] = pose
+                    # MuJoCo free-joint quaternions use (w, x, y, z); forward is +x.
+                    _, _, rotation_state["yaw"] = quat2euler(pose[3:7])
+                    self._rotation_targets[key] = pose.copy()
+                elif event.phase == "update":
+                    if "key" not in rotation_state:
+                        return
+                    if rotation_state["version"] != self._drag_versions.get(rotation_state["key"], 0):
+                        rotation_state.clear()
+                        return
+                    delta_xy = np.array(event.end_position[:2], dtype=float) - rotation_state["grab_xy"]
+                    # A zero-length drag has no heading: keep the last orientation.
+                    if np.linalg.norm(delta_xy) < 1e-6:
+                        return
+                    yaw = np.arctan2(delta_xy[1], delta_xy[0])
+                    delta_yaw = yaw - rotation_state["yaw"]
+                    delta_quat = euler2quat(0, 0, delta_yaw)
+                    pose = rotation_state["pose"].copy()
+                    # Left-multiply by a world-z rotation, preserving roll and pitch.
+                    pose[3:7] = qmult(delta_quat, pose[3:7])
+                    self._rotation_targets[rotation_state["key"]] = pose
+                elif event.phase == "end":
+                    if "key" in rotation_state:
+                        self._rotation_targets.pop(rotation_state["key"], None)
+                    rotation_state.clear()
+
+    def _release_teleported_drag_targets(self) -> None:
+        """Let referee teleports end active drags, including subsequent stale mouse updates."""
+        if not hasattr(self, "_drag_versions"):
+            return
+        with self._drag_lock:
+            joints = [self.teleports.robot_joints[index] for index in self._teleported_robots]
+            if self._ball_teleported:
+                joints.append(self.ball_joint_id)
+            for joint in joints:
+                key = (int(self.model.jnt_qposadr[joint]), int(self.model.jnt_dofadr[joint]))
+                self._drag_versions[key] = self._drag_versions.get(key, 0) + 1
+                self._drag_targets.pop(key, None)
+                self._rotation_targets.pop(key, None)
 
     def _apply_drag_targets(self) -> None:
         """Pin dragged joints to their x-y targets or their rotation poses."""
@@ -553,10 +627,27 @@ class Simulation(Node):
         for event_config in self.early_events:
             if self.step_number % event_config["frequency"] == 0:
                 event_config["handler"]()
+        self._teleported_robots, self._ball_teleported = self.teleports.apply_pending(self.data, self.step_number)
+        self._release_teleported_drag_targets()
+        referee_state = RefereeStepState.capture(self.data)
         mujoco.mj_step(self.model, self.data)
+        self.publish_referee_step(referee_state)
         for event_config in self.events:
             if self.step_number % event_config["frequency"] == 0:
                 event_config["handler"]()
+
+    def publish_referee_step(self, state: RefereeStepState) -> None:
+        """Notify the separate referee after each completed physics step."""
+        self.referee_step_publisher.publish(
+            self.referee_observations.build(
+                self.data,
+                Time(seconds=state.time).to_msg(),
+                self.step_number,
+                self._teleported_robots,
+                self._ball_teleported,
+                state=state,
+            )
+        )
 
     def real_time_factor_callback(self, msg: Float32) -> None:
         self.real_time_factor = msg.data / 0.94  # add a small buffer to try to achieve the requested RTF

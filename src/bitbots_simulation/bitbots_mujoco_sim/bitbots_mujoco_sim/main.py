@@ -2,7 +2,7 @@ import threading
 
 import rclpy
 from bitbots_utils.perf_timer import configure_output
-from rclpy.experimental.events_executor import EventsExecutor
+from rclpy.executors import ExternalShutdownException, SingleThreadedExecutor
 
 from bitbots_mujoco_sim.simulation import Simulation
 
@@ -11,10 +11,24 @@ def main(args=None):
     rclpy.init(args=args)
     configure_output("/tmp/mujoco_perf", "MuJoCo")
     simulation = Simulation()
-    executor = EventsExecutor()
+    # The teleport service awaits a physics-thread acknowledgement.
+    # Use an executor that supports coroutine service callbacks on Jazzy.
+    executor = SingleThreadedExecutor()
     executor.add_node(simulation)
-    thread = threading.Thread(target=executor.spin, daemon=True)
+
+    def spin() -> None:
+        try:
+            executor.spin()
+        except ExternalShutdownException:
+            pass
+
+    thread = threading.Thread(target=spin, daemon=True)
     thread.start()
-    simulation.run()
-    simulation.destroy_node()
-    rclpy.shutdown()
+    try:
+        simulation.run()
+    finally:
+        # A paused viewer may still have an outstanding teleport coroutine.
+        executor.shutdown(timeout_sec=0.0)
+        rclpy.try_shutdown()
+        thread.join()
+        simulation.destroy_node()
