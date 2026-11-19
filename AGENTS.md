@@ -215,10 +215,18 @@ commands may use incompatible installations or incomplete environment state.
 
 ## Git Conventions
 
-- Make changes on a branch and open a pull request against `main`.
-- Prefix branch names with `feature/`, `fix/`, or `refactor/` when applicable.
-- Write commit subjects as `<type>: <description>`, using a concise type such as
-  `feat`, `fix`, `refactor`, `docs`, `test`, or `chore`.
+- Follow [CONTRIBUTING.md](CONTRIBUTING.md) for branch naming, commit and PR
+  titles, the PR template, labels, and project triage. Read it before
+  creating a branch, pull request, or issue.
+- Use Conventional Commits for commit subjects and PR titles, with a scope from
+  CONTRIBUTING.md.
+- After opening an issue or PR, triage it in the Software project. If you
+  cannot, tell the user which steps are left.
+- When a branch is pushed without a PR, suggest opening a draft PR to the user,
+  even if the work is still in progress, so it is visible to the team. Do not
+  open one without the user's approval.
+- Fill in every section of the PR template. Do not tick checklist items you did
+  not do, in particular robot tests.
 - Explain why a non-obvious change is needed in the commit body or pull request
   description.
 - Keep commits focused and do not include unrelated formatter or generated-file

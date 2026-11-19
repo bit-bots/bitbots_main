@@ -8,3 +8,7 @@ updates:
     schedule:
       # Check for updates to GitHub Actions every week
       interval: "weekly"
+    # Produces titles like "ci(deps): bump ..." as described in CONTRIBUTING.md
+    commit-message:
+      prefix: "ci"
+      include: "scope"

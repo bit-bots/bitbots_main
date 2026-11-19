@@ -1,6 +1,7 @@
 ---
 name: "⁉️ Help me"
 about: "Get help with using or improving our software"
+title: 'docs(<scope>): '
 labels: 'question'
 ---
 <!--- If you have a question about any of our projects that is not a bug report or feature request, you can write us an issue like this or send a message to info@bit-bots.de -->
