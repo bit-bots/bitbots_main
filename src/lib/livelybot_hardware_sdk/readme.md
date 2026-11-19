@@ -188,6 +188,12 @@ This is a software interface package for biped robot control and communication. 
    ```
 5. Launch the launch file.
 
+The ROS `joint_states` topic starts publishing only after every configured motor
+has returned feedback. While waiting, the SDK keeps polling the motors and does
+not publish empty or partial joint states containing placeholder positions. If a
+configured motor never responds, joint-state publication remains blocked; inspect
+the motor diagnostics and configuration to find the missing feedback.
+
 ---
 
 ## XI. Software Power On/Off

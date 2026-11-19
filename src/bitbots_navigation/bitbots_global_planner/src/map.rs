@@ -9,6 +9,7 @@ use crate::{
 /// Configuration values for the ObstacleMap, these should be given by ROS parameters
 #[pyclass(
     eq,
+    from_py_object,
     str = "ObstacleMapConfig(robot_radius={robot_radius:?}, margin={margin:?}, num_vertices={num_vertices:?})"
 )]
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -38,7 +39,7 @@ impl ObstacleMapConfig {
     }
 }
 
-#[pyclass(eq, str = "ObstacleMap(obstacles={obstacles:?})")]
+#[pyclass(eq, from_py_object, str = "ObstacleMap(obstacles={obstacles:?})")]
 #[derive(Debug, Clone, PartialEq)]
 pub struct ObstacleMap {
     #[pyo3(get, set)]
