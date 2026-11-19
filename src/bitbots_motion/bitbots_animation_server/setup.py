@@ -13,7 +13,7 @@ setup(
         ("share/" + package_name, ["package.xml"]),
         ("share/" + package_name + "/launch", glob.glob("launch/*.launch")),
     ],
-    scripts=["scripts/animation_hcm_bridge.py", "scripts/run_animation.py"],
+    scripts=["scripts/run_animation.py"],
     install_requires=[
         "launch",
         "setuptools",
