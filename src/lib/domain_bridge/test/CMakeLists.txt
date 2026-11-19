@@ -55,6 +55,7 @@ function(add_communication_tests)
   )
   if(TARGET test_domain_bridge_services${target_suffix})
     ament_target_dependencies(test_domain_bridge_services${target_suffix}
+      "bitbots_localization"
       "rclcpp"
       "test_msgs"
     )
