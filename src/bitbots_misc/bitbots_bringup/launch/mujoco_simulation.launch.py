@@ -81,6 +81,16 @@ def generate_domain_bridge_config(robot_domain: int, output_dir: Path) -> Path:
         "remap": f"{namespace}/joint_command",
     }
 
+    # Services: served in the robot domain, made available namespaced in the main domain
+    config["services"] = {
+        "reset_localization": {
+            "type": "bitbots_localization/srv/ResetFilter",
+            "from_domain": robot_domain,
+            "to_domain": main_domain,
+            "remap": f"{namespace}/reset_localization",
+        },
+    }
+
     config_path = output_dir / f"robot{robot_domain}_bridge.yaml"
     with open(config_path, "w") as f:
         yaml.dump(config, f, default_flow_style=False, sort_keys=False)

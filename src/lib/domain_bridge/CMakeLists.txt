@@ -16,7 +16,10 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 find_package(ament_cmake REQUIRED)
+find_package(ament_cmake_python REQUIRED)
+
 find_package(rclcpp REQUIRED)
+find_package(rclcpp_action REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(rcutils REQUIRED)
 # Leverage rosbag2's generic type support utilities
@@ -26,6 +29,19 @@ find_package(rosidl_default_generators REQUIRED)
 find_package(yaml_cpp_vendor REQUIRED)
 find_package(zstd_vendor REQUIRED)
 find_package(zstd REQUIRED)
+
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+find_package(bitbots_localization REQUIRED)
+
+set(GENERATED_CODE "${CMAKE_CURRENT_BINARY_DIR}/generated_code.cpp")
+
+# Discover interfaces on every build; the generator preserves unchanged output.
+add_custom_target(generate_bridge_interfaces
+  BYPRODUCTS ${GENERATED_CODE}
+  COMMAND Python3::Interpreter ${CMAKE_CURRENT_SOURCE_DIR}/bin/generate_code.py --output ${GENERATED_CODE}
+    --require-service bitbots_localization/srv/ResetFilter
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/bin/generate_code.py ${CMAKE_CURRENT_SOURCE_DIR}/resources/code_template.cpp.em
+)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   msg/CompressedMsg.msg
@@ -40,7 +56,26 @@ add_library(${PROJECT_NAME}_lib SHARED
   src/${PROJECT_NAME}/qos_options.cpp
   src/${PROJECT_NAME}/service_bridge_options.cpp
   src/${PROJECT_NAME}/topic_bridge_options.cpp
+  src/${PROJECT_NAME}/action_bridge_options.cpp
+
+  ${GENERATED_CODE}
 )
+
+add_dependencies(${PROJECT_NAME}_lib generate_bridge_interfaces)
+
+# generate per interface compilation units to keep the memory usage low
+ament_index_get_resources(ros2_interface_packages "rosidl_interfaces")
+# actionlib_msgs is deprecated, but we will quiet the warning until the bridge has support for
+# ROS actions: https://github.com/ros2/design/issues/195
+foreach(package_name ${ros2_interface_packages})
+  find_package(${package_name} QUIET REQUIRED)
+  message(STATUS "Found ${package_name}: ${${package_name}_VERSION} (${${package_name}_DIR})")
+  if("${package_name}" STREQUAL "builtin_interfaces")
+    continue()
+  endif()
+  list(APPEND interface_packages ${package_name})
+endforeach()
+
 
 target_include_directories(${PROJECT_NAME}_lib PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -53,12 +88,14 @@ endif()
 
 ament_target_dependencies(${PROJECT_NAME}_lib
   rclcpp
+  rclcpp_action
   rclcpp_components
   rcutils
   rosbag2_cpp
   rosidl_typesupport_cpp
   yaml_cpp_vendor
   zstd
+  ${interface_packages}
 )
 
 rosidl_get_typesupport_target(cpp_typesupport_target
@@ -130,6 +167,7 @@ install(DIRECTORY examples launch
 ament_export_targets(export_${PROJECT_NAME})
 ament_export_dependencies(
   rclcpp
+  rclcpp_action
   rclcpp_components
   rosbag2_cpp
   rcutils
@@ -139,6 +177,11 @@ ament_export_dependencies(
 )
 
 if(BUILD_TESTING)
+  find_package(ament_cmake_pytest REQUIRED)
+  ament_add_pytest_test(test_generate_code test/test_generate_code.py
+    APPEND_ENV PYTEST_DISABLE_PLUGIN_AUTOLOAD=1
+  )
+
   find_package(ament_lint_auto REQUIRED)
   find_package(test_msgs REQUIRED)
   ament_lint_auto_find_test_dependencies()
@@ -150,6 +193,7 @@ if(BUILD_TESTING)
   )
   ament_target_dependencies(${PROJECT_NAME}_test_component_lib
     rclcpp
+    rclcpp_action
     rclcpp_components
     test_msgs
   )

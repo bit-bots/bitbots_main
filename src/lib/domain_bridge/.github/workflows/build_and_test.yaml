@@ -1,6 +1,6 @@
 name: Continuous Integration for rolling
 
-on: [pull_request]
+on: [push]
 
 jobs:
   build_and_test:
@@ -19,4 +19,4 @@ jobs:
       uses: ros-tooling/action-ros-ci@v0.3
       with:
         package-name: domain_bridge
-        target-ros2-distro: rolling
+        target-ros2-distro: humble

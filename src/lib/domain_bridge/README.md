@@ -3,6 +3,8 @@
 A ROS 2 domain bridge.
 Bridges ROS communication between different ROS domain IDs.
 
+Forked by bitbots for inclusion of services as something that can be bridged.
+
 See the [design document](doc/design.md) for more details about how the bridge works.
 
 ## Prerequisites
@@ -32,6 +34,34 @@ cd domain_bridge_ws
 git clone https://github.com/ros2/domain_bridge.git src/
 colcon build
 ```
+
+## Service interface generation in the Bit-Bots workspace
+
+The service and action dispatcher is compiled from installed ROS interfaces.
+The package declares a build dependency on `bitbots_localization`, so colcon
+installs its reset interface before building the bridge. The generator rejects
+builds where that required service is unavailable.
+
+Interface discovery runs on every build and only rewrites changed output. This
+also refreshes a dispatcher generated before a required package was installed.
+When adding another required interface, declare its package dependency and add
+it to the generator's required services in CMake.
+
+Build with dependencies through the workspace task:
+
+```sh
+pixi run -e default build --packages-up-to domain_bridge
+```
+
+The workspace test task normally skips imported libraries. To run this fork's
+regression tests, override that skip list explicitly:
+
+```sh
+pixi run -e default test --packages-select domain_bridge --packages-skip
+```
+
+These changes belong to the Bit-Bots domain bridge fork and should be kept in
+sync with its upstream repository.
 
 ## Usage
 

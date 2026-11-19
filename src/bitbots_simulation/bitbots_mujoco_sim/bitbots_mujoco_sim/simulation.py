@@ -5,6 +5,7 @@ from pathlib import Path
 import mujoco
 import numpy as np
 from ament_index_python.packages import get_package_share_directory
+from bitbots_localization.srv import ResetFilter
 from mujoco import viewer
 from rclpy.node import Node
 from rclpy.time import Time
@@ -20,6 +21,8 @@ from bitbots_msgs.srv import MoveBall, SimulatorPush
 from bitbots_mujoco_sim.robot import Robot
 
 BALL_JOINT_NAME = "ball-root"
+# Wait briefly after a reset, so the odometry has caught up before the localization is reset
+RESET_LOCALIZATION_DELAY = 0.5
 
 
 class Simulation(Node):
@@ -254,6 +257,7 @@ class Simulation(Node):
             self.data,
             step_fn=lambda model, data: self.step(),
             render_fn=render,
+            reset_fn=self._reset_web_viewer,
         )
         self._add_field_textures(viewer.scene.server)
         self._add_ball_textures(viewer.scene.server)
@@ -476,6 +480,26 @@ class Simulation(Node):
                     self._rotation_targets.pop(rotation_state["key"], None)
                 rotation_state.clear()
 
+    def _reset_web_viewer(self, model: mujoco.MjModel, data: mujoco.MjData) -> None:
+        """Handle the web viewer's reset button.
+
+        Resets the world the same way mjviser does by default, then lets each robot's
+        localization search its robot again, so it does not keep tracking the old pose.
+        """
+        mujoco.mj_resetData(model, data)
+        mujoco.mj_forward(model, data)
+
+        reset_time = self.time + RESET_LOCALIZATION_DELAY
+
+        def reset_localization() -> None:
+            if self.time < reset_time:
+                return
+            self.publish(lambda robot: robot.reset_localization())
+            self.early_events.remove(reset_event)
+
+        reset_event = {"frequency": 1, "handler": reset_localization}
+        self.early_events.append(reset_event)
+
     def _apply_drag_targets(self) -> None:
         """Pin dragged joints to their x-y targets or their rotation poses."""
         # Snapshot: drag callbacks run on viser's thread and may add/remove keys.
@@ -633,6 +657,7 @@ class RobotSimulation:
 
         self.simulation.create_subscription(JointCommand, _topic("joint_command"), self.joint_command_callback, 1)
         self.simulation.create_service(SimulatorPush, _topic("simulator_push"), self.simulator_push_callback)
+        self.reset_localization_client = self.simulation.create_client(ResetFilter, _topic("reset_localization"))
 
     @property
     def domain(self) -> int:
@@ -653,6 +678,13 @@ class RobotSimulation:
             kd = command.kd[i] if i < len(command.kd) and command.kd[i] > 0 else None
             joint.set_gains(kp, kd)
             joint.position = command.positions[i]
+
+    def reset_localization(self) -> None:
+        """Reset the localization to the own sidelines, from where its filter searches the robot by itself."""
+        if not self.reset_localization_client.service_is_ready():
+            self.simulation.get_logger().warn(f"Localization of {self.namespace} is not available, cannot reset it")
+            return
+        self.reset_localization_client.call_async(ResetFilter.Request(init_mode=ResetFilter.Request.OWN_SIDELINE))
 
     def publish_ros_joint_states_event(self) -> None:
         js = JointState()
