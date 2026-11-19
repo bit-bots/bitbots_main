@@ -1,0 +1,13 @@
+<launch>
+  <arg name="sim" default="true" description="true: activates simulation time"/>
+
+  <!-- publish map -> odom from the ground truth pose of the simulator -->
+  <node pkg="bitbots_mujoco_sim" exec="localization_faker" name="localization_faker" output="screen">
+    <param name="use_sim_time" value="$(var sim)"/>
+  </node>
+
+  <!-- publish the field map, which is otherwise done by the localization -->
+  <node pkg="bitbots_mujoco_sim" exec="field_publisher" name="field_publisher" output="screen">
+    <param name="use_sim_time" value="$(var sim)"/>
+  </node>
+</launch>
