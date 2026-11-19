@@ -56,7 +56,12 @@ Code structure
 * ``RfdetrHandler`` (``rfdetr_handler.hpp``/``.cpp``) wraps the ONNX Runtime session: execution-provider
   selection (TensorRT → CUDA → WebGPU → CPU fallback chain), model I/O introspection (outputs are resolved by
   name -- "dets", "labels", and the optional "line_mask" -- not by position, since the output set/order can
-  vary between model exports), and running inference.
+  vary between model exports), and running inference. If creating the session with the GPU execution providers
+  fails, it first retries them with the model converted to float32 in memory
+  (``onnx_float16_conversion.hpp``/``.cpp``, which parses the model with the vendored ONNX schema in
+  ``proto/onnx-ml.proto``) and only then falls back to the CPU. Our exports compute in
+  float16 internally, which some GPU providers cannot run on every device (e.g. WebGPU on GPUs without
+  shader-f16 support, such as NVIDIA Pascal cards); the float32 model runs there on the GPU instead.
 * ``rfdetr_processing.hpp``/``.cpp`` contains the pure (ONNX-free, unit-tested) pre/postprocessing math: direct
   resize + ImageNet normalization on the way in; softmax + per-class confidence threshold + box decoding for
   detections; sigmoid + resize + threshold for the line mask. RF-DETR is NMS-free, so there is no NMS step.
